@@ -8,7 +8,18 @@
   --accent2: #115555;
   --danger:  #993333;
   --radius:  3px;
-  --font-mono: 'Courier New', Courier, monospace;
+  --font-mono:    'Courier New', Courier, monospace;
+  --font-heading: 'TenoText 8x8', var(--font-mono);
+  --font-body:    'PixelMplus12', var(--font-mono);
+}
+
+@font-face {
+  font-family: 'TenoText 8x8';
+  src: url('/fonts/TenoText 8x8.otf') format('opentype');
+}
+@font-face {
+  font-family: 'PixelMplus12';
+  src: url('/fonts/PixelMplus12-Regular.ttf') format('truetype');
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -30,9 +41,9 @@ header {
   align-items: baseline;
   gap: 16px;
 }
-.logo { font-size: 20px; font-weight: bold; color: var(--accent); letter-spacing: 3px; }
+.logo { font-family: var(--font-heading); font-size: 20px; font-weight: bold; color: var(--accent); letter-spacing: 3px; }
 .logo em { color: var(--text); font-style: normal; }
-.tagline { font-size: 11px; color: var(--sub); letter-spacing: 1px; }
+.tagline { font-family: var(--font-body); font-size: 11px; color: var(--sub); letter-spacing: 1px; }
 .header-menu-btn { width: auto; margin-left: auto; }
 
 /* ── Layout ── */
@@ -68,6 +79,7 @@ header {
 /* ── Section ── */
 .section { display: flex; flex-direction: column; gap: 8px; }
 .section-title {
+  font-family: var(--font-heading);
   font-size: 10px;
   letter-spacing: 2px;
   color: var(--accent);

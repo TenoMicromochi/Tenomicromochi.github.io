@@ -6,6 +6,14 @@
     font-family: 'TenoText';
     src: url('TenoText 8x11(+Extended ASCII).ttf');
 }
+@font-face {
+    font-family: 'TenoText 8x8';
+    src: url('/fonts/TenoText 8x8.otf') format('opentype');
+}
+@font-face {
+    font-family: 'PixelMplus12';
+    src: url('/fonts/PixelMplus12-Regular.ttf') format('truetype');
+}
 
 /* ---- Design Tokens (CHROMALT-Q system) ---- */
 :root {
@@ -18,7 +26,9 @@
     --accent2:  #115555;
     --danger:   #993333;
     --radius:   3px;
-    --font-mono: 'Courier New', Courier, monospace;
+    --font-mono:    'Courier New', Courier, monospace;
+    --font-heading: 'TenoText 8x8', var(--font-mono);
+    --font-body:    'PixelMplus12', var(--font-mono);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -32,10 +42,10 @@ body {
     padding: 0 0 40px 0;
 }
 
-/* ---- Header ---- */
-.header-block {
+/* ---- Header（GLYPHALTと共通の見た目） ---- */
+.site-header {
     border-bottom: 2px solid var(--border);
-    padding: 8px 20px;
+    padding: 12px 20px;
     background: var(--bg);
     position: sticky;
     top: 0;
@@ -44,37 +54,9 @@ body {
     align-items: baseline;
     gap: 16px;
 }
-.header-inner {
-    display: flex;
-    align-items: baseline;
-    gap: 16px;
-}
-.title-row {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-}
-.brand-tag {
-    font-size: 10px;
-    letter-spacing: 0.15em;
-    color: var(--sub);
-}
-h1 {
-    font-size: 17px;
-    font-weight: bold;
-    letter-spacing: 3px;
-    color: var(--accent);
-    font-family: var(--font-mono);
-}
-h1 .ver {
-    color: var(--text);
-    font-size: 17px;
-}
-.subtitle {
-    font-size: 10px;
-    color: var(--sub);
-    letter-spacing: 1px;
-}
+.site-header .logo { font-family: var(--font-heading); font-size: 20px; font-weight: bold; color: var(--accent); letter-spacing: 3px; }
+.site-header .logo em { color: var(--text); font-style: normal; }
+.site-header .tagline { font-family: var(--font-body); font-size: 11px; color: var(--sub); letter-spacing: 1px; }
 
 /* ---- App Layout ---- */
 .app-layout {
@@ -111,6 +93,7 @@ h1 .ver {
     overflow: visible;
 }
 .panel-header {
+    font-family: var(--font-heading);
     font-size: 9px;
     letter-spacing: 2px;
     color: var(--accent);
