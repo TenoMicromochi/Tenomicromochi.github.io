@@ -44,6 +44,12 @@ header {
 .logo { font-family: var(--font-heading); font-size: 20px; font-weight: bold; color: var(--accent); letter-spacing: 3px; }
 .logo em { color: var(--text); font-style: normal; }
 .tagline { font-family: var(--font-body); font-size: 11px; color: var(--sub); letter-spacing: 1px; }
+
+/* ── 設定項目のキャプション文字（INVERT/BRIGHTNESS等） ── */
+.ctrl-label, .check-row, .drop-label, .size-field label,
+.pal-hint, .glyph-info, .status-line, .download-scale, .quad-toggle {
+  font-family: var(--font-body);
+}
 .header-menu-btn { width: auto; margin-left: auto; }
 
 /* ── Layout ── */

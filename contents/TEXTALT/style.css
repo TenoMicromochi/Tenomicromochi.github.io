@@ -58,6 +58,11 @@ body {
 .site-header .logo em { color: var(--text); font-style: normal; }
 .site-header .tagline { font-family: var(--font-body); font-size: 11px; color: var(--sub); letter-spacing: 1px; }
 
+/* ── 設定項目のキャプション文字（INVERT/BRIGHTNESS等） ── */
+.ctrl-label, .hint, .status-bar {
+  font-family: var(--font-body);
+}
+
 /* ---- App Layout ---- */
 .app-layout {
     display: grid;
