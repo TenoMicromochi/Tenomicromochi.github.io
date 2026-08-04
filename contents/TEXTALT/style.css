@@ -2,61 +2,27 @@
    TEXTALT-V — CHROMALT-Q Design System Port
    ============================================================ */
 
+@import url('/theme.css');
+
 @font-face {
     font-family: 'TenoText';
     src: url('TenoText 8x11(+Extended ASCII).ttf');
 }
-@font-face {
-    font-family: 'TenoText 8x8';
-    src: url('/fonts/TenoText 8x8.otf') format('opentype');
-}
-@font-face {
-    font-family: 'PixelMplus12';
-    src: url('/fonts/PixelMplus12-Regular.ttf') format('truetype');
-}
-
-/* ---- Design Tokens (CHROMALT-Q system) ---- */
-:root {
-    --bg:       #ffffff;
-    --panel:    #f5f8fa;
-    --border:   #99bbcc;
-    --text:     #333355;
-    --sub:      #556688;
-    --accent:   #227777;
-    --accent2:  #115555;
-    --danger:   #993333;
-    --radius:   3px;
-    --font-mono:    'Courier New', Courier, monospace;
-    --font-heading: 'TenoText 8x8', var(--font-mono);
-    --font-body:    'PixelMplus12', var(--font-mono);
-}
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
     font-family: var(--font-mono);
-    background: var(--bg);
-    color: var(--text);
     font-size: 12px;
     min-height: 100vh;
     padding: 0 0 40px 0;
 }
 
-/* ---- Header（GLYPHALTと共通の見た目） ---- */
+/* ---- Header（GLYPHALTと共通の見た目。テーマとの差分のみ上書き） ---- */
 .site-header {
-    border-bottom: 2px solid var(--border);
-    padding: 12px 20px;
     background: var(--bg);
     position: sticky;
     top: 0;
     z-index: 100;
-    display: flex;
-    align-items: baseline;
-    gap: 16px;
 }
-.site-header .logo { font-family: var(--font-heading); font-size: 20px; font-weight: bold; color: var(--accent); letter-spacing: 3px; }
-.site-header .logo em { color: var(--text); font-style: normal; }
-.site-header .tagline { font-family: var(--font-body); font-size: 11px; color: var(--sub); letter-spacing: 1px; }
 
 /* ── 設定項目のキャプション文字（INVERT/BRIGHTNESS等） ── */
 .ctrl-label, .hint, .status-bar {

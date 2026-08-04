@@ -1,33 +1,7 @@
-:root {
-  --bg:      #ffffff;
-  --panel:   #f5f8fa;
-  --border:  #99bbcc;
-  --text:    #333355;
-  --sub:     #556688;
-  --accent:  #227777;
-  --accent2: #115555;
-  --danger:  #993333;
-  --radius:  3px;
-  --font-mono:    'Courier New', Courier, monospace;
-  --font-heading: 'TenoText 8x8', var(--font-mono);
-  --font-body:    'PixelMplus12', var(--font-mono);
-}
+@import url('/theme.css');
 
-@font-face {
-  font-family: 'TenoText 8x8';
-  src: url('/fonts/TenoText 8x8.otf') format('opentype');
-}
-@font-face {
-  font-family: 'PixelMplus12';
-  src: url('/fonts/PixelMplus12-Regular.ttf') format('truetype');
-}
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-  background: var(--bg);
-  color: var(--text);
   font-family: var(--font-mono);
-  font-size: 13px;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
