@@ -1,0 +1,68 @@
+@import url('/theme.css');
+
+#poem-container {
+    display: flex;
+    gap: 20px;
+    height: 500px;
+}
+
+#poem-list-side {
+    width: 260px;
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    border-radius: var(--radius);
+    padding: 10px;
+    overflow-y: auto;
+}
+
+#poem-titles {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+#poem-titles li {
+    margin-bottom: 4px;
+}
+
+#poem-titles a {
+    display: block;
+    padding: 4px 6px;
+    font-size: 11px;
+    color: var(--text);
+    text-decoration: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+}
+#poem-titles a::before { content: '▸ '; color: var(--accent); }
+
+#poem-titles a:hover {
+    background: var(--panel2);
+    color: var(--accent);
+}
+
+#poem-content-side {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+#poem-display {
+    white-space: pre-wrap;
+    line-height: 1.7;
+    font-size: 12px;
+    color: var(--text);
+}
+
+.placeholder {
+    color: var(--sub);
+}
+
+@media (max-width: 680px) {
+    #poem-container { flex-direction: column; height: auto; }
+    #poem-list-side { width: 100%; max-height: 220px; }
+}

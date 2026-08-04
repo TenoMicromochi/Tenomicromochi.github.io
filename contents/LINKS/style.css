@@ -1,0 +1,71 @@
+@import url('/theme.css');
+
+#link-list-container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.link-item {
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+}
+
+.link-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.link-icon {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    border: 1px solid var(--border);
+    background-color: var(--bg);
+    border-radius: var(--radius);
+    flex-shrink: 0;
+}
+
+.link-title {
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    color: var(--accent);
+    margin-right: auto;
+}
+
+.link-button {
+    display: inline-block;
+    padding: 5px 12px;
+    background-color: var(--accent);
+    border: 1px solid var(--accent2);
+    border-radius: var(--radius);
+    color: #fff;
+    text-decoration: none;
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: background-color 0.1s;
+}
+
+.link-button:hover {
+    background-color: var(--accent2);
+    text-decoration: none;
+}
+
+.link-button:active {
+    opacity: 0.85;
+}
+
+.link-desc {
+    font-size: 11px;
+    line-height: 1.6;
+    color: var(--sub);
+    margin-left: 44px;
+    white-space: pre-wrap;
+}

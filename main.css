@@ -1,0 +1,137 @@
+
+
+/* =========================================
+   送電世界 共通シェル（サイドバーナビ）
+   全ページ共通で読み込む。各コンテンツページ独自の
+   スタイルとぶつからないよう、body/*等の汎用セレクタは
+   極力使わずクラス/ID限定で書くこと。
+   ========================================= */
+@font-face {
+    font-family: 'TenoText 7x13';
+    src: url('/fonts/TenoText 7x13.otf') format('opentype');
+}
+
+@font-face {
+    font-family: 'PixelMplus12';
+    src: url('/fonts/PixelMplus12-Regular.ttf') format('truetype');
+}
+
+#sodenmir-sidebar {
+    box-sizing: border-box;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 200px;
+    height: 100vh;
+    background-image: url('/images/tile.png');
+    background-repeat: repeat;
+    border-right: 2px solid #A9D9D0;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    overflow-y: auto;
+    z-index: 9999;
+    font-family: 'PixelMplus12', monospace;
+    font-size: 12px;
+}
+
+#sodenmir-sidebar * {
+    box-sizing: border-box;
+}
+
+.sodenmir-branding {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.sodenmir-site-banner {
+    max-width: 100%;
+    display: block;
+    margin: 0 auto 5px;
+    border: 1px solid #038C7F;
+    image-rendering: pixelated;
+}
+
+.sodenmir-site-title {
+    font-family: 'TenoText 7x13';
+    font-size: 26px;
+    color: #556688;
+    text-shadow: 1px 1px 0 #A9D9D0;
+    margin: 0;
+}
+
+#sodenmir-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sodenmir-menu-item {
+    display: flex;
+    align-items: center;
+    padding: 5px;
+    text-decoration: none;
+    border: 1px dotted #99BBCC;
+    background-color: rgba(255, 255, 255, 0.6);
+    transition: all 0.1s;
+    cursor: pointer;
+}
+
+.sodenmir-menu-icon {
+    width: 32px;
+    height: 32px;
+    margin-right: 10px;
+    object-fit: contain;
+    background-color: #FFFFFF;
+    border: 1px solid #99BBCC;
+    image-rendering: pixelated;
+}
+
+.sodenmir-menu-text {
+    font-family: 'TenoText 7x13';
+    font-size: 26px;
+    color: #556688;
+}
+
+.sodenmir-menu-item:hover {
+    background-color: #99BBCC;
+    border-style: solid;
+}
+
+.sodenmir-menu-item.active {
+    background-color: #333355;
+    border: 1px solid #99BBCC;
+}
+
+.sodenmir-menu-item.active .sodenmir-menu-text {
+    color: #FFFFFF;
+    font-weight: bold;
+}
+
+/* サイドバー分の余白。クラス限定＋高詳細度でページ側の
+   body{padding:...}より確実に優先させる */
+body.sodenmir-has-sidebar {
+    padding-left: 200px;
+}
+
+@media (max-width: 680px) {
+    #sodenmir-sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+    }
+    .sodenmir-branding {
+        margin-bottom: 0;
+    }
+    #sodenmir-menu {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    body.sodenmir-has-sidebar {
+        padding-left: 0;
+    }
+}

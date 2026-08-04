@@ -1,0 +1,121 @@
+/* ============================================================
+   送電世界 共通デザインシステム（GLYPHALT / CHROMALT-Q 基準）
+   contents/配下の各ページの style.css 先頭で
+   @import url('/theme.css'); して使う。
+   ============================================================ */
+:root {
+    --bg:       #ffffff;
+    --panel:    #f5f8fa;
+    --panel2:   #eaf0f4;
+    --border:   #99bbcc;
+    --border2:  #ccdde6;
+    --text:     #333355;
+    --sub:      #556688;
+    --accent:   #227777;
+    --accent2:  #115555;
+    --danger:   #993333;
+    --radius:   3px;
+    --font-mono: 'Courier New', Courier, monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    margin: 0;
+}
+
+/* ── ヘッダー（GLYPHALT/TEXTALTと共通の見た目） ── */
+.site-header {
+    border-bottom: 2px solid var(--border);
+    padding: 12px 20px;
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+}
+.site-header .logo { font-size: 20px; font-weight: bold; color: var(--accent); letter-spacing: 3px; }
+.site-header .logo em { color: var(--text); font-style: normal; }
+.site-header .tagline { font-size: 11px; color: var(--sub); letter-spacing: 1px; }
+
+/* ── ページ本文の共通余白 ── */
+.page-content {
+    padding: 20px;
+    max-width: 960px;
+    margin: 0 auto;
+}
+.page-content.wide { max-width: 1100px; }
+
+/* ── パネル / セクション ── */
+.panel {
+    border: 1px solid var(--border);
+    background: var(--panel);
+    border-radius: var(--radius);
+}
+.panel-head {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    font-weight: bold;
+    background: var(--panel2);
+    border-bottom: 1px solid var(--border);
+    padding: 5px 10px;
+}
+.panel-body { padding: 12px; }
+
+.section-title {
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    font-weight: bold;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 4px;
+    margin-bottom: 12px;
+}
+
+/* ── ボタン ── */
+.btn {
+    padding: 8px 14px;
+    background: var(--accent);
+    color: #fff;
+    border: 1px solid var(--accent2);
+    border-radius: var(--radius);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: background 0.1s;
+}
+.btn:hover { background: var(--accent2); }
+.btn:active { opacity: 0.85; }
+.btn.secondary { background: transparent; color: var(--accent); border-color: var(--accent); }
+.btn.secondary:hover { background: #eef5f5; }
+
+/* ── ステータス風ラベル ── */
+.status-line {
+    font-size: 10px; color: var(--sub); padding: 3px 6px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: var(--radius); letter-spacing: 1px;
+    display: inline-block;
+}
+
+/* ── タグ / チップ ── */
+.tag {
+    font-size: 10px;
+    color: var(--accent2);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 2px 6px;
+    letter-spacing: 0.5px;
+    border-radius: var(--radius);
+    display: inline-block;
+}
+
+/* ── リンク ── */
+a { color: var(--accent); }
+a:hover { color: var(--accent2); }
+
+hr.divider { border: none; border-top: 1px solid var(--border2); margin: 10px 0; }

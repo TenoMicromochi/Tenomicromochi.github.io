@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache">
+<title>GLYPHALT-16</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="/main.css">
+  <script src="/menu.js" defer></script>
+</head>
+<body>
+
+<header>
+  <div class="logo">GLYPH<em>ALT</em>-16</div>
+  <div class="tagline">character cell image converter</div>
+  <button class="btn secondary sm header-menu-btn" id="menuToggle">☰ MENU</button>
+</header>
+
+<div class="main">
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-col">
+
+      <!-- INPUT IMAGE -->
+      <div class="section">
+        <div class="section-title">INPUT IMAGE</div>
+        <div class="drop-zone" id="dropZone">
+          <input type="file" accept="image/*" id="imageInput">
+          <div class="drop-icon">⊞</div>
+          <div class="drop-label">Drop image or click to browse</div>
+          <div class="drop-name" id="imgName"></div>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- PALETTE -->
+      <div class="section">
+        <div class="section-title">PALETTE</div>
+        <div class="status-line" id="paletteStatus">Loading palettes…</div>
+        <select id="paletteSelect"></select>
+        <div class="palette-grid" id="paletteGrid"></div>
+        <div class="pal-hint">Click swatches to toggle colors</div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- GLYPH SETS (shared load status; A/B contribute together) -->
+      <div class="section">
+        <div class="section-title">GLYPH SETS</div>
+        <div class="status-line" id="glyphStatus">Loading glyphs…</div>
+        <div class="pal-hint">Set A + Set Bの有効グリフを混ぜて1回の変換で使用します</div>
+      </div>
+
+      <!-- GLYPH SET A -->
+      <div class="section">
+        <div class="section-title">GLYPH SET A</div>
+        <select id="glyphSelectA"></select>
+        <div class="glyph-grid" id="glyphGridA"></div>
+        <div class="glyph-info">
+          <span id="glyphOnCountA">0</span> / <span id="glyphTotalCountA">0</span> glyphs enabled
+        </div>
+        <div class="glyph-btn-row">
+          <button class="btn secondary sm" id="glyphAllOnA">ALL ON</button>
+          <button class="btn secondary sm" id="glyphAllOffA">ALL OFF</button>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- GLYPH SET B -->
+      <div class="section">
+        <div class="section-title">GLYPH SET B</div>
+        <select id="glyphSelectB"></select>
+        <div class="glyph-grid" id="glyphGridB"></div>
+        <div class="glyph-info">
+          <span id="glyphOnCountB">0</span> / <span id="glyphTotalCountB">0</span> glyphs enabled
+        </div>
+        <div class="glyph-btn-row">
+          <button class="btn secondary sm" id="glyphAllOnB">ALL ON</button>
+          <button class="btn secondary sm" id="glyphAllOffB">ALL OFF</button>
+        </div>
+      </div>
+
+    </div><!-- /sidebar-col left -->
+
+    <div class="sidebar-col">
+
+      <!-- OUTPUT SIZE -->
+      <div class="section">
+        <div class="section-title">OUTPUT SIZE</div>
+        <div class="size-row">
+          <div class="size-field">
+            <label>WIDTH (px)</label>
+            <input type="number" id="outWidth" value="512" min="64" max="1024" step="8">
+          </div>
+          <div class="size-field">
+            <label>HEIGHT (px)</label>
+            <input type="number" id="outHeight" value="512" min="64" max="1024" step="8">
+          </div>
+        </div>
+        <label class="check-row">
+          <input type="checkbox" id="keepAspect" checked>
+          Keep aspect ratio
+        </label>
+      </div>
+
+      <hr class="divider">
+
+      <!-- IMAGE ADJUST -->
+      <div class="section">
+        <div class="section-title">IMAGE ADJUST</div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">SOBEL</div>
+          <div class="ctrl-input-row">
+            <input type="range" min="0" max="10" value="0" step="1" id="sobel">
+            <input type="number" min="0" max="10" value="0" step="1" id="sobelVal" class="ctrl-number">
+          </div>
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">BLUR</div>
+          <div class="ctrl-input-row">
+            <input type="range" min="0" max="10" value="0" step="1" id="blur">
+            <input type="number" min="0" max="10" value="0" step="1" id="blurVal" class="ctrl-number">
+          </div>
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">SHARPNESS</div>
+          <div class="ctrl-input-row">
+            <input type="range" min="0" max="10" value="0" step="1" id="sharp">
+            <input type="number" min="0" max="10" value="0" step="1" id="sharpVal" class="ctrl-number">
+          </div>
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">GAMMA (%)</div>
+          <div class="ctrl-input-row">
+            <input type="range" min="10" max="300" value="100" id="gamma">
+            <input type="number" min="10" max="300" value="100" id="gammaVal" class="ctrl-number">
+          </div>
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">BRIGHTNESS (%)</div>
+          <div class="ctrl-input-row">
+            <input type="range" min="10" max="300" value="100" id="brightness">
+            <input type="number" min="10" max="300" value="100" id="brightnessVal" class="ctrl-number">
+          </div>
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">CONTRAST (%)</div>
+          <div class="ctrl-input-row">
+            <input type="range" min="10" max="300" value="100" id="contrast">
+            <input type="number" min="10" max="300" value="100" id="contrastVal" class="ctrl-number">
+          </div>
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">SATURATION (%)</div>
+          <div class="ctrl-input-row">
+            <input type="range" min="0" max="300" value="100" id="saturation">
+            <input type="number" min="0" max="300" value="100" id="saturationVal" class="ctrl-number">
+          </div>
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">HUE SHIFT (°)</div>
+          <div class="ctrl-input-row">
+            <input type="range" min="0" max="360" value="0" step="1" id="hue">
+            <input type="number" min="0" max="360" value="0" step="1" id="hueVal" class="ctrl-number">
+          </div>
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">POSTERIZE</div>
+          <div class="ctrl-input-row">
+            <input type="range" min="0" max="10" value="0" step="1" id="posterize">
+            <input type="number" min="0" max="10" value="0" step="1" id="posterizeVal" class="ctrl-number">
+          </div>
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">DITHER</div>
+          <div class="ctrl-input-row">
+            <input type="range" min="0" max="10" value="0" step="1" id="dither">
+            <input type="number" min="0" max="10" value="0" step="1" id="ditherVal" class="ctrl-number">
+          </div>
+        </div>
+        <label class="check-row">
+          <input type="checkbox" id="negative">
+          Negative
+        </label>
+      </div>
+
+      <hr class="divider">
+
+      <!-- FEATURE SPLIT -->
+      <div class="section">
+        <div class="section-title">FEATURE SPLIT</div>
+        <div class="quad-toggle" id="quadToggle">
+          <label><input type="radio" name="quadMode" value="1"> 1</label>
+          <label><input type="radio" name="quadMode" value="2h"> 2 L/R</label>
+          <label><input type="radio" name="quadMode" value="2v"> 2 T/B</label>
+          <label><input type="radio" name="quadMode" value="4" checked> 4</label>
+          <label><input type="radio" name="quadMode" value="16"> 16</label>
+        </div>
+        <div class="pal-hint">⚠️The more partitions you add, the higher the accuracy becomes, but the slower the process gets.</div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- RENDER -->
+      <div class="section">
+        <div class="section-title">RENDER</div>
+        <div class="progress-wrap" id="progressWrap">
+          <div class="progress-bar-outer"><div class="progress-bar-inner" id="progressBar"></div></div>
+          <div class="progress-text" id="progressText">INITIALIZING...</div>
+        </div>
+        <button class="btn" id="convertBtn" disabled>CONVERT</button>
+        <button class="btn secondary" id="downloadBtn" disabled>DOWNLOAD PNG</button>
+        <div class="download-scale" aria-label="Download scale">
+          <span>DOWNLOAD SCALE</span>
+          <label><input type="radio" name="downloadScale" value="1" checked> 1x</label>
+          <label><input type="radio" name="downloadScale" value="2"> 2x</label>
+          <label><input type="radio" name="downloadScale" value="3"> 3x</label>
+          <label><input type="radio" name="downloadScale" value="4"> 4x</label>
+        </div>
+      </div>
+
+    </div><!-- /sidebar-col right -->
+  </div><!-- /sidebar -->
+
+  <div class="canvas-area">
+    <div class="canvas-container">
+      <div id="placeholder">
+        <div class="placeholder-art">
+┌───────────────────────┐
+│  GLYPHALT-16          │
+│  ░░░░░░░░░░░░░░░░░    │
+│  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓    │
+│  Create by Tenokun!   │
+└───────────────────────┘</div>
+        <div class="placeholder-msg">[ AWAITING INPUT ]</div>
+      </div>
+      <canvas id="outputCanvas" style="display:none"></canvas>
+    </div>
+    <div class="info-bar" id="infoBar" style="display:none">
+      <div class="info-chip">SIZE: <strong id="infoSize">-</strong></div>
+      <div class="info-chip">CELLS: <strong id="infoCells">-</strong></div>
+      <div class="info-chip">GLYPHS: <strong id="infoGlyphs">-</strong></div>
+      <div class="info-chip">TIME: <strong id="infoTime">-</strong></div>
+    </div>
+    <button class="btn tweet-btn" id="tweetBtn" disabled>POST TO X</button>
+  </div>
+</div>
+
+<canvas id="workCanvas" style="display:none"></canvas>
+<div id="errorToast"></div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

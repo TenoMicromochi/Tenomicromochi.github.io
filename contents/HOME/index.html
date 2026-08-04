@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Micromochi_Teno</title>
+    <style>
+@import url('/theme.css');
+
+/* ── Variables（テーマにない分だけ追加） ─────────────────────── */
+:root {
+    --panel2:  #eaf0f4;
+    --border2: #ccdde6;
+    --accent3: #333355;
+    --muted:   #aabbcc;
+}
+
+body { line-height: 1.6; }
+
+.site-header .logo em { color: var(--accent3); }
+
+/* ── Page wrapper ────────────────────────────────────────────── */
+.page {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 24px 20px;
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 20px;
+}
+
+/* ── Left column ─────────────────────────────────────────────── */
+.col-left {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* ── Right column ────────────────────────────────────────────── */
+.col-right {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* ── Panel card ──────────────────────────────────────────────── */
+.panel {
+    border: 1px solid var(--border);
+    background: var(--panel);
+}
+
+/* ── Panel header ────────────────────────────────────────────── */
+.panel-head {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    background: var(--panel2);
+    border-bottom: 1px solid var(--border);
+    padding: 5px 10px;
+}
+
+/* ── Panel body ──────────────────────────────────────────────── */
+.panel-body {
+    padding: 12px 12px;
+}
+
+/* ── Icon block ──────────────────────────────────────────────── */
+.icon-wrap {
+    display: flex;
+    justify-content: center;
+    padding: 12px;
+    border-bottom: 1px solid var(--border2);
+}
+
+.profile-icon {
+    width: 160px;
+    height: 160px;
+    border: 1px solid var(--border);
+    display: block;
+    object-fit: cover;
+}
+
+/* ── Status chip ─────────────────────────────────────────────── */
+.status-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border2);
+    font-size: 10px;
+    color: var(--sub);
+}
+.status-dot {
+    width: 7px;
+    height: 7px;
+    background: var(--accent);
+    border-radius: 50%;
+    flex-shrink: 0;
+    animation: pulse 2s step-end infinite;
+}
+@keyframes pulse {
+    0%,100% { opacity: 1; }
+    50%      { opacity: 0.2; }
+}
+
+/* ── Tag list ────────────────────────────────────────────────── */
+.tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+.tag {
+    font-size: 11px;
+    color: var(--accent2);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 2px 6px;
+    letter-spacing: 0.5px;
+}
+
+/* ── Info table ──────────────────────────────────────────────── */
+.info-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.info-table tr {
+    border-bottom: 1px solid var(--border2);
+}
+.info-table tr:last-child {
+    border-bottom: none;
+}
+.info-table td {
+    padding: 5px 0;
+    vertical-align: top;
+    font-size: 12px;
+}
+.info-table .key {
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 1px;
+    white-space: nowrap;
+    padding-right: 10px;
+    min-width: 80px;
+}
+.info-table .val {
+    color: var(--text);
+    font-size: 12px;
+}
+.info-table .val-ja {
+    color: var(--sub);
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+/* ── Section divider ──────────────────────────────────────────── */
+.divider {
+    border: none;
+    border-top: 1px solid var(--border2);
+    margin: 10px 0;
+}
+
+/* ── Bio text ────────────────────────────────────────────────── */
+.bio-en {
+    font-size: 11px;
+    color: var(--text);
+    line-height: 1.7;
+    letter-spacing: 0.3px;
+}
+.bio-ja {
+    font-size: 12px;
+    color: var(--sub);
+    line-height: 1.8;
+    margin-top: 8px;
+}
+
+/* ── Like list ───────────────────────────────────────────────── */
+.like-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3px 12px;
+}
+.like-item {
+    font-size: 12px;
+    color: var(--sub);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.like-item::before {
+    content: '\25B8';
+    color: var(--accent);
+    flex-shrink: 0;
+}
+
+/* ── Comment block ───────────────────────────────────────────── */
+.comment-box {
+    border-left: 3px solid var(--accent);
+    padding: 8px 10px;
+    background: var(--bg);
+    font-size: 11px;
+    color: var(--text);
+    letter-spacing: 0.5px;
+}
+.comment-box .ja {
+    font-size: 12px;
+    color: var(--sub);
+    margin-top: 4px;
+}
+
+/* ── Blink cursor ─────────────────────────────────────────────── */
+.cursor {
+    display: inline-block;
+    width: 8px;
+    height: 12px;
+    background: var(--accent);
+    vertical-align: middle;
+    margin-left: 2px;
+    animation: blink 1s step-end infinite;
+}
+@keyframes blink {
+    0%,100% { opacity: 1; }
+    50%      { opacity: 0; }
+}
+
+/* ── Footer ──────────────────────────────────────────────────── */
+footer {
+    border-top: 1px solid var(--border);
+    padding: 8px 20px;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 680px) {
+    .page {
+        grid-template-columns: 1fr;
+    }
+}
+    </style>
+    <link rel="stylesheet" href="/main.css">
+    <script src="/menu.js" defer></script>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header class="site-header">
+    <div class="logo">MICRO<em>MOCHI</em>_TENO</div>
+    <div class="tagline">personal website / 個人サイト</div>
+</header>
+
+<!-- ── Main layout ── -->
+<div class="page">
+
+    <!-- LEFT COLUMN -->
+    <div class="col-left">
+
+        <!-- Icon + status -->
+        <div class="panel">
+            <div class="panel-head">USER ICON</div>
+            <div class="icon-wrap">
+                <img src="../../images/tenokun_2.gif" width="160" height="160" alt="Tenokun" class="profile-icon">
+            </div>
+            <div class="status-row">
+                <div class="status-dot"></div>
+                ONLINE<span class="cursor"></span>
+            </div>
+            <div class="panel-body">
+                <div class="tag-list">
+                    <span class="tag">VRChat</span>
+                    <span class="tag">Pixelart</span>
+                    <span class="tag">Chiptune</span>
+                    <span class="tag">Coding</span>
+                    <span class="tag">Y2K</span>
+                    <span class="tag">Gadgets</span>
+                    <span class="tag">Potatoes</span>
+                    <span class="tag">Selfie</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick info -->
+        <div class="panel">
+            <div class="panel-head">QUICK INFO</div>
+            <div class="panel-body">
+                <table class="info-table">
+                    <tr>
+                        <td class="key">NAME</td>
+                        <td class="val">Teno Micromochi
+                            <div class="val-ja">一微餅ての</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="key">ALIAS</td>
+                        <td class="val">Tenokun<br>Teno</td>
+                    </tr>
+                    <tr>
+                        <td class="key">AGE</td>
+                        <td class="val">20+</td>
+                    </tr>
+                    <tr>
+                        <td class="key">SEX</td>
+                        <td class="val">Male
+                            <div class="val-ja">男</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="key">GENDER</td>
+                        <td class="val">Undefined ;3</td>
+                    </tr>
+                    <tr>
+                        <td class="key">LANG</td>
+                        <td class="val">JA / EN</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+    </div><!-- /col-left -->
+
+    <!-- RIGHT COLUMN -->
+    <div class="col-right">
+
+        <!-- About this site -->
+        <div class="panel">
+            <div class="panel-head">ABOUT THIS SITE</div>
+            <div class="panel-body">
+                <p class="bio-en">
+                    This is my personal little corner on the web.<br>
+                    I’ve gathered all sorts of things I’ve made here,<br>
+                    so feel free to explore and play around as much as you like!
+                </p>
+                <p class="bio-ja">
+                    ここは僕の個人サイトだよ<br>
+                    作ったものをいろいろ置いてあるよ、遊んだりみていってね
+                </p>
+            </div>
+        </div>
+
+        <!-- About me -->
+        <div class="panel">
+            <div class="panel-head">ABOUT ME</div>
+            <div class="panel-body">
+                <p class="bio-en">
+                    Hi, I'm Teno! I’m a big fan of Y2K<br>
+                    (old web aesthetics, Heisei retro vibes, and cyberpunk styles, etc…)<br>
+                    I’m a villain who bootlegs pixel art, chiptunes, and web tools.<br>
+                    Nice to meet you!
+                </p>
+                <p class="bio-ja">
+                    「ての」だよ。Y2K美学 (オールドウェブ・平成レトロ・サイバーパンクetc…)が好きな<br>
+                    ドット絵・チップチューン・ウェブツールの密造が好きな極悪人だよ。<br>
+                    よろしくね!
+                </p>
+
+                <hr class="divider">
+
+                <div style="font-size:10px;color:var(--accent);letter-spacing:2px;margin-bottom:8px;">LIKES / 好きなもの</div>
+                <div class="like-grid">
+                    <div class="like-item">Potatoes / じゃがいも</div>
+                    <div class="like-item">Y2K Aesthetics / ﾜｲﾂｰｹｰ</div>
+                    <div class="like-item">Gadgets / ガジェット</div>
+                    <div class="like-item">Pixel Art / ドット絵</div>
+                    <div class="like-item">Chiptune / ﾋﾟｺﾋﾟｺ音楽</div>
+                    <div class="like-item">Coding / コーディング</div>
+                    <div class="like-item">VRChat / ぶいちゃ</div>
+                    <div class="like-item">Selfie / 自撮り</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comment -->
+        <div class="panel">
+            <div class="panel-head">COMMENT</div>
+            <div class="panel-body">
+                <div class="comment-box">
+                    Good morning, humankind!
+                    <div class="ja">おはようじんるい！</div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /col-right -->
+
+</div><!-- /page -->
+
+<footer>
+    <span>Micromochi_Teno's website</span>
+    <span>hosted on Neocities</span>
+</footer>
+
+</body>
+</html>

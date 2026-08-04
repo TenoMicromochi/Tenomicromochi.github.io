@@ -1,0 +1,92 @@
+
+@font-face {
+    font-family: 'TenoText 7x13';
+    src: url('../../fonts/TenoText 7x13.otf') format('opentype');
+}
+
+@font-face {
+    font-family: 'PixelMplus12';
+    src: url('../../fonts/PixelMplus12-Regular.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'TenoText 8x11(+Extended ASCII)';
+    src: url('../../fonts/TenoText 8x11(+Extended ASCII).ttf') format('truetype');
+}
+
+* { -webkit-font-smoothing: none; font-smooth: never; }
+
+body {
+    margin: 0;
+    padding: 20px;
+    background-color: #FFFFFF;
+    color: #333355;
+    font-family: 'PixelMplus12', sans-serif;
+    font-size: 22px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+#home-container {
+    width: 1000px;
+    margin: 0 auto;
+}
+
+#profile-top-table {
+    width: 100%;
+    border-bottom: 2px solid #99BBCC;
+    margin-bottom: 20px;
+}
+
+.icon-cell {
+    width: 270px;
+    padding: 10px;
+    vertical-align: middle;
+}
+
+.profile-icon {
+    border: 1px solid #99BBCC;
+    display: block;
+}
+
+.aa-cell {
+    padding: 10px;
+    vertical-align: middle;
+    background:#FFFFFF;
+}
+
+.name-aa {
+    font-family: 'TenoText 8x11(+Extended ASCII)', monospace;
+    font-size: 11px;
+    line-height: 1.0; 
+    color: #3355FF;
+    background: #FFFFFF;
+    padding: 10px;
+    border: 1px dotted #99BBCC;
+    overflow-x: auto;
+
+}
+
+
+#intro-section {
+    padding: 10px;
+}
+
+.section-title {
+    font-family: 'TenoText 7x13';
+    font-size: 26px;
+    color: #223366;
+    padding-left: 10px;
+    margin-bottom: 15px;
+}
+
+.sub-title {
+    font-family: 'TenoText 7x13';
+    font-size: 26px;
+    color: #223366;
+    margin-top: 20px;
+}
+
+.intro-content p {
+    margin-bottom: 1em;
+}

@@ -1,0 +1,78 @@
+@import url('/theme.css');
+
+/* フォント配布ページ固有のフォント定義（プレビュー/配布対象） */
+@font-face { font-family: 'TenoText 3x6'; src: url('../../fonts/TenoText 3x6.ttf') format('truetype'); }
+@font-face { font-family: 'TenoText 8x8'; src: url('../../fonts/TenoText 8x8.otf') format('opentype'); }
+@font-face { font-family: 'TenoText 8x10'; src: url('../../fonts/TenoText 8x10.ttf') format('truetype'); }
+@font-face { font-family: 'TenoText 8x11(+Extended ASCII)'; src: url('../../fonts/TenoText 8x11(+Extended ASCII).ttf') format('truetype'); }
+@font-face { font-family: 'TenoText 7x13'; src: url('../../fonts/TenoText 7x13.otf') format('opentype'); }
+@font-face { font-family: 'TenoText 11x31'; src: url('../../fonts/TenoText 11x31.otf') format('opentype'); }
+@font-face { font-family: 'TenoGlyph 4x4'; src: url('../../fonts/TenoGlyph 4x4.ttf') format('truetype'); }
+@font-face { font-family: 'TenoGlyph Magic'; src: url('../../fonts/TenoGlyph Magic.otf') format('opentype'); }
+
+.font-layout {
+    display: flex;
+    gap: 20px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    border-radius: var(--radius);
+    padding: 16px;
+    flex-wrap: wrap;
+}
+
+.font-list-area { width: 260px; }
+.preview-area { flex: 1; min-width: 260px; }
+
+.label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+#font-selector {
+    width: 100%;
+    height: 170px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    background: var(--bg);
+}
+
+#download-area { margin-top: 15px; }
+
+#download-button { width: 100%; }
+
+#font-preview-display {
+    width: 100%;
+    min-height: 120px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+    padding: 10px;
+    font-size: 24px;
+    word-break: break-all;
+    overflow-y: auto;
+    color: var(--text);
+    font-family: 'TenoText 3x6'; /* 初期フォント */
+}
+
+#preview-input {
+    width: 100%;
+    margin-top: 20px;
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text);
+    background: var(--bg);
+}
+
+@media (max-width: 560px) {
+    .font-layout { flex-direction: column; }
+    .font-list-area { width: 100%; }
+}

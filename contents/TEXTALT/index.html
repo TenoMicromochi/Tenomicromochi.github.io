@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEXTALT-V</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/main.css">
+    <script src="/menu.js" defer></script>
+</head>
+<body>
+
+    <div class="header-block">
+        <div class="header-inner">
+            <div class="title-row">
+                <span class="brand-tag">TENOKUN's</span>
+                <h1>TEXTALT<span class="ver">-V</span></h1>
+            </div>
+            <span class="subtitle">image to ASCII art converter · TenoText</span>
+        </div>
+    </div>
+
+    <div class="app-layout">
+
+        <!-- LEFT COLUMN -->
+        <div class="col col-left">
+
+            <div class="panel">
+                <div class="panel-header">IMAGE LOAD</div>
+                <div class="panel-body">
+                    <div id="manual-font-load" class="font-error-box">
+                        <span class="error-tag">FONT ERROR</span>
+                        <p>Please manually select "TenoText 8x11 (+Extended ASCII).ttf"</p>
+                        <input type="file" id="fontInput" accept=".ttf" class="file-input">
+                    </div>
+                    <div class="control-row">
+                        <label class="ctrl-label">IMAGE FILE</label>
+                        <input type="file" id="imgInput" accept="image/*" class="file-input">
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">PREVIEW</div>
+                <div class="panel-body preview-body">
+                    <canvas id="previewCanvas"></canvas>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">IMAGE ADJUST</div>
+                <div class="panel-body">
+                    <div class="control-row toggle-row">
+                        <label class="ctrl-label">INVERT</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="invertCheck">
+                            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                        </label>
+                    </div>
+                    <div class="control-row">
+                        <label class="ctrl-label">BRIGHTNESS <span class="val-badge" id="val-brightness">0</span></label>
+                        <input type="range" id="brightnessRange" min="-100" max="100" value="0" class="slider">
+                    </div>
+                    <div class="control-row">
+                        <label class="ctrl-label">CONTRAST <span class="val-badge" id="val-contrast">0</span></label>
+                        <input type="range" id="contrastRange" min="-100" max="100" value="0" class="slider">
+                    </div>
+                    <div class="control-row">
+                        <label class="ctrl-label">GAMMA <span class="val-badge" id="val-gamma">1.00</span></label>
+                        <input type="range" id="gammaRange" min="0.1" max="4.0" step="0.01" value="1.0" class="slider">
+                    </div>
+                    <div class="control-row">
+                        <label class="ctrl-label">POSTERIZE <span class="val-badge" id="val-posterize">0</span></label>
+                        <input type="range" id="posterizeRange" min="0" max="16" step="1" value="0" class="slider">
+                        <span class="hint">0 = OFF</span>
+                    </div>
+                    <div class="control-row">
+                        <label class="ctrl-label">SHARPEN <span class="val-badge" id="val-sharpen">0</span></label>
+                        <input type="range" id="sharpenRange" min="0" max="5" step="0.1" value="0" class="slider">
+                    </div>
+                    <div class="control-row">
+                        <label class="ctrl-label">BLUR <span class="val-badge" id="val-blur">0</span></label>
+                        <input type="range" id="blurRange" min="0" max="100" step="1" value="0" class="slider">
+                        <span class="hint">0 = OFF</span>
+                    </div>
+                    <div class="control-row">
+                        <label class="ctrl-label">SOBEL <span class="val-badge" id="val-sobel">0</span></label>
+                        <input type="range" id="sobelRange" min="0" max="100" step="1" value="0" class="slider">
+                        <span class="hint">0 = OFF</span>
+                    </div>
+                    <div class="control-row">
+                        <label class="ctrl-label">THRESHOLD <span class="val-badge" id="val-threshold">0</span></label>
+                        <input type="range" id="thresholdRange" min="0" max="255" step="1" value="0" class="slider">
+                        <span class="hint">0 = OFF</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- CENTER COLUMN -->
+        <div class="col col-center">
+
+            <div class="panel">
+                <div class="panel-header">OUTPUT</div>
+                <div class="panel-body">
+                    <div class="control-row">
+                        <label class="ctrl-label">WIDTH (chars) <span class="val-badge" id="val-width">80</span></label>
+                        <input type="range" id="widthInput" min="10" max="300" value="80" class="slider">
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">EXPORT PNG</div>
+                <div class="panel-body">
+                    <div class="control-row">
+                        <label class="ctrl-label">SCALE</label>
+                        <div class="scale-btn-group">
+                            <button class="btn-scale" data-scale="1">1×</button>
+                            <button class="btn-scale" data-scale="2">2×</button>
+                            <button class="btn-scale" data-scale="3">3×</button>
+                            <button class="btn-scale" data-scale="4">4×</button>
+                        </div>
+                    </div>
+                    <div class="control-row">
+                        <label class="ctrl-label">COLOR</label>
+                        <div class="color-picker-row">
+                            <div class="color-field">
+                                <span class="color-dot" id="fgColorDot" style="background:#c8cfe8"></span>
+                                <label class="ctrl-label">FG</label>
+                                <input type="color" id="fgColorPicker" value="#c8cfe8" class="color-input">
+                            </div>
+                            <div class="color-field">
+                                <span class="color-dot" id="bgColorDot" style="background:#1a1d28"></span>
+                                <label class="ctrl-label">BG</label>
+                                <input type="color" id="bgColorPicker" value="#1a1d28" class="color-input">
+                            </div>
+                            <button class="btn-secondary" id="swapColorsBtn">⇄</button>
+                        </div>
+                    </div>
+                    <div id="exportStatus" class="export-status"></div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">CHAR SET</div>
+                <div class="panel-body">
+                    <div class="control-row">
+                        <label class="ctrl-label">PRESET</label>
+                        <select id="charSetSelect" class="select-input">
+                            <optgroup label="— Teno —">
+                                <option value="teno">TenoTeno</option>
+                            </optgroup>
+                            <optgroup label="— Density —">
+                                <option value="minimal">Minimalist</option>
+                                <option value="circles">Circles</option>
+                                <option value="dots">Dots</option>
+                                <option value="dots_circles">Circles+Dots</option>
+                                <option value="bars">Bars</option>
+                            </optgroup>
+                            <optgroup label="— Numbers —">
+                                <option value="numbers">Numbers</option>
+                                <option value="numbers_plus">Numbers+</option>
+                            </optgroup>
+                            <optgroup label="— Symbols —">
+                                <option value="symbols">Symbols</option>
+                                <option value="ext_symbols">Ext-Symbols</option>
+                                <option value="all_symbols">All-Symbols</option>
+                            </optgroup>
+                            <optgroup label="— Alphabet —">
+                                <option value="large">Capital</option>
+                                <option value="small">Small</option>
+                                <option value="ext_large">Ext-Capital</option>
+                                <option value="ext_small">Ext-Small</option>
+                                <option value="large_small">Capital+Small</option>
+                                <option value="ext_large_small">Ext(Capital+Small)</option>
+                                <option value="all_alphabet">All Alphabet</option>
+                            </optgroup>
+                            <optgroup label="— All —">
+                                <option value="all" selected>**ALL**</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div class="control-row">
+                        <label class="ctrl-label">ADD PRESET →</label>
+                        <button id="addPresetBtn" class="btn-secondary">ADD</button>
+                        <button id="replacePresetBtn" class="btn-secondary">OVERWRITE</button>
+                    </div>
+                    <div class="control-row">
+                        <label class="ctrl-label">CUSTOM CHARS</label>
+                    </div>
+                    <textarea id="customCharsInput" class="char-textarea" placeholder="Only ASCII and extended ASCII characters are supported."></textarea>
+                    <div class="char-counter"><span id="charCount">0</span> chars</div>
+                    <div class="control-row toggle-row">
+                        <label class="ctrl-label">AUTO-APPLY ON EDIT</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="autoApplyCheck" checked>
+                            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">FEATURE EXTRACTION</div>
+                <div class="panel-body">
+                    <div class="grid-control-row">
+                        <div class="grid-item">
+                            <label class="ctrl-label">GRID X</label>
+                            <div class="number-spin">
+                                <button class="spin-btn" data-target="gridX" data-dir="-1">−</button>
+                                <span id="val-gridX" class="spin-val">2</span>
+                                <button class="spin-btn" data-target="gridX" data-dir="1">+</button>
+                            </div>
+                            <input type="hidden" id="gridX" value="2">
+                        </div>
+                        <div class="grid-cross">×</div>
+                        <div class="grid-item">
+                            <label class="ctrl-label">GRID Y</label>
+                            <div class="number-spin">
+                                <button class="spin-btn" data-target="gridY" data-dir="-1">−</button>
+                                <span id="val-gridY" class="spin-val">2</span>
+                                <button class="spin-btn" data-target="gridY" data-dir="1">+</button>
+                            </div>
+                            <input type="hidden" id="gridY" value="2">
+                        </div>
+                    </div>
+                    <div class="control-row toggle-row">
+                        <label class="ctrl-label">INCLUDE OVERALL BRIGHTNESS</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="includeAvgCheck" checked>
+                            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                        </label>
+                    </div>
+                    <div class="control-row">
+                        <label class="ctrl-label">DENSITY WEIGHT <span class="val-badge" id="val-densityWeight">10.0</span></label>
+                        <input type="range" id="densityWeightRange" min="0.1" max="30" step="0.1" value="10.0" class="slider">
+                    </div>
+                </div>
+            </div>
+
+            <div id="status-bar" class="status-bar">Initializing...</div>
+        </div>
+
+        <!-- RIGHT COLUMN: ASCII Output -->
+        <div class="col col-right">
+            <div class="panel output-panel">
+                <div class="panel-header output-panel-header">
+                    <span class="output-title">ASCII OUTPUT</span>
+                    <div class="view-tabs">
+                        <button class="view-tab active" data-tab="text">TEXT</button>
+                        <button class="view-tab"        data-tab="preview">PREVIEW</button>
+                    </div>
+                </div>
+                <div class="panel-body output-body">
+                    <div id="tab-text" class="output-tab active">
+                        <pre id="output"></pre>
+                    </div>
+                    <div id="tab-preview" class="output-tab">
+                        <canvas id="bitmapCanvas"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <canvas id="analysisCanvas" style="display:none;"></canvas>
+    <script src="js/constants.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/imageProcessing.js"></script>
+    <script src="js/features.js"></script>
+    <script src="js/fontAnalysis.js"></script>
+    <script src="js/charset.js"></script>
+    <script src="js/convert.js"></script>
+    <script src="js/glyph.js"></script>
+    <script src="js/export.js"></script>
+    <script src="js/fontLoader.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

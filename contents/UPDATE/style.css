@@ -1,0 +1,33 @@
+@import url('/theme.css');
+
+#log-container {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+/* 履歴1件分のまとまり */
+.log-item {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px dotted var(--border);
+}
+.log-item:last-child { border-bottom: none; }
+
+/* 日付 */
+.log-date {
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 4px;
+}
+
+/* 本文 */
+.log-text {
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text);
+    white-space: pre-wrap;
+    padding-left: 4px;
+}
