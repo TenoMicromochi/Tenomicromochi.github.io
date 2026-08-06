@@ -1,15 +1,4 @@
 
-// ===============================================
-// 送電世界 共通トップナビゲーション
-// 各コンテンツページの<head>に以下2行を追加するだけで
-// このナビが自動的に挿入される：
-//   <link rel="stylesheet" href="/main.css">
-//   <script src="/menu.js" defer></script>
-// iframeは使わず、各ページは独立したURLを持つ本物の
-// ページなので、直リンク・戻る/進む・ブックマークが
-// すべてそのまま機能する。
-// ===============================================
-
 // トップレベル項目（フォルダ分けしない単独ページ）
 const SODENMIR_TOP_ITEMS = [
     { label: "PROFILE", dir: "/contents/PROFILE/", path: "/contents/PROFILE/index.html", icon: "/images/TENOKUN_ICON.gif" },
