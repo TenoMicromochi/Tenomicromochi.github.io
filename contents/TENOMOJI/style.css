@@ -1,0 +1,137 @@
+/* ============================================================
+   TENOMOJI — TEXTALT-V / GLYPHALT-16 Design System Port
+   ============================================================ */
+
+@import url('/theme.css');
+
+body {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    min-height: 100vh;
+    padding: 0 0 40px 0;
+}
+
+/* ---- Header（他ツールと共通の見た目） ---- */
+.site-header {
+    background: var(--bg);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+/* ── 設定項目のキャプション文字 ── */
+.ctrl-label, .hint, .copy-status {
+    font-family: var(--font-body);
+}
+
+/* ---- App Layout: 縦積み・スリムな中央寄せカラム ---- */
+.app-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 20px 16px 0;
+}
+
+/* ---- Action Bar（CLEAR / COPY を大きく、入力欄の上にまとめる） ---- */
+.action-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+.btn-action {
+    border: none;
+    border-radius: var(--radius);
+    padding: 16px 10px;
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: bold;
+    letter-spacing: 3px;
+    cursor: pointer;
+    color: #fff;
+    transition: background 0.1s, transform 0.05s;
+}
+.btn-action:active { transform: translateY(1px); }
+.btn-clear {
+    background: var(--danger);
+    border: 1px solid #662222;
+}
+.btn-clear:hover { background: #772222; }
+.btn-copy {
+    background: var(--success);
+    border: 1px solid var(--success2);
+}
+.btn-copy:hover { background: var(--success2); }
+
+.copy-status {
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--success);
+    min-height: 14px;
+    text-align: center;
+    font-weight: bold;
+}
+
+/* ---- Panel ---- */
+.panel {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+}
+.panel-header {
+    font-family: var(--font-heading);
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    font-weight: bold;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 4px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.panel-body {
+    padding: 0;
+}
+
+.val-badge {
+    display: inline-block;
+    background: var(--bg);
+    border: none;
+    color: var(--text);
+    font-size: 10px;
+    font-weight: bold;
+    min-width: 24px;
+    text-align: right;
+    font-family: var(--font-mono);
+}
+
+/* ---- Text Areas（単語～短文向け。画面いっぱいにせず縦長スリムに） ---- */
+.moji-textarea {
+    width: 100%;
+    height: 110px;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px;
+    font-family: var(--font-mono);
+    font-size: 15px;
+    line-height: 1.7;
+    resize: vertical;
+    outline: none;
+}
+.moji-textarea:focus { border-color: var(--accent); }
+.moji-textarea[readonly] {
+    background: #1a1d28;
+    color: #c8cfe8;
+    border-color: var(--accent2);
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 520px) {
+    .app-layout { max-width: 100%; padding: 16px 12px 0; }
+    .btn-action { font-size: 13px; padding: 14px 8px; letter-spacing: 2px; }
+}

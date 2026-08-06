@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>送電世界 - TENOMOJI</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/main.css">
+    <script src="/menu.js" defer></script>
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="logo">TENO<em>MOJI</em></div>
+        <div class="tagline">Text to gal-moji (special character) converter</div>
+    </header>
+
+    <div class="app-layout">
+
+        <!-- ACTION BAR: big CLEAR / COPY buttons -->
+        <div class="action-bar">
+            <button id="clearBtn" class="btn-action btn-clear">CLEAR</button>
+            <button id="copyBtn" class="btn-action btn-copy">COPY</button>
+        </div>
+        <div id="copyStatus" class="copy-status"></div>
+
+        <!-- INPUT -->
+        <div class="panel">
+            <div class="panel-header">INPUT <span class="val-badge" id="charCount">0</span></div>
+            <div class="panel-body">
+                <textarea id="inputText" class="moji-textarea" placeholder="ひらがな・カタカナ・英字を入力してください" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
+            </div>
+        </div>
+
+        <!-- OUTPUT -->
+        <div class="panel">
+            <div class="panel-header">OUTPUT</div>
+            <div class="panel-body">
+                <textarea id="outputText" class="moji-textarea" readonly spellcheck="false"></textarea>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="js/map.js"></script>
+    <script src="js/convert.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

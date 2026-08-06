@@ -11,6 +11,7 @@ const SODENMIR_GROUPS = [
         items: [
             { label: "GLYPHALT", dir: "/contents/GLYPHALT/", path: "/contents/GLYPHALT/index.html", icon: "/images/TOOLS.png" },
             { label: "TEXTALT", dir: "/contents/TEXTALT/", path: "/contents/TEXTALT/index.html", icon: "/images/TOOLS.png" },
+            { label: "TENOMOJI", dir: "/contents/TENOMOJI/", path: "/contents/TENOMOJI/index.html", icon: "/images/TOOLS.png" },
         ],
     },
     {

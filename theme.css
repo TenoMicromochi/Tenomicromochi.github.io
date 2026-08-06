@@ -14,6 +14,8 @@
     --accent:   #227777;
     --accent2:  #115555;
     --danger:   #993333;
+    --success:  #2e8b47;
+    --success2: #1c5c2d;
     --radius:   3px;
     --font-mono:    'Courier New', Courier, monospace;
     --font-heading: 'TenoText 8x8', var(--font-mono);
