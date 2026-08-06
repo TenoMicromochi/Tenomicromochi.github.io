@@ -1,5 +1,13 @@
 const UPDATE_LOGS = [
     {
+        date: "2026/08/06",
+        text: "変更//Updated: SITE-DESIGN"
+    },
+    {
+        date: "2026/08/04",
+        text: "🐾Move the site's host to GitHub🐾"
+    },
+    {
         date: "2026/08/04",
         text: "変更//Updated: TEXTALT-V"
     },
