@@ -1,7 +1,7 @@
 const poemList = [
-{ title: "短歌", file: "data/俳句.txt" },
-{ title: "抗アレルギー薬と人類愛と頭痛と風邪と体が熱くて眠いから", file: "data/kaze.txt" },
-{ title: "2つのプロペラ、3つの皿、5泊の連続に。", file: "data/235.txt" },
+{ title: "俳句・短歌・自由律", file: "data/俳句・短歌・自由律.txt" },
+{ title: "抗アレルギー薬と人類愛と頭痛と風邪と体が熱くて眠いから", file: "data/抗アレルギー薬と人類愛と頭痛と風邪と体が熱くて眠いから.txt" },
+{ title: "2つのプロペラ、3つの皿、5泊の連続に。", file: "data/2つのプロペラ、3つの皿、5泊の連続に。.txt" },
 { title: "爆死未遂ログ！", file: "data/爆死未遂ログ！.txt" },
 { title: "簡単に言えば72回目くらいのルール", file: "data/簡単に言えば72回目くらいのルール.txt" },
 { title: "止まらない動悸！(混乱！)", file: "data/止まらない動悸！(混乱！).txt" },
