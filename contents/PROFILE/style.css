@@ -1,0 +1,223 @@
+@import url('/theme.css');
+
+/* ── Variables（テーマにない分だけ追加） ─────────────────────── */
+:root {
+    --accent3: #333355;
+    --muted:   #aabbcc;
+}
+
+body { line-height: 1.6; }
+
+/* リニューアルに伴い、このページは PixelMplus12 に統一 */
+.site-header .tagline {
+    font-family: 'PixelMplus12', var(--font-mono);
+}
+
+.site-header .logo {
+    font-family: 'TenoText 8x8', var(--font-mono);
+    font-size: 24px;
+}
+
+.site-header .logo em { color: var(--accent3); }
+
+/* ── Page wrapper ────────────────────────────────────────────── */
+.page {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 24px 20px;
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 20px;
+}
+
+/* ── Left column ─────────────────────────────────────────────── */
+.col-left {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* ── Right column ────────────────────────────────────────────── */
+.col-right {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* ── Panel header（テーマより小さいサイズで使用） ──────────────── */
+.panel-head {
+    font-family: 'TenoText 8x8', var(--font-mono);
+    font-size: 8px;
+    font-weight: normal;
+}
+
+/* ── Icon block ──────────────────────────────────────────────── */
+.icon-wrap {
+    display: flex;
+    justify-content: center;
+    padding: 12px;
+    border-bottom: 1px solid var(--border2);
+}
+
+.profile-icon {
+    width: 160px;
+    height: 160px;
+    border: 1px solid var(--border);
+    display: block;
+    object-fit: cover;
+}
+
+/* ── Status chip ─────────────────────────────────────────────── */
+.status-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border2);
+    font-size: 10px;
+    color: var(--sub);
+}
+.status-dot {
+    width: 7px;
+    height: 7px;
+    background: var(--accent);
+    border-radius: 50%;
+    flex-shrink: 0;
+    animation: pulse 2s step-end infinite;
+}
+@keyframes pulse {
+    0%,100% { opacity: 1; }
+    50%      { opacity: 0.2; }
+}
+
+/* ── Tag list（テーマより大きいサイズで使用） ─────────────────── */
+.tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+.tag {
+    font-size: 12px;
+}
+
+/* ── Info table ──────────────────────────────────────────────── */
+.info-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.info-table tr {
+    border-bottom: 1px solid var(--border2);
+}
+.info-table tr:last-child {
+    border-bottom: none;
+}
+.info-table td {
+    padding: 5px 0;
+    vertical-align: top;
+    font-size: 12px;
+}
+.info-table .key {
+    font-size: 8px;
+    color: var(--accent);
+    letter-spacing: 1px;
+    white-space: nowrap;
+    padding-right: 10px;
+    min-width: 80px;
+}
+.info-table .val {
+    color: var(--text);
+    font-size: 12px;
+}
+.info-table .val-ja {
+    color: var(--sub);
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+/* ── Section divider ──────────────────────────────────────────── */
+.divider {
+    border: none;
+    border-top: 1px solid var(--border2);
+    margin: 10px 0;
+}
+
+/* ── Bio text ────────────────────────────────────────────────── */
+.bio-en {
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.7;
+    letter-spacing: 0.3px;
+}
+.bio-ja {
+    font-size: 12px;
+    color: var(--sub);
+    line-height: 1.8;
+    margin-top: 8px;
+}
+
+/* ── Like list ───────────────────────────────────────────────── */
+.like-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3px 12px;
+}
+.like-item {
+    font-size: 12px;
+    color: var(--sub);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.like-item::before {
+    content: '\25B8';
+    color: var(--accent);
+    flex-shrink: 0;
+}
+
+/* ── Comment block ───────────────────────────────────────────── */
+.comment-box {
+    border-left: 3px solid var(--accent);
+    padding: 8px 10px;
+    background: var(--bg);
+    font-size: 11px;
+    color: var(--text);
+    letter-spacing: 0.5px;
+}
+.comment-box .ja {
+    font-size: 12px;
+    color: var(--sub);
+    margin-top: 4px;
+}
+
+/* ── Blink cursor ─────────────────────────────────────────────── */
+.cursor {
+    display: inline-block;
+    width: 8px;
+    height: 12px;
+    background: var(--accent);
+    vertical-align: middle;
+    margin-left: 2px;
+    animation: blink 1s step-end infinite;
+}
+@keyframes blink {
+    0%,100% { opacity: 1; }
+    50%      { opacity: 0; }
+}
+
+/* ── Footer ──────────────────────────────────────────────────── */
+footer {
+    border-top: 1px solid var(--border);
+    padding: 8px 20px;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 680px) {
+    .page {
+        grid-template-columns: 1fr;
+    }
+}

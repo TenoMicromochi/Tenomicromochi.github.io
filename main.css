@@ -1,7 +1,7 @@
 
 
 /* =========================================
-   送電世界 共通シェル（サイドバーナビ）
+   送電世界 共通シェル（上部ナビ）
    全ページ共通で読み込む。各コンテンツページ独自の
    スタイルとぶつからないよう、body/*等の汎用セレクタは
    極力使わずクラス/ID限定で書くこと。
@@ -15,123 +15,212 @@
     font-family: 'PixelMplus12';
     src: url('/fonts/PixelMplus12-Regular.ttf') format('truetype');
 }
-
-#sodenmir-sidebar {
-    box-sizing: border-box;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 200px;
-    height: 100vh;
-    background-image: url('/images/tile.png');
-    background-repeat: repeat;
-    border-right: 2px solid #A9D9D0;
-    display: flex;
-    flex-direction: column;
-    padding: 10px;
-    overflow-y: auto;
-    z-index: 9999;
-    font-family: 'PixelMplus12', monospace;
-    font-size: 12px;
+@font-face {
+    font-family: 'PixelMplus12';
+    src: url('/fonts/PixelMplus12-Bold.ttf') format('truetype');
+    font-weight: bold;
 }
 
-#sodenmir-sidebar * {
+#sodenmir-topbar {
+    box-sizing: border-box;
+    position: sticky;
+    top: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 8px 16px;
+    min-height: 56px;
+    /* バナー画像未着手のため、暫定でタイル背景を敷いている。
+       画像は56x88pxだが実際のタイル部分は下端56x56pxのみで、
+       上部32pxは余白（本来非表示）。high=56pxに収め、position: bottomで
+       下端基準の56x56だけを表示させ、上の余白がはみ出さないようにする。
+       一枚絵/専用バナーができたら background を差し替える。 */
+    background-image: url('/images/tile.png');
+    background-repeat: repeat-x;
+    background-position: left bottom;
+    image-rendering: pixelated;
+    border-bottom: 2px solid #A9D9D0;
+    font-family: 'PixelMplus12', monospace;
+}
+
+#sodenmir-topbar * {
     box-sizing: border-box;
 }
 
 .sodenmir-branding {
-    margin-bottom: 20px;
-    text-align: center;
-}
-
-.sodenmir-site-banner {
-    max-width: 100%;
-    display: block;
-    margin: 0 auto 5px;
-    border: 1px solid #038C7F;
-    image-rendering: pixelated;
-}
-
-.sodenmir-site-title {
-    font-family: 'TenoText 7x13';
-    font-size: 26px;
-    color: #556688;
-    text-shadow: 1px 1px 0 #A9D9D0;
-    margin: 0;
-}
-
-#sodenmir-menu {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.sodenmir-menu-item {
     display: flex;
     align-items: center;
-    padding: 5px;
+    gap: 8px;
     text-decoration: none;
-    border: 1px dotted #99BBCC;
-    background-color: rgba(255, 255, 255, 0.6);
-    transition: all 0.1s;
-    cursor: pointer;
+    flex-shrink: 0;
 }
 
-.sodenmir-menu-icon {
-    width: 32px;
-    height: 32px;
-    margin-right: 10px;
-    object-fit: contain;
-    background-color: #FFFFFF;
-    border: 1px solid #99BBCC;
+.sodenmir-brand-icon {
+    width: 40px;
+    height: 40px;
+    display: block;
+    border: 1px solid #038C7F;
+    background: #fff;
     image-rendering: pixelated;
 }
 
-.sodenmir-menu-text {
-    font-family: 'TenoText 7x13';
-    font-size: 26px;
-    color: #556688;
+.sodenmir-brand-banner {
+    width: 196px;
+    height: 48px;
+    display: block;
+    image-rendering: pixelated;
 }
 
-.sodenmir-menu-item:hover {
+#sodenmir-nav {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.sodenmir-top-item,
+.sodenmir-group-summary {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 8px;
+    text-decoration: none;
+    border: 1px dotted #99BBCC;
+    background-color: rgba(255, 255, 255, 0.75);
+    cursor: pointer;
+    list-style: none;
+    font-family: 'PixelMplus12', monospace;
+    font-size: 12px;
+    color: #556688;
+}
+.sodenmir-group-summary::-webkit-details-marker { display: none; }
+
+.sodenmir-top-item:hover,
+.sodenmir-group-summary:hover {
     background-color: #99BBCC;
     border-style: solid;
 }
 
-.sodenmir-menu-item.active {
+.sodenmir-top-item.active {
     background-color: #333355;
     border: 1px solid #99BBCC;
 }
-
-.sodenmir-menu-item.active .sodenmir-menu-text {
+.sodenmir-top-item.active .sodenmir-top-text {
     color: #FFFFFF;
     font-weight: bold;
 }
 
-/* サイドバー分の余白。クラス限定＋高詳細度でページ側の
-   body{padding:...}より確実に優先させる */
-body.sodenmir-has-sidebar {
-    padding-left: 200px;
+.sodenmir-top-icon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    background-color: #FFFFFF;
+    border: 1px solid #99BBCC;
+    image-rendering: pixelated;
+    flex-shrink: 0;
 }
 
-@media (max-width: 680px) {
-    #sodenmir-sidebar {
-        position: static;
-        width: 100%;
-        height: auto;
-        flex-direction: row;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 10px;
+.sodenmir-caret {
+    font-size: 9px;
+    color: #556688;
+}
+.sodenmir-group[open] > .sodenmir-group-summary .sodenmir-caret {
+    transform: rotate(180deg);
+}
+
+.sodenmir-group {
+    position: relative;
+}
+.sodenmir-group-panel {
+    position: absolute;
+    top: 110%;
+    right: 0;
+    min-width: 170px;
+    background: #ffffff;
+    border: 1px solid #99BBCC;
+    box-shadow: 0 4px 10px rgba(51, 51, 85, 0.2);
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+}
+
+.sodenmir-row-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    text-decoration: none;
+    border-bottom: 1px dotted #ccdde6;
+    font-family: 'PixelMplus12', monospace;
+    font-size: 12px;
+    color: #556688;
+}
+.sodenmir-row-item:last-child { border-bottom: none; }
+.sodenmir-row-item:hover { background-color: #eaf0f4; }
+.sodenmir-row-item.active {
+    background-color: #333355;
+    color: #ffffff;
+}
+.sodenmir-row-item.active .sodenmir-row-text { color: #ffffff; font-weight: bold; }
+
+.sodenmir-row-icon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    background-color: #FFFFFF;
+    border: 1px solid #99BBCC;
+    image-rendering: pixelated;
+    flex-shrink: 0;
+}
+
+#sodenmir-mobile-toggle {
+    display: none;
+    align-items: center;
+    padding: 6px 12px;
+    border: 1px solid #99BBCC;
+    background: rgba(255, 255, 255, 0.85);
+    font-family: 'PixelMplus12', monospace;
+    font-size: 12px;
+    color: #556688;
+    cursor: pointer;
+}
+#sodenmir-mobile-toggle.open {
+    background: #333355;
+    color: #ffffff;
+}
+
+#sodenmir-mobile-nav {
+    display: none;
+    flex-direction: column;
+    background: #ffffff;
+    border-bottom: 2px solid #A9D9D0;
+}
+#sodenmir-mobile-nav.open { display: flex; }
+#sodenmir-mobile-nav .sodenmir-row-item,
+#sodenmir-mobile-nav .sodenmir-group-summary {
+    border-bottom: 1px dotted #ccdde6;
+}
+#sodenmir-mobile-nav .sodenmir-group-panel {
+    position: static;
+    box-shadow: none;
+    border: none;
+    border-top: 1px dotted #ccdde6;
+}
+#sodenmir-mobile-nav .sodenmir-group-summary {
+    background: transparent;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+}
+
+@media (max-width: 720px) {
+    #sodenmir-nav {
+        display: none;
     }
-    .sodenmir-branding {
-        margin-bottom: 0;
-    }
-    #sodenmir-menu {
-        flex-direction: row;
-        flex-wrap: wrap;
-    }
-    body.sodenmir-has-sidebar {
-        padding-left: 0;
+    #sodenmir-mobile-toggle {
+        display: flex;
     }
 }
