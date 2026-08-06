@@ -32,11 +32,6 @@
     gap: 16px;
     padding: 8px 16px;
     min-height: 56px;
-    /* バナー画像未着手のため、暫定でタイル背景を敷いている。
-       画像は56x88pxだが実際のタイル部分は下端56x56pxのみで、
-       上部32pxは余白（本来非表示）。high=56pxに収め、position: bottomで
-       下端基準の56x56だけを表示させ、上の余白がはみ出さないようにする。
-       一枚絵/専用バナーができたら background を差し替える。 */
     background-image: url('/images/tile.png');
     background-repeat: repeat-x;
     background-position: left bottom;
