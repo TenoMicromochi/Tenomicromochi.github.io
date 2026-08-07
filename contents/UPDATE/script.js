@@ -5,7 +5,7 @@ const UPDATE_LOGS = [
     },
     {
         date: "2026/08/06",
-        text: "変更//Updated: SITE-DESIGN\n追加//Added: PROFILE\n変更//Updated: HOME\n"
+        text: "変更//Updated: SITE-DESIGN\n追加//Added: PROFILE\n変更//Updated: HOME"
     },
     {
         date: "2026/08/04",
