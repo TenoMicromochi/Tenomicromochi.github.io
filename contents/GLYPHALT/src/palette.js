@@ -63,16 +63,18 @@ export async function loadAllPalettes() {
     ];
   }
   rebuildPaletteSelect();
-  setActivePalette(Object.keys(loadedPalettes)[0]);
+  setActivePalette(document.getElementById('paletteSelect').options[0].value);
   const n = Object.keys(loadedPalettes).length;
   setStatus('paletteStatus', `${n} palette${n>1?'s':''} loaded`, 'ok');
 }
 
-// パレット選択<select>の中身を読み込み済みパレット名で再構築
+// パレット選択<select>の中身を読み込み済みパレット名で再構築。
+// 読み込み完了順(非同期・不定)ではなく、表示名の五十音/アルファベット順に並べる
 export function rebuildPaletteSelect() {
   const sel = document.getElementById('paletteSelect');
   sel.innerHTML = '';
-  for (const name of Object.keys(loadedPalettes)) {
+  const names = Object.keys(loadedPalettes).sort((a, b) => a.localeCompare(b));
+  for (const name of names) {
     const opt = document.createElement('option');
     opt.value = name; opt.textContent = name;
     sel.appendChild(opt);

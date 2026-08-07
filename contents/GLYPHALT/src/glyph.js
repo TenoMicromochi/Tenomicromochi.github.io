@@ -111,14 +111,16 @@ function createSlot(dom) {
     updateCombinedInfoGlyphs();
   }
 
-  // このスロットの<select>の中身を「None」+ 読み込み済みグリフセット名で再構築
+  // このスロットの<select>の中身を「None」+ 読み込み済みグリフセット名で再構築。
+  // 読み込み完了順(非同期・不定)ではなく、表示名の五十音/アルファベット順に並べる
   function rebuildSelect() {
     const sel = document.getElementById(dom.select);
     sel.innerHTML = '';
     const noneOpt = document.createElement('option');
     noneOpt.value = NONE; noneOpt.textContent = 'None';
     sel.appendChild(noneOpt);
-    for (const name of Object.keys(loadedGlyphs)) {
+    const names = Object.keys(loadedGlyphs).sort((a, b) => a.localeCompare(b));
+    for (const name of names) {
       const opt = document.createElement('option');
       opt.value = name; opt.textContent = name;
       sel.appendChild(opt);
@@ -220,10 +222,10 @@ export async function loadAllGlyphs() {
   glyphSlots.A.rebuildSelect();
   glyphSlots.B.rebuildSelect();
 
-  const names = Object.keys(loadedGlyphs);
-  glyphSlots.A.setActiveGlyph(loadedGlyphs['Default'] ? 'Default' : names[0]);
+  const sortedNames = Object.keys(loadedGlyphs).sort((a, b) => a.localeCompare(b));
+  glyphSlots.A.setActiveGlyph(loadedGlyphs['Default'] ? 'Default' : sortedNames[0]);
   glyphSlots.B.setActiveGlyph(NONE);
 
-  const n = names.length;
+  const n = sortedNames.length;
   setStatus('glyphStatus', `${n} glyph set${n>1?'s':''} loaded`, 'ok');
 }
