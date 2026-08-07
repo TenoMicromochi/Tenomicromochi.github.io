@@ -1,11 +1,15 @@
 const UPDATE_LOGS = [
     {
+        date: "2026/08/07",
+        text: "追加//Added: TENOMOJI\n変更//Updated: GLYPHALT-16"
+    },
+    {
         date: "2026/08/06",
-        text: "変更//Updated: SITE-DESIGN"
+        text: "変更//Updated: SITE-DESIGN\n追加//Added: PROFILE\n変更//Updated: HOME\n"
     },
     {
         date: "2026/08/04",
-        text: "🐾Move the site's host to GitHub🐾"
+        text: "🐾Move the site's host to GitHub🐾\n削除//Deleted: CHROMALT-Q\n削除//Deleted: MAP-GEN"
     },
     {
         date: "2026/08/04",
