@@ -31,6 +31,11 @@ export function getCurrentPalette() { return currentPalette; }
 export function getEnabledColors() { return enabledColors; }
 export function getCurrentPaletteName() { return currentPaletteName; }
 
+// 読み込み済み全パレットを{名前, 16色}の配列として返す(参照用ライブラリパネル向け)
+export function getAllPalettes() {
+  return Object.entries(loadedPalettes).map(([name, colors]) => ({ name, colors }));
+}
+
 // パレット画像を16x1にリサイズしてサンプリングし、16色の配列として取り込む
 export function loadPaletteFromPath(name, path) {
   return new Promise(resolve => {

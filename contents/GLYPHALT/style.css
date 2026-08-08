@@ -24,8 +24,6 @@ header {
 .pal-hint, .glyph-info, .status-line, .download-scale, .quad-toggle {
   font-family: var(--font-body);
 }
-.header-menu-btn { width: auto; margin-left: auto; }
-
 /* ── Layout ── */
 .main {
   position: relative;
@@ -34,6 +32,38 @@ header {
   min-height: 0;
   overflow: hidden;
 }
+
+/* ── Edge tabs (settings on the left, palette/glyph library on the right).
+   Kept off the top header so they don't cluster with the site's own top menu.
+   Span the full height of .main as a fixed-width strip; the label rotates via
+   an inner span (rotating the whole flex box with top:50%/transform hits a
+   layout bug in some engines when combined with writing-mode). ── */
+.edge-tab {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  cursor: pointer;
+  z-index: 22;
+}
+.edge-tab span {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  white-space: nowrap;
+}
+.edge-tab:hover { background: var(--accent); color: #fff; }
+.edge-tab-left { left: 0; border-left: none; }
+.edge-tab-right { right: 0; border-right: none; }
 
 /* ── Sidebar (overlay panel, slides over the canvas) ── */
 .sidebar {
@@ -44,7 +74,8 @@ header {
   grid-template-columns: 1fr 1fr;
   align-content: start;
   gap: 14px 20px;
-  padding: 16px;
+  /* left padding leaves room for the SETTINGS edge-tab so its content never sits under it */
+  padding: 16px 16px 16px 44px;
   overflow-y: auto;
   background: var(--panel);
   border-right: 1px solid var(--border);
@@ -55,6 +86,47 @@ header {
 .sidebar.hidden { transform: translateX(-100%); }
 
 .sidebar-col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+
+/* ── Catalog panel (reference list of every bundled palette & glyph set) ── */
+.catalog-panel {
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: min(360px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* right padding leaves room for the PALETTE & GLYPHS edge-tab so its content never sits under it */
+  padding: 16px 44px 16px 16px;
+  overflow-y: auto;
+  background: var(--panel);
+  border-left: 1px solid var(--border);
+  box-shadow: -6px 0 20px rgba(0,0,0,0.18);
+  z-index: 20;
+  transition: transform 0.2s ease;
+}
+.catalog-panel.hidden { transform: translateX(100%); }
+
+.catalog-body { display: flex; flex-direction: column; gap: 14px; }
+.catalog-card { display: flex; flex-direction: column; gap: 5px; }
+.catalog-card-label { font-size: 10px; color: var(--sub); letter-spacing: 1px; }
+
+.catalog-swatch-strip { display: flex; gap: 3px; }
+.catalog-swatch {
+  flex: 1 1 0;
+  min-width: 0;
+  aspect-ratio: 1;
+  border: 1px solid rgba(0,0,0,0.15);
+  border-radius: 2px;
+}
+
+.catalog-glyph-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; }
+.catalog-glyph-grid canvas {
+  display: block; width: 100%; aspect-ratio: 1;
+  image-rendering: pixelated;
+  background: #111;
+  border: 1px solid var(--border);
+}
+.catalog-more { font-size: 10px; color: var(--sub); letter-spacing: 1px; }
 
 /* ── Section ── */
 .section { display: flex; flex-direction: column; gap: 8px; }
@@ -291,6 +363,7 @@ hr.divider { border: none; border-top: 1px solid var(--border); }
 
 @media (max-width: 680px) {
   .sidebar { width: 100%; }
+  .catalog-panel { width: 100%; }
 }
 
 @media (max-width: 560px) {

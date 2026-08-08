@@ -21,10 +21,11 @@
 <header>
   <div class="logo">GLYPH<em>ALT</em>-16</div>
   <div class="tagline">image to MSX-like art converter</div>
-  <button class="btn secondary sm header-menu-btn" id="menuToggle">☰ MENU</button>
 </header>
 
 <div class="main">
+  <button class="edge-tab edge-tab-left" id="menuToggle" type="button" aria-label="Toggle settings panel"><span id="menuToggleLabel">SETTINGS</span></button>
+
   <div class="sidebar" id="sidebar">
     <div class="sidebar-col">
 
@@ -252,6 +253,14 @@
       <div class="info-chip">TIME: <strong id="infoTime">-</strong></div>
     </div>
     <button class="btn tweet-btn" id="tweetBtn" disabled>POST TO X</button>
+  </div>
+
+  <button class="edge-tab edge-tab-right" id="catalogToggle" type="button" aria-label="Toggle palette and glyph library"><span id="catalogToggleLabel">PALETTE &amp; GLYPHS</span></button>
+
+  <div class="catalog-panel hidden" id="catalogPanel">
+    <div class="section-title">PALETTE &amp; GLYPH LIBRARY</div>
+    <div class="pal-hint">All bundled palettes &amp; glyph sets,<br>for reference</div>
+    <div class="catalog-body" id="catalogBody"></div>
   </div>
 </div>
 

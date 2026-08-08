@@ -2,6 +2,7 @@
 import { setupSlider, clampSize, showError } from './ui.js';
 import { loadAllPalettes, setActivePalette } from './palette.js';
 import { loadAllGlyphs, glyphSlots } from './glyph.js';
+import { buildCatalog } from './catalog.js';
 import { setQuadMode } from './matching.js';
 import { startConvert, stopConvert, getIsConverting, setInputImageData, setInputFile, setSrcAspect, getSrcAspect, isOutputReady, getInputFile, getInputImageData } from './convert.js';
 
@@ -14,6 +15,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // パレット・グリフを並行読み込みし、両方の<select>とグリッドを初期化
   await Promise.all([loadAllPalettes(), loadAllGlyphs()]);
+  // 現在の選択状態とは独立に、同梱の全パレット・全グリフセットを右パネルの一覧として構築
+  buildCatalog();
 
   document.getElementById('paletteSelect').addEventListener('change', function() {
     setActivePalette(this.value);
@@ -42,14 +45,28 @@ document.addEventListener('DOMContentLoaded', async () => {
   // メニュー(サイドバー)の表示/非表示トグル。画像を等倍で見たい時に隠せるように
   const sidebar = document.getElementById('sidebar');
   const menuToggle = document.getElementById('menuToggle');
+  const menuToggleLabel = document.getElementById('menuToggleLabel');
   function syncMenuToggleLabel() {
-    menuToggle.textContent = sidebar.classList.contains('hidden') ? '☰ MENU' : '✕ CLOSE';
+    menuToggleLabel.textContent = sidebar.classList.contains('hidden') ? 'SETTINGS' : '✕ CLOSE';
   }
   menuToggle.addEventListener('click', () => {
     sidebar.classList.toggle('hidden');
     syncMenuToggleLabel();
   });
   syncMenuToggleLabel();
+
+  // パレット&グリフ一覧パネルの表示/非表示トグル
+  const catalogPanel = document.getElementById('catalogPanel');
+  const catalogToggle = document.getElementById('catalogToggle');
+  const catalogToggleLabel = document.getElementById('catalogToggleLabel');
+  function syncCatalogToggleLabel() {
+    catalogToggleLabel.textContent = catalogPanel.classList.contains('hidden') ? 'PALETTE & GLYPHS' : '✕ CLOSE';
+  }
+  catalogToggle.addEventListener('click', () => {
+    catalogPanel.classList.toggle('hidden');
+    syncCatalogToggleLabel();
+  });
+  syncCatalogToggleLabel();
 
   // 選択された画像ファイルを読み込み、最大1024px以内にリサイズして入力データとして保持する
   function loadImage(file) {

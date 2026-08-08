@@ -26,6 +26,11 @@ export const GLYPH_GRID_COLS = 8, GLYPH_GRID_MAX_ROWS = 8;
 // 読み込み済みグリフセット({名前: {bitmasks, thumbCanvases}})。A/B両スロットで共有するプール
 const loadedGlyphs = {};
 
+// 読み込み済み全グリフセットを{名前, thumbCanvases}の配列として返す(参照用ライブラリパネル向け)
+export function getAllGlyphSets() {
+  return Object.entries(loadedGlyphs).map(([name, entry]) => ({ name, thumbCanvases: entry.thumbCanvases }));
+}
+
 // グリフシート画像を輝度127しきい値で二値化し、グリフごとのON/OFFビットマスクに変換
 export function parseFontBitmasks(canvas) {
   const ctx = canvas.getContext('2d');
