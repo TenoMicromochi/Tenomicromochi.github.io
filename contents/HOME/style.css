@@ -5,6 +5,39 @@ body {
     font-family: 'PixelMplus12', var(--font-mono);
 }
 
+@font-face {
+    font-family: 'TenoText 3x6';
+    src: url('/fonts/TenoText 3x6.ttf') format('truetype');
+}
+
+/* ── 左下隅のての絵＋時計 ── */
+.tenokun-mascot {
+    position: fixed;
+    left: 12px;
+    bottom: 12px;
+    z-index: 500;
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    pointer-events: none;
+}
+
+.tenokun-mascot-img {
+    display: block;
+    width: 100px;
+    height: 80px;
+    image-rendering: pixelated;
+}
+
+.tenokun-clock {
+    font-family: 'TenoText 3x6', var(--font-mono);
+    font-size: 12px;
+    line-height: 1;
+    color: var(--text);
+    white-space: nowrap;
+    padding-bottom: 4px;
+}
+
 .home-main {
     padding: 20px;
     max-width: 960px;
