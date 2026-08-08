@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>送電世界 - PALETALT-K</title>
+<meta name="description" content="画像からカラーパレットを抽出">
+<meta property="og:type" content="website">
+<meta property="og:title" content="送電世界 - PALETALT-K">
+<meta property="og:description" content="画像からカラーパレットを抽出">
+<meta property="og:image" content="https://tenomicromochi.github.io/images/OGP.png">
+<meta property="og:url" content="https://tenomicromochi.github.io/contents/PALETALT/index.html">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="/main.css">
+<script src="/menu.js" defer></script>
+</head>
+<body>
+<header>
+  <div class="logo">PALET<em>ALT</em>-K</div>
+  <div class="tagline">image to color palette extractor</div>
+</header>
+<div class="main">
+
+<!-- COL 1 -->
+<div class="sidebar">
+  <div class="section">
+    <div class="section-title">INPUT IMAGE</div>
+    <div class="drop-zone" id="dropZone">
+      <input type="file" accept="image/*" id="imageInput">
+      <div class="drop-icon">⊞</div>
+      <div class="drop-label">Drop image or click to browse</div>
+      <div class="drop-name" id="imgName"></div>
+    </div>
+    <button class="btn secondary" id="demoBtn">LOAD TEST PATTERN</button>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section">
+    <div class="section-title">SAMPLING</div>
+    <div class="ctrl-row">
+      <div class="ctrl-label">LONG EDGE (px) <span id="resV">384</span></div>
+      <div class="ctrl-inputs"><input type="range" id="res" min="64" max="1024" step="16" value="384"><input type="number" id="resN" min="64" max="1024" step="16" value="384"></div>
+    </div>
+    <div class="ctrl-row">
+      <div class="ctrl-label">ALPHA CUTOFF <span id="acV">128</span></div>
+      <div class="ctrl-inputs"><input type="range" id="ac" min="0" max="255" value="128"><input type="number" id="acN" min="0" max="255" value="128"></div>
+    </div>
+    <div class="level-hint">透明度がこの値未満の画素は無視します</div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section">
+    <div class="section-title">IMAGE ADJUST</div>
+    <div class="ctrl-row">
+      <div class="ctrl-label">BRIGHTNESS <span id="brV">0</span></div>
+      <div class="ctrl-inputs"><input type="range" id="br" min="-100" max="100" value="0"><input type="number" id="brN" min="-100" max="100" value="0"></div>
+    </div>
+    <div class="ctrl-row">
+      <div class="ctrl-label">CONTRAST <span id="ctV">0</span></div>
+      <div class="ctrl-inputs"><input type="range" id="ct" min="-100" max="100" value="0"><input type="number" id="ctN" min="-100" max="100" value="0"></div>
+    </div>
+    <div class="ctrl-row">
+      <div class="ctrl-label">SATURATION <span id="saV">0</span></div>
+      <div class="ctrl-inputs"><input type="range" id="sa" min="-100" max="100" value="0"><input type="number" id="saN" min="-100" max="100" value="0"></div>
+    </div>
+    <div class="ctrl-row">
+      <div class="ctrl-label">GAMMA <span id="gaV">1.00</span></div>
+      <div class="ctrl-inputs"><input type="range" id="ga" min="10" max="300" value="100"><input type="number" id="gaN" min="0.1" max="3" step="0.05" value="1"></div>
+    </div>
+    <button class="btn secondary" id="resetAdjBtn">RESET ADJUST</button>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section">
+    <div class="section-title">THUMBNAILS</div>
+    <div class="thumb-row">
+      <div class="thumb-box"><canvas id="thumb0" width="80" height="80"></canvas><span>ORIGINAL</span></div>
+      <div class="thumb-box"><canvas id="thumb1" width="80" height="80"></canvas><span>ADJUSTED</span></div>
+      <div class="thumb-box"><canvas id="thumb2" width="80" height="80"></canvas><span>QUANTIZED</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- COL 2 -->
+<div class="sidebar">
+  <div class="section">
+    <div class="section-title">PALETTE SIZE</div>
+    <div class="ctrl-row">
+      <div class="ctrl-label">TARGET COLORS <span id="tgV">8</span></div>
+      <div class="ctrl-inputs"><input type="range" id="tg" min="2" max="64" value="8"><input type="number" id="tgN" min="2" max="64" value="8"></div>
+    </div>
+    <div class="level-hint">この数が絶対の上限です。マージ閾値に上書きされません</div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section">
+    <div class="section-title">QUANTIZE</div>
+    <div class="ctrl-row">
+      <div class="ctrl-label">COLOR SPACE</div>
+      <div class="view-btn-group full">
+        <button class="view-btn active" data-space="oklab">OKLAB</button>
+        <button class="view-btn" data-space="rgb">RGB</button>
+      </div>
+    </div>
+    <div class="ctrl-row">
+      <div class="ctrl-label">INITIAL POOL <span id="poV">64</span></div>
+      <div class="ctrl-inputs"><input type="range" id="po" min="4" max="256" value="64"><input type="number" id="poN" min="4" max="256" value="64"></div>
+    </div>
+    <div class="ctrl-row">
+      <div class="ctrl-label">K-MEANS REFINE <span id="kmV">8</span></div>
+      <div class="ctrl-inputs"><input type="range" id="km" min="0" max="30" value="8"><input type="number" id="kmN" min="0" max="30" value="8"></div>
+    </div>
+    <div class="level-hint">0 = OFF。1〜数回で小面積の鮮やかな色を拾えます</div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section">
+    <div class="section-title">SIMILARITY MERGE</div>
+    <div class="ctrl-row">
+      <div class="ctrl-label">MERGE ΔE <span id="mtV">0.0</span></div>
+      <div class="ctrl-inputs"><input type="range" id="mt" min="0" max="200" value="0"><input type="number" id="mtN" min="0" max="20" step="0.1" value="0"></div>
+    </div>
+    <label class="check-row"><input type="checkbox" id="weighted" checked> Weight merge by area</label>
+    <div class="level-hint">0 = OFF。TARGET を下回る方向にのみ働きます（≒2で「ほぼ同じ色」）</div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section">
+    <div class="section-title">REPRESENTATIVE COLOR</div>
+    <select id="strategy">
+      <option value="centroid" selected>Centroid (重心 / 忠実)</option>
+      <option value="medoid">Medoid (画像に実在する色)</option>
+      <option value="median">Median (外れ値に強い)</option>
+      <option value="mode">Mode binned (フラット絵向き)</option>
+      <option value="linear">Linear-light average (濁り回避)</option>
+    </select>
+    <div class="ctrl-row">
+      <div class="ctrl-label">CHROMA BIAS <span id="cbV">0</span>%</div>
+      <div class="ctrl-inputs"><input type="range" id="cb" min="0" max="100" value="0"><input type="number" id="cbN" min="0" max="100" value="0"></div>
+    </div>
+    <div class="level-hint">クラスタ内で最も彩度の高い色へ寄せます</div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section">
+    <div class="section-title">OUTPUT</div>
+    <div class="ctrl-row">
+      <div class="ctrl-label">SORT BY</div>
+      <select id="sortBy">
+        <option value="population" selected>Population (面積順)</option>
+        <option value="lightness">Lightness</option>
+        <option value="hue">Hue</option>
+        <option value="chroma">Chroma</option>
+      </select>
+    </div>
+    <label class="check-row"><input type="checkbox" id="showHex" checked> Show hex labels</label>
+    <label class="check-row"><input type="checkbox" id="autoRun" checked> Auto process on change</label>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section">
+    <div class="section-title">RENDER</div>
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-bar-outer"><div class="progress-bar-inner" id="progressBar"></div></div>
+      <div class="progress-text" id="progressText">PROCESSING...</div>
+    </div>
+    <button class="btn" id="runBtn" disabled>PROCESS</button>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section">
+    <div class="section-title">EXPORT</div>
+    <div class="ctrl-row">
+      <div class="ctrl-label">PALETTE PNG SCALE</div>
+      <div class="view-btn-group full" id="scaleGroup">
+        <button class="view-btn active" data-scale="1">1×</button>
+        <button class="view-btn" data-scale="2">2×</button>
+        <button class="view-btn" data-scale="4">4×</button>
+      </div>
+    </div>
+    <label class="check-row"><input type="checkbox" id="pngText" checked> Text labels (forces 4×)</label>
+    <div class="level-hint" id="pngTextHint">OFF時は1色1pxの横並び画像を出力します</div>
+    <button class="btn secondary" id="dlPaletteBtn" disabled>DOWNLOAD PALETTE PNG</button>
+    <button class="btn secondary" id="dlImageBtn" disabled>DOWNLOAD QUANTIZED PNG</button>
+    <div class="ctrl-row">
+      <div class="ctrl-label">TEXT FORMAT</div>
+      <select id="textFormat">
+        <option value="hex" selected>HEX list</option>
+        <option value="css">CSS variables</option>
+        <option value="json">JSON</option>
+        <option value="gpl">GIMP palette (.gpl)</option>
+      </select>
+    </div>
+    <div class="btn-row">
+      <button class="btn secondary" id="copyBtn" disabled>COPY</button>
+      <button class="btn secondary" id="dlTextBtn" disabled>SAVE</button>
+    </div>
+  </div>
+</div>
+
+<!-- CANVAS AREA -->
+<div class="canvas-area">
+  <div class="view-toolbar">
+    <div class="view-btn-group" id="viewGroup">
+      <button class="view-btn active" data-view="quantized">QUANTIZED</button>
+      <button class="view-btn" data-view="adjusted">ADJUSTED</button>
+      <button class="view-btn" data-view="original">ORIGINAL</button>
+    </div>
+    <label class="overlay-toggle" id="ditherLabel"><input type="checkbox" id="dither"> DITHER</label>
+  </div>
+
+  <div class="canvas-stack" id="canvasStack">
+    <div id="placeholder">
+      <div class="placeholder-art">
+┌───────────────────────┐
+│  PALETALT-K           │
+│  ██▓▓▒▒░░  ░░▒▒▓▓██   │
+│  ▓▒░ ██ ░▒▓ ██ ░▒▓█   │
+│  Create by Tenokun!   │
+└───────────────────────┘
+</div>
+      <div class="placeholder-msg">[ AWAITING INPUT ]</div>
+    </div>
+    <canvas id="dispCanvas" style="display:none"></canvas>
+  </div>
+
+  <div class="palette-block" id="paletteBlock" style="display:none">
+    <div class="palette-head">
+      <span class="palette-title">EXTRACTED PALETTE</span>
+      <span class="palette-count" id="paletteCount">-</span>
+    </div>
+    <div class="palette-strip" id="paletteStrip"></div>
+    <div class="pal-hint">スウォッチをクリックで HEX をコピー</div>
+  </div>
+
+  <div class="info-bar" id="infoBar" style="display:none">
+    <div class="info-chip">SIZE: <strong id="infoSize">-</strong></div>
+    <div class="info-chip">UNIQUE: <strong id="infoUnique">-</strong></div>
+    <div class="info-chip">POOL→FINAL: <strong id="infoFlow">-</strong></div>
+    <div class="info-chip">MEAN ΔE: <strong id="infoErr">-</strong></div>
+    <div class="info-chip">TIME: <strong id="infoTime">-</strong></div>
+  </div>
+</div>
+
+</div>
+<div id="errorToast"></div>
+<div id="okToast"></div>
+
+<canvas id="workCanvas" style="display:none"></canvas>
+
+<script src="js/state.js"></script>
+<script src="js/color.js"></script>
+<script src="js/imageProcessing.js"></script>
+<script src="js/quantize.js"></script>
+<script src="js/render.js"></script>
+<script src="js/export.js"></script>
+<script src="js/controls.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
