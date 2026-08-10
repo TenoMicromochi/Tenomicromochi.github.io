@@ -365,6 +365,25 @@
     .modal-box { flex-direction: column; padding: 60px 12px 12px; overflow-y: auto; overflow-x: hidden; }
     .modal-info { width: 100%; }
     .zoom-stage { min-height: 200px; }
+
+    /* DOWNLOAD(160px)と拡大率グループが横並びだと画面幅で重なるため、
+       縦積み(DOWNLOAD→ORIGINAL/x2/x3/x4)に変更。閉じるボタンは
+       画面右上に固定して、積んだボタン群と干渉しないようにする。 */
+    .viewer-controls {
+        flex-direction: column;
+        gap: 10px;
+        min-height: auto;
+    }
+    .download-btn {
+        position: static;
+        transform: none;
+    }
+    .modal-close {
+        position: fixed;
+        top: 12px;
+        right: 12px;
+        transform: none;
+    }
 }
 
 @media (max-width: 720px) {
