@@ -1,0 +1,355 @@
+{
+  "categories": [
+    {
+      "key": "avatar",
+      "ja": "アバター",
+      "en": "Avatars"
+    },
+    {
+      "key": "icons",
+      "ja": "アイコン・素材",
+      "en": "Icons & Materials"
+    },
+    {
+      "key": "machine",
+      "ja": "マシン系",
+      "en": "Machines"
+    },
+    {
+      "key": "other",
+      "ja": "その他",
+      "en": "Other"
+    },
+    {
+      "key": "talisman",
+      "ja": "護符",
+      "en": "Talismans"
+    },
+    {
+      "key": "medicine",
+      "ja": "おくすりファンアート",
+      "en": "Medicine Fan Art"
+    },
+    {
+      "key": "equipment",
+      "ja": "装備",
+      "en": "Equipment"
+    }
+  ],
+  "items": [
+    {
+      "category": "avatar",
+      "file": "my_works/avatar/2025春_Discord用バナー.gif",
+      "titleEn": "2025 Spring Discord Banner",
+      "descriptionJa": "2025年の春につくったDiscord用のバナーだよ",
+      "descriptionEn": "A banner I made for Discord in spring 2025."
+    },
+    {
+      "category": "avatar",
+      "file": "my_works/avatar/I_LUV_U!.gif",
+      "titleEn": "🌈💊𝙸 𝙻𝚄𝚅 𝚄!💊🌈",
+      "descriptionJa": "おはようじんるい！必要性は可能性の隣人だって聞いたから！",
+      "descriptionEn": "Good morning, humanity! I heard necessity lives right next door to possibility!"
+    },
+    {
+      "category": "avatar",
+      "file": "my_works/avatar/たなばた2023.png",
+      "titleEn": "Tanabata 2023",
+      "descriptionJa": "2023年の七夕にVRChatに吊るしてきたやつ",
+      "descriptionEn": "The one I hung up in VRChat for Tanabata 2023."
+    },
+    {
+      "category": "avatar",
+      "file": "my_works/avatar/時は移ろい、僕たちも変わる。.png",
+      "titleEn": "Time Passes, and So Do We",
+      "descriptionJa": "ヴァーチャル空間に飛び込んでしまった僕の姿",
+      "descriptionEn": "My own self, having dived headfirst into virtual space."
+    },
+    {
+      "category": "avatar",
+      "file": "my_works/avatar/星へ!.png",
+      "titleEn": "To the Stars!",
+      "descriptionJa": "AD ASTRAは僕のモットー",
+      "descriptionEn": "Ad astra — that's my motto."
+    },
+    {
+      "category": "icons",
+      "file": "my_works/icons/GLYPHALT-16のグリフ一覧.png",
+      "titleJa": "GLYPHALT-16のグリフ一覧",
+      "titleEn": "GLYPHALT-16 Glyph List",
+      "descriptionJa": "「GLYPHALT-16」の対応グリフ一覧表。",
+      "descriptionEn": "A reference sheet listing the glyphs supported by the \"GLYPHALT-16.\""
+    },
+    {
+      "category": "icons",
+      "file": "my_works/icons/OGP.png",
+      "titleJa": "OGP画像",
+      "titleEn": "OGP Image",
+      "descriptionJa": "サイトのOGP(SNSシェア時のプレビュー)用画像素材。",
+      "descriptionEn": "The image material used for the site's OGP (social-share preview) image."
+    },
+    {
+      "category": "icons",
+      "file": "my_works/icons/おスシ.png",
+      "titleJa": "おスシ",
+      "titleEn": "Sushi",
+      "descriptionJa": "スシ！",
+      "descriptionEn": "Sushi!"
+    },
+    {
+      "category": "icons",
+      "file": "my_works/icons/そーでんみーるの画像アセット.png",
+      "titleJa": "そーでんみーるの画像アセット",
+      "titleEn": "Soden-mir Image Assets",
+      "descriptionJa": "「送電世界/そーでんみーる」サイトで使っている画像素材まとめ。",
+      "descriptionEn": "A collection of the image assets used across the \"Soden-mir\" site."
+    },
+    {
+      "category": "icons",
+      "file": "my_works/icons/パソコン用絵文字.png",
+      "titleJa": "パソコン用絵文字",
+      "titleEn": "PC Emoji Set",
+      "descriptionJa": "パソコン向けに作った絵文字アイコン素材。",
+      "descriptionEn": "A set of emoji icons made for use on PC."
+    },
+    {
+      "category": "icons",
+      "file": "my_works/icons/顔の絵文字.png",
+      "titleJa": "顔の絵文字",
+      "titleEn": "Face Emoji",
+      "descriptionJa": "表情豊かな顔の絵文字アイコン素材。",
+      "descriptionEn": "A set of expressive face emoji icons."
+    },
+    {
+      "category": "icons",
+      "file": "my_works/icons/鉱石.png",
+      "titleJa": "鉱石",
+      "titleEn": "Minerals",
+      "descriptionJa": "鉱石・宝石をモチーフにしたアイコン素材。",
+      "descriptionEn": "An icon asset featuring minerals and gemstones."
+    },
+    {
+      "category": "machine",
+      "file": "my_works/machine/Re機械で夢見る方法.gif",
+      "titleEn": "⚠️ Re: How to Dream in a Machine ⚠️",
+      "descriptionJa": "これ　が　ぼく　の　ゆめみた　きかい　の　からだ",
+      "descriptionEn": "This is the machine body I dreamed of."
+    },
+    {
+      "category": "machine",
+      "file": "my_works/machine/Re機械で夢見る方法Another.gif",
+      "titleEn": "⚠️ Re: How to Dream in a Machine (Another) ⚠️",
+      "descriptionJa": "これも　ぼく　の　ゆめみた　きかい　の　からだ",
+      "descriptionEn": "This one, too, is the machine body I dreamed of."
+    },
+    {
+      "category": "machine",
+      "file": "my_works/machine/マシン・サイケデリクI.gif",
+      "titleEn": "Machine Psychedelic I",
+      "descriptionJa": "意味がわからない機械！",
+      "descriptionEn": "A machine that makes no sense!"
+    },
+    {
+      "category": "machine",
+      "file": "my_works/machine/マシン・サイケデリクII.gif",
+      "titleEn": "Machine Psychedelic II",
+      "descriptionJa": "これだって意味がわからない機械！",
+      "descriptionEn": "This one makes no sense either!"
+    },
+    {
+      "category": "machine",
+      "file": "my_works/machine/マシン・サイケデリクIII.gif",
+      "titleEn": "Machine Psychedelic III",
+      "descriptionJa": "意味のわからない機械にかわりなかった！",
+      "descriptionEn": "Still a machine that makes no sense!"
+    },
+    {
+      "category": "machine",
+      "file": "my_works/machine/マシン・テノ・マシンII.gif",
+      "titleEn": "Machine Teno Machine II",
+      "descriptionJa": "てのくんマシン",
+      "descriptionEn": "The Tenokun Machine."
+    },
+    {
+      "category": "machine",
+      "file": "my_works/machine/マシン・テノ・マシンIII.gif",
+      "titleEn": "Machine Teno Machine III",
+      "descriptionJa": "これもてのくんマシン",
+      "descriptionEn": "This one's a Tenokun Machine too."
+    },
+    {
+      "category": "machine",
+      "file": "my_works/machine/電光石火のベランジェール.gif",
+      "titleEn": "Bérengère, Swift as Lightning",
+      "descriptionJa": "ともだちが描いてって言ったから",
+      "descriptionEn": "A friend asked me to draw it."
+    },
+    {
+      "category": "machine",
+      "file": "my_works/machine/未探索異次元探索装置.gif",
+      "titleEn": "Unexplored-Dimension Exploration Device",
+      "descriptionJa": "脳をどっかに繋いで夢見たい",
+      "descriptionEn": "I want to plug my brain into somewhere and dream."
+    },
+    {
+      "category": "machine",
+      "file": "my_works/machine/隣接次元探知装置.gif",
+      "titleEn": "Adjacent-Dimension Detection Device",
+      "descriptionJa": "おばけを探す機械",
+      "descriptionEn": "A machine for finding ghosts."
+    },
+    {
+      "category": "other",
+      "file": "my_works/other/BIKFED.gif",
+      "descriptionJa": "ぶぶ漬けで京都人を囲うと圧縮できるし核融合も起こせる(独自研究)",
+      "descriptionEn": "Surround a Kyoto local with bubuzuke and you can compress them — might even trigger nuclear fusion (personal research)."
+    },
+    {
+      "category": "other",
+      "file": "my_works/other/LIFE_GOES_ON_まだつづく.gif",
+      "titleEn": "LIFE GOES ON — It's Still Going",
+      "descriptionJa": "生きる理由じゃなくて、生存に急かされて死ぬ理由がないだけだよ",
+      "descriptionEn": "Not a reason to live — just no reason to die, hurried along by survival."
+    },
+    {
+      "category": "other",
+      "file": "my_works/other/でじたるおいなりさま_gif.gif",
+      "titleEn": "Digital Oinari-sama",
+      "descriptionJa": "20XX年、稲荷神の御利益にサイバーセキュリティが追加された――稲荷神ならそれくらい余裕だよね？",
+      "descriptionEn": "In 20XX, cybersecurity was added to the blessings of the Inari god — well, that's easy enough for a fox deity, right?"
+    },
+    {
+      "category": "other",
+      "file": "my_works/other/まよなかトリップ.gif",
+      "titleEn": "Midnight Trip",
+      "descriptionJa": "おくすりおくすりおくすりおくすりおくすり",
+      "descriptionEn": "medicine medicine medicine medicine medicine"
+    },
+    {
+      "category": "other",
+      "file": "my_works/other/牛頭馬頭.png",
+      "titleEn": "Gozu-Mezu (Ox-Head & Horse-Head)",
+      "descriptionJa": "ごず&めず！僕なりのリ・デザイン！",
+      "descriptionEn": "Gozu & Mezu! My own re-design of them!"
+    },
+    {
+      "category": "talisman",
+      "file": "my_works/talisman/電脳護符I.gif",
+      "titleEn": "Cyber Talisman I",
+      "descriptionJa": "これを剥がしてから、剥がしてから時計が1970-01-01から動かない。",
+      "descriptionEn": "Ever since I peeled this off — peeled it off — the clock's been stuck at 1970-01-01."
+    },
+    {
+      "category": "talisman",
+      "file": "my_works/talisman/電脳護符II.gif",
+      "titleEn": "Cyber Talisman II",
+      "descriptionJa": "これを剥がしてから、乱数生成器が毎回同じ値を返す。",
+      "descriptionEn": "Ever since I peeled this off, the random number generator keeps returning the same value every time."
+    },
+    {
+      "category": "talisman",
+      "file": "my_works/talisman/電脳護符III.gif",
+      "titleEn": "Cyber Talisman III",
+      "descriptionJa": "これを剥がしてから、/etc/hostsに存在しない名前が増えてる。",
+      "descriptionEn": "Ever since I peeled this off, entries for nonexistent hostnames keep appearing in /etc/hosts."
+    },
+    {
+      "category": "talisman",
+      "file": "my_works/talisman/電脳護符IV.gif",
+      "titleEn": "Cyber Talisman IV",
+      "descriptionJa": "これを剥がしてから、ログイン履歴に自分が二人いる。",
+      "descriptionEn": "Ever since I peeled this off, there are two of me in the login history."
+    },
+    {
+      "category": "medicine",
+      "file": "my_works/おくすりファンアート/えすぞぴくろん.png",
+      "titleEn": "Eszopiclone",
+      "descriptionJa": "朝がくると口がやたら苦くなる目覚まし機能付きの不思議な睡眠薬",
+      "descriptionEn": "A mysterious sleeping pill with a built-in alarm feature — your mouth turns oddly bitter come morning."
+    },
+    {
+      "category": "medicine",
+      "file": "my_works/おくすりファンアート/じあぜぱむ.png",
+      "titleEn": "Diazepam",
+      "descriptionJa": "こいつを飲んだら何故かしゃっくりが止まらなくなった　ひっく　ひっく",
+      "descriptionEn": "For some reason, after taking this one, the hiccups just wouldn't stop. Hic. Hic."
+    },
+    {
+      "category": "medicine",
+      "file": "my_works/おくすりファンアート/すヴぉれきさんと.png",
+      "titleEn": "Suvorexant",
+      "descriptionJa": "自然に眠れるおくすりなのですきです",
+      "descriptionEn": "A medicine that lets you fall asleep naturally, so I like it."
+    },
+    {
+      "category": "medicine",
+      "file": "my_works/おくすりファンアート/するぴりど.png",
+      "titleEn": "Sulpiride",
+      "descriptionJa": "男の僕に母乳を出させてくれたし、胃の調子を良くしてくれた半分呪われた薬",
+      "descriptionEn": "It made even me, a guy, lactate, and it settled my stomach — a half-cursed medicine."
+    },
+    {
+      "category": "medicine",
+      "file": "my_works/おくすりファンアート/ぞるぴでむ.gif",
+      "titleEn": "Zolpidem",
+      "descriptionJa": "山積みの灰皿はイソギンチャクみたいに、玄関の傘はウミユリみたいに泳いでる",
+      "descriptionEn": "The piled-up ashtrays sway like anemones, and the umbrella by the door drifts like a sea lily."
+    },
+    {
+      "category": "medicine",
+      "file": "my_works/おくすりファンアート/できすとろめとるふぁん.png",
+      "titleEn": "Dextromethorphan",
+      "descriptionJa": "宇宙旅行へのチケット",
+      "descriptionEn": "A ticket to a trip through space."
+    },
+    {
+      "category": "medicine",
+      "file": "my_works/おくすりファンアート/ぶろまぜぱむ.png",
+      "titleEn": "Bromazepam",
+      "descriptionJa": "さぁ、雨上がりにおはようって告げよう。だって今晴れたから！",
+      "descriptionEn": "Come on, let's say good morning to the clearing sky after the rain. Because it's sunny now!"
+    },
+    {
+      "category": "medicine",
+      "file": "my_works/おくすりファンアート/ろらぜぱむ.png",
+      "titleEn": "Lorazepam",
+      "descriptionJa": "憂いの夜を裂く、魔法の弾丸は今。安寧の昼を啓く、希望の弾丸は今。",
+      "descriptionEn": "The magic bullet that rips through the night of sorrow — now. The bullet of hope that opens the day of peace — now."
+    },
+    {
+      "category": "equipment",
+      "file": "my_works/装備/サイバーパンク翁面.png",
+      "titleEn": "Cyberpunk Okina Mask",
+      "descriptionJa": "能の翁面をサイバーパンクにしたよ",
+      "descriptionEn": "I turned a Noh Okina mask cyberpunk."
+    },
+    {
+      "category": "equipment",
+      "file": "my_works/装備/サイバーパンク狐面.png",
+      "titleEn": "Cyberpunk Fox Mask",
+      "descriptionJa": "狐面をサイバーパンクにしたよ",
+      "descriptionEn": "I turned a fox mask cyberpunk."
+    },
+    {
+      "category": "equipment",
+      "file": "my_works/装備/魔法の杖(禁忌).png",
+      "titleEn": "Forbidden Magic Wand",
+      "descriptionJa": "やばいそうな杖をデザインしたかった",
+      "descriptionEn": "I wanted to design a wand that looks dangerous."
+    },
+    {
+      "category": "equipment",
+      "file": "my_works/装備/魔法の杖1.png",
+      "titleEn": "Magic Wand 1",
+      "descriptionJa": "かなり昔の作品、魔法の杖のデザイン",
+      "descriptionEn": "An older piece — a magic wand design."
+    },
+    {
+      "category": "equipment",
+      "file": "my_works/装備/魔法の杖2.png",
+      "titleEn": "Magic Wand 2",
+      "descriptionJa": "最近描いた作品、魔法の杖のデザイン",
+      "descriptionEn": "A more recent piece — a magic wand design."
+    }
+  ]
+}

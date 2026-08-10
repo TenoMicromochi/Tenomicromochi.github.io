@@ -16,15 +16,16 @@ const SODENMIR_GROUPS = [
         ],
     },
     {
-        label: "WRITING", icon: "/images/FOLDER.png",
+        label: "WORKS", icon: "/images/FOLDER.png",
         items: [
+            { label: "GALLERY", dir: "/contents/GALLERY/", path: "/contents/GALLERY/index.html", icon: "/images/GALLARY.png" },
             { label: "POEM", dir: "/contents/POEM/", path: "/contents/POEM/index.html", icon: "/images/FOLDER.png" },
+            { label: "FONT", dir: "/contents/FONT/", path: "/contents/FONT/index.html", icon: "/images/FONTS.png" },
         ],
     },
     {
         label: "OTHER", icon: "/images/FOLDER.png",
         items: [
-            { label: "FONT", dir: "/contents/FONT/", path: "/contents/FONT/index.html", icon: "/images/FONTS.png" },
             { label: "LINK", dir: "/contents/LINKS/", path: "/contents/LINKS/index.html", icon: "/images/LINK.png" },
             { label: "UPDATE", dir: "/contents/UPDATE/", path: "/contents/UPDATE/index.html", icon: "/images/UPDATE.png" },
         ],

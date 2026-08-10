@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>送電世界 - PIXEL ART GALLERY</title>
+<meta name="description" content="てのくんのドット絵作品ギャラリー">
+<meta property="og:type" content="website">
+<meta property="og:title" content="送電世界 - PIXEL ART GALLERY">
+<meta property="og:description" content="てのくんのドット絵作品ギャラリー">
+<meta property="og:image" content="https://tenomicromochi.github.io/images/OGP.png">
+<meta property="og:url" content="https://tenomicromochi.github.io/contents/GALLERY/index.html">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="/main.css">
+<script src="/menu.js" defer></script>
+</head>
+<body>
+
+<header class="site-header">
+    <div class="logo">PIXEL<em>ART</em>GALLERY</div>
+    <div class="tagline">Tenokun's pixelart collection</div>
+</header>
+
+<div class="gallery-shell">
+
+    <!-- ===== 左サイドバー：カテゴリ選択 ===== -->
+    <aside class="gallery-sidebar panel">
+        <div class="sidebar-head">
+            <img src="/images/GALLARY.png" class="sidebar-head-icon" alt="">
+            <span>CATEGORY</span>
+        </div>
+        <nav class="category-list" id="categoryList"></nav>
+    </aside>
+
+    <!-- ===== 右メイン：一覧グリッド ===== -->
+    <main class="gallery-main">
+        <div class="toolbar panel">
+            <div class="toolbar-row">
+                <span class="current-category" id="currentCategoryLabel">ALL / すべて</span>
+                <div class="size-btn-group" id="sizeGroup">
+                    <span class="label" style="margin-right:6px;">SIZE</span>
+                    <button class="size-btn" data-size="72"><img data-asset="size_s" alt="S"></button>
+                    <button class="size-btn" data-size="112"><img data-asset="size_m" alt="M"></button>
+                    <button class="size-btn" data-size="160"><img data-asset="size_l" alt="L"></button>
+                </div>
+            </div>
+            <div class="level-hint">サムネイルは別画像を作らず、原寸のドット絵をそのまま縮小表示しています（比率保持・トリミング無し）</div>
+        </div>
+
+        <div class="gallery-grid" id="galleryGrid"></div>
+    </main>
+
+</div>
+
+<!-- ===== 拡大ビューア：サイドバーごと覆う全面オーバーレイ ===== -->
+<div class="modal-overlay" id="modalOverlay">
+
+    <div class="modal-box">
+        <div class="modal-viewer">
+            <div class="zoom-stage" id="zoomStage">
+                <img id="zoomImage" src="" alt="">
+            </div>
+
+            <!-- 左:DOWNLOAD／中央:拡大率／右:閉じる の3ゾーン構成 -->
+            <div class="viewer-controls">
+                <button class="download-btn" id="downloadBtn" title="原寸のファイルをダウンロード">
+                    <img data-asset="download" alt="ダウンロード">
+                </button>
+
+                <div class="scale-btn-group" id="scaleGroup">
+                    <button class="scale-btn" data-scale="1"><img data-asset="original(x1)" alt="原寸(x1)"></button>
+                    <button class="scale-btn" data-scale="2"><img data-asset="x2" alt="x2"></button>
+                    <button class="scale-btn" data-scale="3"><img data-asset="x3" alt="x3"></button>
+                    <button class="scale-btn" data-scale="4"><img data-asset="x4" alt="x4"></button>
+                </div>
+
+                <button class="modal-close" id="modalClose" title="閉じる">
+                    <img src="/images/buttons/button_close.png" alt="閉じる">
+                </button>
+            </div>
+        </div>
+
+        <div class="modal-info panel">
+            <div class="modal-title-ja" id="modalTitleJa">-</div>
+            <div class="modal-title-en" id="modalTitleEn">-</div>
+            <div class="modal-tags">
+                <span class="tag" id="metaCategory">-</span>
+                <img class="ext-badge large" id="metaExt" alt="-">
+            </div>
+            <div class="modal-desc-block">
+                <p class="modal-desc-ja" id="modalDescJa"></p>
+                <p class="modal-desc-en" id="modalDescEn"></p>
+            </div>
+            <div class="modal-dims">
+                <span class="status-line" id="metaSize">-</span>
+                <span class="status-line" id="metaDisplay">-</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="src/data.js"></script>
+<script src="src/gallery.js"></script>
+<script src="src/viewer.js"></script>
+</body>
+</html>

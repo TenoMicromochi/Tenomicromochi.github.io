@@ -1,0 +1,375 @@
+/* ============================================================
+   PIXEL ART GALLERY
+   ============================================================ */
+@import url('/theme.css');
+
+/* .site-header / .panel / .tag / .status-line 等は theme.css 側の定義をそのまま使う。 */
+
+.label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    font-weight: bold;
+}
+
+.level-hint { font-size: 10px; color: var(--sub); margin-top: 6px; }
+
+/* ── 全体シェル：左サイドバー＋右メイン ── */
+.gallery-shell {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.gallery-sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    padding: 10px;
+    position: sticky;
+    /* 共通ヘッダー(#sodenmir-topbar、約66px)の下に16pxの間隔を空けて追従させる。
+       16pxのままだとスクロール時にヘッダーの裏に隠れてしまう。 */
+    top: 82px;
+}
+
+.sidebar-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 4px 10px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-heading);
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--accent);
+}
+.sidebar-head-icon {
+    /* GALLARY.png は32x32のドット絵。補完で潰れないよう等倍表示。 */
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    background: #fff;
+    border: 1px solid var(--border);
+    image-rendering: pixelated;
+}
+
+.category-list { display: flex; flex-direction: column; gap: 3px; }
+
+.category-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 8px;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    cursor: pointer;
+    color: var(--sub);
+}
+.category-item:hover { background: var(--panel2); border-color: var(--border2); }
+.category-item.active { background: var(--accent); color: #fff; }
+.category-item.active .category-count { color: #fff; opacity: 0.8; }
+
+.category-icon {
+    /* FOLDER.png も32x32のドット絵。等倍表示（縮小しない）。 */
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    background: #fff;
+    border: 1px solid var(--border);
+    image-rendering: pixelated;
+    flex-shrink: 0;
+}
+
+.category-labels { display: flex; flex-direction: column; line-height: 1.3; flex: 1; min-width: 0; }
+.category-ja { font-size: 11px; }
+.category-en { font-size: 9px; color: var(--sub); }
+.category-item.active .category-en { color: #dfeaea; }
+
+.category-count { font-size: 10px; color: var(--sub); }
+
+.gallery-main { flex: 1; min-width: 0; }
+
+/* ── ツールバー ── */
+.toolbar { padding: 10px 14px; margin-bottom: 16px; }
+.toolbar-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.current-category { font-family: var(--font-heading); font-size: 12px; color: var(--accent); letter-spacing: 1px; }
+
+/* ── ギャラリーグリッド ──
+   固定の高さの行に、画像本来の比率を保ったまま並べる。
+   正方形／横長／縦長どれが来てもトリミングせず、
+   専用サムネイル画像を別途作らずに済む構成。 */
+.gallery-grid {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 14px;
+}
+
+.gallery-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 10px;
+    border: 1px solid var(--border2);
+    background: var(--bg);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: border-color 0.1s, background 0.1s;
+}
+.gallery-card:hover {
+    border-color: var(--accent);
+    background: var(--panel2);
+}
+
+.thumb-frame {
+    --thumb-h: 112px;
+    height: var(--thumb-h);
+    max-width: 320px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-image:
+        linear-gradient(45deg, #e4e9ec 25%, transparent 25%, transparent 75%, #e4e9ec 75%),
+        linear-gradient(45deg, #e4e9ec 25%, transparent 25%, transparent 75%, #e4e9ec 75%);
+    background-size: 12px 12px;
+    background-position: 0 0, 6px 6px;
+    background-color: #f4f6f7;
+    border: 1px solid var(--border2);
+}
+
+/* height:100%+width:autoだけだと横長画像がmax-widthで潰れて縦横比が崩れるため、
+   max-height/max-width の両方をautoで制約し、常に比率を保って収める。 */
+.thumb-frame img {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    display: block;
+}
+
+.card-titles {
+    max-width: 180px;
+    text-align: center;
+    overflow: hidden;
+}
+.card-title-ja {
+    font-size: 11px;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.card-title-en {
+    font-size: 9px;
+    color: var(--sub);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.card-meta {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+.card-meta .dims { font-size: 9px; color: var(--sub); }
+
+/* ── 拡張子バッジ（button_extension_png/gif.png、ドット絵なので等倍/2倍のみ） ── */
+.ext-badge {
+    image-rendering: pixelated;
+    display: block;
+    width: 32px;
+    height: 13px;
+}
+.ext-badge.large { width: 64px; height: 26px; }
+
+/* ── 拡大ビューア：サイドバーごと画面全体を覆うオーバーレイ ── */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 26, 34, 0.82);
+    /* 共通ヘッダー(#sodenmir-topbar、z-index:9999)より手前に出し、
+       画面全体を覆うオーバーレイとして機能させる。 */
+    z-index: 10000;
+}
+.modal-overlay.open { display: flex; }
+
+.modal-box {
+    flex: 1;
+    display: flex;
+    padding: 20px;
+    gap: 16px;
+    overflow: hidden;
+}
+
+.modal-viewer {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+}
+
+.zoom-stage {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: auto;
+    background-image:
+        linear-gradient(45deg, #3a4450 25%, transparent 25%, transparent 75%, #3a4450 75%),
+        linear-gradient(45deg, #3a4450 25%, transparent 25%, transparent 75%, #3a4450 75%);
+    background-size: 16px 16px;
+    background-position: 0 0, 8px 8px;
+    background-color: #2b333c;
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    cursor: grab;
+    user-select: none;
+}
+.zoom-stage.panning { cursor: grabbing; }
+
+.zoom-stage img {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    display: block;
+    -webkit-user-drag: none;
+    user-drag: none;
+}
+
+/* ── 拡大率切替（button_original(x1) / x2 / x3 / x4、ON/OFFの差し替え式）
+   すべてドット絵ボタンなので等倍の2倍で表示し、補完させない。 ── */
+.scale-btn-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.scale-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    line-height: 0;
+    cursor: pointer;
+}
+.scale-btn img {
+    image-rendering: pixelated;
+    display: block;
+    height: 32px;
+}
+.scale-btn[data-scale="1"] img { width: 160px; }
+.scale-btn:not([data-scale="1"]) img { width: 48px; }
+
+/* ── ビューアの操作バー：左=DOWNLOAD／中央=拡大率／右=閉じる の3ゾーン
+   DOWNLOAD(160px)とCLOSE(32px)は幅が大きく異なるため、grid の 1fr/1fr では
+   中央の拡大率グループが真ん中からずれる。左右を position:absolute で
+   固定し、中央グループだけを通常フローに残して justify-content: center
+   で確実に中央寄せする。 ── */
+.viewer-controls {
+    position: relative;
+    width: 100%;
+    min-height: 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.download-btn {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 0;
+    line-height: 0;
+    cursor: pointer;
+}
+.download-btn img {
+    image-rendering: pixelated;
+    display: block;
+    width: 160px;
+    height: 32px;
+}
+.download-btn:hover img { filter: brightness(1.1); }
+.download-btn:active img { filter: brightness(0.9); }
+
+/* button_close.png（16x16のドット絵）を等倍の2倍で使用。補完させない。 */
+.modal-close {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 0;
+    line-height: 0;
+    cursor: pointer;
+}
+.modal-close img {
+    width: 32px;
+    height: 32px;
+    image-rendering: pixelated;
+    display: block;
+}
+.modal-close:hover img { filter: brightness(1.15); }
+.modal-close:active img { filter: brightness(0.9); }
+
+/* ── サムネイルサイズ切替（button_size_s/m/l、ON/OFFの差し替え式） ── */
+.size-btn-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.size-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    line-height: 0;
+    cursor: pointer;
+}
+.size-btn img {
+    image-rendering: pixelated;
+    display: block;
+    width: 48px;
+    height: 32px;
+}
+
+.modal-info {
+    width: 260px;
+    flex-shrink: 0;
+    padding: 14px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.modal-title-ja { font-size: 15px; font-weight: bold; color: var(--text); }
+.modal-title-en { font-size: 11px; color: var(--sub); margin-top: -6px; }
+.modal-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.modal-desc-block { border-top: 1px dotted var(--border2); padding-top: 10px; }
+.modal-desc-ja { font-size: 11px; color: var(--text); line-height: 1.7; }
+.modal-desc-en { font-size: 10px; color: var(--sub); line-height: 1.6; margin-top: 6px; }
+.modal-dims { display: flex; flex-direction: column; gap: 6px; }
+.modal-dims .status-line { text-align: center; }
+
+@media (max-width: 760px) {
+    .modal-box { flex-direction: column; padding: 60px 12px 12px; overflow-y: auto; overflow-x: hidden; }
+    .modal-info { width: 100%; }
+    .zoom-stage { min-height: 200px; }
+}
+
+@media (max-width: 720px) {
+    .gallery-shell { flex-direction: column; }
+    .gallery-sidebar { width: 100%; position: static; }
+    .category-list { flex-direction: row; flex-wrap: wrap; }
+    .category-item { flex: 1 1 auto; }
+}
