@@ -60,11 +60,16 @@ function closeModal() {
     zoomImage.src = '';
 }
 
+// currentScale は「1ドットあたりの実機ピクセル数」。
+// スマホは devicePixelRatio が2〜3あるので、CSSピクセルにそのまま原寸を入れると
+// 実機では2〜3倍に拡大されてしまう（=等倍にならない・画面からはみ出す）。
+// DPRを割り戻して指定することで、x1が実機での本当の等倍になる。
 function applyScale() {
+    const dpr = window.devicePixelRatio || 1;
     const w = currentNaturalW * currentScale;
     const h = currentNaturalH * currentScale;
-    zoomImage.style.width = w + 'px';
-    zoomImage.style.height = h + 'px';
+    zoomImage.style.width = (w / dpr) + 'px';
+    zoomImage.style.height = (h / dpr) + 'px';
     metaDisplay.textContent = 'display: ' + w + '×' + h + ' (' + currentScale + '×)';
 }
 

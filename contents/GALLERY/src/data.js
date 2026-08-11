@@ -26,6 +26,23 @@ function extOf(filename) {
     return filename.split('.').pop().toUpperCase();
 }
 
+// ドット絵を滲ませずに表示するための倍率計算。
+// 端数倍率で拡縮するとブラウザが補間してドットが潰れる（特にスマホは
+// devicePixelRatio が2〜3あるため、CSS上は縮小でも実機では拡大になり得る）。
+// そこで「1ドット = 実機の整数ピクセル」になる倍率だけを選ぶ。
+// 拡大側は整数倍(1,2,3…)、縮小側は整数分の1(1/2,1/3…)に切り下げる。
+// 返り値の cssW/cssH は devicePixelRatio を割り戻したCSSピクセル値。
+function integerDeviceScale(naturalW, naturalH, boxW, boxH) {
+    const dpr = window.devicePixelRatio || 1;
+    const fit = Math.min((boxW * dpr) / naturalW, (boxH * dpr) / naturalH);
+    const deviceScale = fit >= 1 ? Math.floor(fit) : 1 / Math.ceil(1 / fit);
+    return {
+        deviceScale,
+        cssW: (naturalW * deviceScale) / dpr,
+        cssH: (naturalH * deviceScale) / dpr,
+    };
+}
+
 let CATEGORIES = [];
 let ITEMS = [];
 

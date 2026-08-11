@@ -6,6 +6,35 @@ const currentCategoryLabel = document.getElementById('currentCategoryLabel');
 const sizeGroup = document.getElementById('sizeGroup');
 
 let activeCategory = 'all';
+// S/M/Lで選ばれたサムネイル枠の高さ。カテゴリ切替で作り直しても維持する。
+let thumbHeight = 112;
+
+// カード内で画像に使える最大幅。
+// グリッド幅からカードの padding/border と枠線分を引いた値で、
+// .thumb-frame の max-width:320px（border-box）を上限にする。
+function thumbBoxWidth() {
+    return Math.min(318, Math.max(48, grid.clientWidth - 24));
+}
+
+// サムネイル1枚を「1ドット=実機の整数ピクセル」なサイズに合わせる。
+// CSSのmax-width/max-heightに任せると端数倍率になり補間で滲むため、
+// 明示的にwidth/heightを指定する。
+function applyThumbSize(img) {
+    if (!img.naturalWidth) return;
+    const frame = img.closest('.thumb-frame');
+    // --thumb-h は枠の外寸(border-box)。枠線2px分を除いた内容領域に収めないと
+    // CSSの max-height:100% に切り詰められて端数倍率に戻ってしまう。
+    const boxH = (frame && frame.clientHeight) || (thumbHeight - 2);
+    const { cssW, cssH } = integerDeviceScale(
+        img.naturalWidth, img.naturalHeight, thumbBoxWidth(), boxH
+    );
+    img.style.width = cssW + 'px';
+    img.style.height = cssH + 'px';
+}
+
+function applyAllThumbSizes() {
+    grid.querySelectorAll('.thumb-frame img').forEach(applyThumbSize);
+}
 
 function buildSidebar() {
     categoryList.innerHTML = '';
@@ -61,6 +90,7 @@ function buildCard(item) {
 
     const frame = document.createElement('div');
     frame.className = 'thumb-frame';
+    frame.style.setProperty('--thumb-h', thumbHeight + 'px');
 
     const displayTitle = item.titleJa || titleFromFile(item.file);
 
@@ -97,6 +127,7 @@ function buildCard(item) {
 
     img.addEventListener('load', () => {
         dims.textContent = img.naturalWidth + '×' + img.naturalHeight;
+        applyThumbSize(img);
     });
 
     card.appendChild(frame);
@@ -125,14 +156,23 @@ function setActiveSizeButton(sizePx) {
 sizeGroup.addEventListener('click', (e) => {
     const btn = e.target.closest('.size-btn');
     if (!btn) return;
-    const sizePx = Number(btn.dataset.size);
-    setActiveSizeButton(sizePx);
-    document.querySelectorAll('.thumb-frame').forEach(f => {
-        f.style.setProperty('--thumb-h', sizePx + 'px');
+    thumbHeight = Number(btn.dataset.size);
+    setActiveSizeButton(thumbHeight);
+    grid.querySelectorAll('.thumb-frame').forEach(f => {
+        f.style.setProperty('--thumb-h', thumbHeight + 'px');
     });
+    applyAllThumbSizes();
 });
 
-setActiveSizeButton(112);
+// 画面回転や幅変更で使える枠サイズが変わると整数倍率もずれるため、
+// レイアウト確定後に計算し直す。
+let resizeTimer = null;
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(applyAllThumbSizes, 150);
+});
+
+setActiveSizeButton(thumbHeight);
 
 loadWorks()
     .then(() => {

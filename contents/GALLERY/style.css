@@ -218,12 +218,14 @@
     gap: 14px;
 }
 
+/* 中央寄せに justify-content/align-items を使うと、画像がステージより
+   大きいときに左側・上側のはみ出し分へスクロールで到達できなくなり、
+   ドット絵の端が永久に見えなくなる。子側の margin:auto なら
+   収まる時は中央寄せ・はみ出す時は全方向スクロール可能になる。 */
 .zoom-stage {
     flex: 1;
     width: 100%;
     display: flex;
-    align-items: center;
-    justify-content: center;
     overflow: auto;
     background-image:
         linear-gradient(45deg, #3a4450 25%, transparent 25%, transparent 75%, #3a4450 75%),
@@ -242,6 +244,8 @@
     image-rendering: pixelated;
     image-rendering: -moz-crisp-edges;
     display: block;
+    margin: auto;
+    flex-shrink: 0;
     -webkit-user-drag: none;
     user-drag: none;
 }
