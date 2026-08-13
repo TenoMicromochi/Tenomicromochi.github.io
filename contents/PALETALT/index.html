@@ -82,6 +82,17 @@
       <div class="thumb-box"><canvas id="thumb1" width="80" height="80"></canvas><span>ADJUSTED</span></div>
       <div class="thumb-box"><canvas id="thumb2" width="80" height="80"></canvas><span>QUANTIZED</span></div>
     </div>
+    <div class="ctrl-row">
+      <div class="ctrl-label">QUANTIZED PNG SCALE</div>
+      <div class="view-btn-group full" id="imageScaleGroup">
+        <button class="view-btn active" data-iscale="1">1×</button>
+        <button class="view-btn" data-iscale="2">2×</button>
+        <button class="view-btn" data-iscale="3">3×</button>
+        <button class="view-btn" data-iscale="4">4×</button>
+      </div>
+    </div>
+    <div class="level-hint" id="imageScaleHint">-</div>
+    <button class="btn secondary" id="dlImageBtn" disabled>DOWNLOAD QUANTIZED PNG</button>
   </div>
 </div>
 
@@ -191,7 +202,6 @@
     <label class="check-row"><input type="checkbox" id="pngText" checked> Text labels (forces 4×)</label>
     <div class="level-hint" id="pngTextHint">OFF時は1色1pxの横並び画像を出力します</div>
     <button class="btn secondary" id="dlPaletteBtn" disabled>DOWNLOAD PALETTE PNG</button>
-    <button class="btn secondary" id="dlImageBtn" disabled>DOWNLOAD QUANTIZED PNG</button>
     <div class="ctrl-row">
       <div class="ctrl-label">TEXT FORMAT</div>
       <select id="textFormat">
@@ -216,7 +226,27 @@
       <button class="view-btn" data-view="adjusted">ADJUSTED</button>
       <button class="view-btn" data-view="original">ORIGINAL</button>
     </div>
-    <label class="overlay-toggle" id="ditherLabel"><input type="checkbox" id="dither"> DITHER</label>
+    <div class="view-btn-group" id="zoomGroup" title="1:1 = LONG EDGE と同じ実寸 / FIT = 枠に収まる最大の整数倍">
+      <button class="view-btn" data-zoom="actual">1:1</button>
+      <button class="view-btn active" data-zoom="fit">FIT</button>
+    </div>
+    <div class="dither-bar">
+      <label class="dither-fine" id="ditherFine" title="Number of Bayer coverage patterns">
+        PATTERN
+        <input type="range" id="dfine" min="0" max="3" step="1" value="3">
+        <span class="dither-val" id="dfineV">17</span>
+      </label>
+      <label class="dither-fine" id="ditherClean" title="Drop the sparsest dither steps at both ends">
+        CLEAN
+        <input type="range" id="dclean" min="0" max="3" step="1" value="0">
+        <span class="dither-val" id="dcleanV">0</span>
+      </label>
+      <div class="view-btn-group" id="ditherModeGroup">
+        <button class="view-btn" data-dmode="fs">FLOYD</button>
+        <button class="view-btn active" data-dmode="bayer">BAYER</button>
+      </div>
+      <label class="overlay-toggle" id="ditherLabel"><input type="checkbox" id="dither"> DITHER</label>
+    </div>
   </div>
 
   <div class="canvas-stack" id="canvasStack">

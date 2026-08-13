@@ -48,10 +48,13 @@ const Main = (() => {
         console.error(err);
       }
       const ms = performance.now() - t0;
-      Render.drawMain();
+      // drawMain の FIT 倍率は同じ列の要素の高さを実測するので、
+      // パレットと情報バーの表示を確定させてから最後に描く
       Render.drawThumbs();
       Render.drawPalette();
       Render.drawInfo(ms);
+      Render.drawMain();
+      Controls.syncImageScaleHint();
       Controls.setBusy(false);
       running = false;
     });

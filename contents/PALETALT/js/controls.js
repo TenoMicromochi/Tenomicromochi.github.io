@@ -35,6 +35,14 @@ const Controls = (() => {
     { id: 'dither',   key: 'dither',   level: LEVEL.DRAW, out: true },
   ];
 
+  // ディザ細かさスライダーの目盛り → 使用する被覆パターン数。
+  // 4x4 ベイヤーの16段を均等に間引ける割り方はこの4通りしかない
+  const DITHER_LEVELS = [3, 5, 9, 17];
+
+  // CLEAN の上限。中央の段まで潰すとディザが消えてしまうので段数から決まる。
+  // パターン数3では潰せる段がなく 0（＝操作不可）になる
+  const maxClean = (levels) => Math.min(3, Math.floor((levels - 2) / 2));
+
   function updatePct(el) {
     const min = +el.min, max = +el.max;
     const pct = max === min ? 0 : ((+el.value - min) / (max - min)) * 100;
@@ -48,6 +56,43 @@ const Controls = (() => {
     num.value = b.dec ? p.toFixed(b.dec) : p;
     label.textContent = b.fmt ? b.fmt(p) : p;
     updatePct(range);
+  }
+
+  /** 保存される量子化PNGの実寸を出しておく（倍率だけだと大きさが読めないため） */
+  function syncImageScaleHint() {
+    const el = $('imageScaleHint');
+    if (!State.work) { el.textContent = 'Load an image first'; return; }
+    const s = State.imageScale;
+    el.textContent = 'Output: ' + (State.work.w * s) + '×' + (State.work.h * s) + ' px';
+  }
+
+  /** ディザ関連UIを params に合わせ直す。細かさは BAYER のときだけ有効 */
+  function syncDitherUI() {
+    const p = State.params;
+    const fine = $('dfine');
+    const idx = DITHER_LEVELS.indexOf(p.ditherLevels);
+    fine.value = idx < 0 ? DITHER_LEVELS.length - 1 : idx;
+    updatePct(fine);
+    $('dfineV').textContent = p.ditherLevels;
+
+    // CLEAN の可動域はパターン数に従属する。効かない位置は最初から選ばせない
+    const cmax = maxClean(p.ditherLevels);
+    const clean = $('dclean');
+    p.ditherClean = Math.min(p.ditherClean, cmax);
+    clean.max = cmax;
+    clean.value = p.ditherClean;
+    updatePct(clean);
+    $('dcleanV').textContent = p.ditherClean;
+
+    $('dither').checked = p.dither;
+    $('ditherLabel').classList.toggle('on', p.dither);
+    document.querySelectorAll('#ditherModeGroup .view-btn').forEach((b) =>
+      b.classList.toggle('active', b.dataset.dmode === p.ditherMode));
+
+    const bayerOn = p.dither && p.ditherMode === 'bayer';
+    $('ditherModeGroup').classList.toggle('disabled', !p.dither);
+    $('ditherFine').classList.toggle('disabled', !bayerOn);
+    $('ditherClean').classList.toggle('disabled', !bayerOn || cmax === 0);
   }
 
   function bindAll() {
@@ -81,10 +126,30 @@ const Controls = (() => {
       el.checked = State.params[c.key];
       el.addEventListener('change', () => {
         State.params[c.key] = el.checked;
-        if (c.id === 'dither') $('ditherLabel').classList.toggle('on', el.checked);
+        if (c.id === 'dither') syncDitherUI();
         if (c.level !== null) Main.request(c.level, c.out);
       });
     });
+
+    $('dfine').addEventListener('input', (e) => {
+      State.params.ditherLevels = DITHER_LEVELS[+e.target.value];
+      syncDitherUI();
+      Main.request(LEVEL.DRAW, true);
+    });
+
+    $('dclean').addEventListener('input', (e) => {
+      State.params.ditherClean = +e.target.value;
+      syncDitherUI();
+      Main.request(LEVEL.DRAW, true);
+    });
+
+    groupButtons('#ditherModeGroup .view-btn', (btn) => {
+      State.params.ditherMode = btn.dataset.dmode;
+      syncDitherUI();
+      Main.request(LEVEL.DRAW, true);
+    });
+
+    syncDitherUI();
 
     $('strategy').addEventListener('change', (e) => {
       State.params.strategy = e.target.value;
@@ -110,6 +175,16 @@ const Controls = (() => {
 
     groupButtons('#scaleGroup .view-btn', (btn) => {
       State.exportScale = +btn.dataset.scale;
+    });
+
+    groupButtons('#imageScaleGroup .view-btn', (btn) => {
+      State.imageScale = +btn.dataset.iscale;
+      syncImageScaleHint();
+    });
+
+    groupButtons('#zoomGroup .view-btn', (btn) => {
+      State.zoom = btn.dataset.zoom;
+      Render.drawMain();
     });
   }
 
@@ -165,7 +240,8 @@ const Controls = (() => {
 
     $('dlPaletteBtn').addEventListener('click', () =>
       Exporter.palettePng(State.exportScale, $('pngText').checked));
-    $('dlImageBtn').addEventListener('click', () => Exporter.quantizedPng());
+    $('dlImageBtn').addEventListener('click', () => Exporter.quantizedPng(State.imageScale));
+    syncImageScaleHint();
     $('copyBtn').addEventListener('click', () => Exporter.copyPalette($('textFormat').value));
     $('dlTextBtn').addEventListener('click', () => Exporter.saveText($('textFormat').value));
   }
@@ -187,5 +263,5 @@ const Controls = (() => {
     Main.request(LEVEL.IMAGE);
   }
 
-  return { bindAll, bindImageInput, bindExports, setBusy, setEnabled, resetAdjust, syncBind, BIND };
+  return { bindAll, bindImageInput, bindExports, setBusy, setEnabled, resetAdjust, syncBind, syncImageScaleHint, BIND };
 })();

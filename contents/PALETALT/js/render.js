@@ -27,15 +27,102 @@ const Render = (() => {
     };
   }
 
+  /* ---------- 近傍2色 + 混合比（順序付きディザ用） ---------- */
+
+  /**
+   * 元色 → { a, b, lv } を返すキャッシュ付き関数。
+   * a / b は最も近いパレット色2つの添字、lv は b を打つ被覆段数（0..levels-1）。
+   * どれも画素位置に依存しないのでキャッシュに丸ごと載せられる。
+   *
+   * clean は両端から何段ぶんをベタに寄せるか。打点が疎すぎる段は模様として
+   * 成立せずゴミに見えるので、そこだけ落とす。段数単位なので levels と直交する。
+   */
+  function makePairMatcher(palette, space, levels, clean) {
+    const pw = palette.map((c) => Color.toWork(c.r, c.g, c.b, space));
+    const cache = new Map();
+    const steps = levels - 1;
+    // 中央の段まで潰すとディザが全滅するので、最低1段は残す
+    const dead = Math.max(0, Math.min(clean, Math.floor((steps - 1) / 2)));
+
+    return function pair(r, g, b) {
+      const key = (r << 16) | (g << 8) | b;
+      let e = cache.get(key);
+      if (e !== undefined) return e;
+
+      const v = Color.toWork(r, g, b, space);
+      let a = 0, ad = Infinity, s = -1, sd = Infinity;
+      for (let i = 0; i < pw.length; i++) {
+        const d = Color.dist2(v, pw[i]);
+        if (d < ad) { s = a; sd = ad; a = i; ad = d; }
+        else if (d < sd) { s = i; sd = d; }
+      }
+
+      let lv = 0;
+      if (s >= 0) {
+        // v を線分 a→s に射影して混合比 t を出す。t をそのまま段数に落とす
+        const va = pw[a], vs = pw[s];
+        let num = 0, den = 0;
+        for (let k = 0; k < 3; k++) {
+          const dk = vs[k] - va[k];
+          num += (v[k] - va[k]) * dk;
+          den += dk * dk;
+        }
+        const t = den > 0 ? Math.max(0, Math.min(1, num / den)) : 0;
+        lv = Math.round(t * steps);
+        if (lv <= dead) lv = 0;
+        else if (lv >= steps - dead) lv = steps;
+      }
+
+      e = { a, b: s < 0 ? a : s, lv };
+      cache.set(key, e);
+      return e;
+    };
+  }
+
+  /* ---------- 順序付きディザ（ベイヤー 4x4） ---------- */
+
+  // 4x4 ベイヤー行列。値は 0..15 なので被覆パターンは 17 通り
+  const BAYER4 = [
+     0,  8,  2, 10,
+    12,  4, 14,  6,
+     3, 11,  1,  9,
+    15,  7, 13,  5,
+  ];
+
+  /**
+   * パターン数を減らすときは行列そのものを間引く。
+   * div=2 → 9通り、4 → 5通り（2x2ベイヤー相当）、8 → 3通り（ベタ + 市松のみ）。
+   */
+  function ditherBayer(work, palette, space, levels, clean) {
+    const { w, h } = work;
+    const src = work.data;
+    const out = new Uint8ClampedArray(src.length);
+    const pair = makePairMatcher(palette, space, levels, clean);
+    const div = 16 / (levels - 1);
+
+    for (let y = 0; y < h; y++) {
+      const row = (y & 3) << 2;
+      for (let x = 0; x < w; x++) {
+        const o = (y * w + x) * 4;
+        const e = pair(src[o], src[o + 1], src[o + 2]);
+        const m = (BAYER4[row | (x & 3)] / div) | 0;
+        const c = palette[m < e.lv ? e.b : e.a];
+        out[o] = c.r; out[o + 1] = c.g; out[o + 2] = c.b; out[o + 3] = src[o + 3];
+      }
+    }
+    return { w, h, data: out };
+  }
+
   /* ---------- 量子化画像 ---------- */
 
-  function quantizeImage(work, palette, space, dither) {
+  function quantizeImage(work, palette, p) {
     const { w, h } = work;
+    const space = p.space;
     const src = work.data;
     const out = new Uint8ClampedArray(src.length);
     if (palette.length === 0) return { w, h, data: out };
 
-    if (!dither) {
+    if (!p.dither) {
       const match = makeMatcher(palette, space);
       for (let i = 0; i < src.length; i += 4) {
         const c = palette[match(src[i], src[i + 1], src[i + 2])];
@@ -43,6 +130,8 @@ const Render = (() => {
       }
       return { w, h, data: out };
     }
+
+    if (p.ditherMode === 'bayer') return ditherBayer(work, palette, space, p.ditherLevels, p.ditherClean);
 
     // Floyd–Steinberg。誤差拡散で元にない色が出るので毎回最近傍を引く
     const buf = new Float32Array(w * h * 3);
@@ -107,10 +196,33 @@ const Render = (() => {
     finishMain(cv, ph);
   }
 
+  /**
+   * FIT のときに使う倍率。縦長の画像がはみ出さないよう横だけでなく縦も見る。
+   * 残り高さは、キャンバス枠と同じ列に並ぶ要素を実測して差し引いて求める。
+   * スクロール量に依存しないよう、基準は常にコンテナ高さと画面高さの小さい方。
+   */
+  function fitScale(cv) {
+    const area = cv.parentElement.parentElement;   // .canvas-area
+    const maxW = Math.min(720, area.clientWidth - 24);
+
+    const pal = $('paletteBlock'), info = $('infoBar');
+    const palOn = pal.style.display !== 'none';
+    const infoOn = info.style.display !== 'none';
+    const used = area.querySelector('.view-toolbar').offsetHeight
+      + (palOn ? pal.offsetHeight : 0)
+      + (infoOn ? info.offsetHeight : 0)
+      + 8 * (1 + palOn + infoOn)                   // .canvas-area の gap
+      + 24 + 2;                                    // padding と枠線
+    const maxH = Math.min(area.clientHeight, window.innerHeight) - used;
+
+    const s = Math.min(Math.floor(maxW / cv.width), Math.floor(maxH / cv.height));
+    return Math.max(1, Math.min(16, s));
+  }
+
   function finishMain(cv, ph) {
-    // 小さい画像でも見やすいよう、表示だけ整数倍に近い形で拡大する
-    const maxW = Math.min(720, cv.parentElement.parentElement.clientWidth - 24);
-    const scale = Math.max(1, Math.min(4, Math.floor(maxW / cv.width) || 1));
+    // ドット絵を潰さないため表示倍率は常に整数。FIT でも非整数には落とさず、
+    // 等倍で枠に入らない場合は縮小せず canvas-stack 側をスクロールさせる
+    const scale = State.zoom === 'fit' ? fitScale(cv) : 1;
     cv.style.width = (cv.width * scale) + 'px';
     cv.style.height = 'auto';
     cv.style.display = 'block';
@@ -201,7 +313,7 @@ const Render = (() => {
 
   function refreshQuantized() {
     if (!State.work || State.palette.length === 0) { lastQuantized = null; return; }
-    lastQuantized = quantizeImage(State.work, State.palette, State.params.space, State.params.dither);
+    lastQuantized = quantizeImage(State.work, State.palette, State.params);
   }
 
   return {

@@ -12,7 +12,9 @@ const State = {
   meanErr: 0,         // 平均量子化誤差（ΔE）
 
   view: 'quantized',
-  exportScale: 1,
+  zoom: 'fit',        // 'fit' = 枠に収まる最大の整数倍 / 'actual' = 等倍
+  exportScale: 1,     // パレットPNGの倍率
+  imageScale: 1,      // 量子化画像PNGの倍率
 
   params: {
     res: 384,
@@ -32,7 +34,10 @@ const State = {
     sortBy: 'population',
     showHex: true,
     autoRun: true,
-    dither: false,
+    dither: true,
+    ditherMode: 'bayer',  // 'bayer' = 順序付き / 'fs' = Floyd–Steinberg
+    ditherLevels: 17,     // ベイヤーで使う被覆パターン数（3 / 5 / 9 / 17）
+    ditherClean: 0,       // 両端から何段ぶんベタに寄せるか（疎な打点の除去）
   },
 };
 

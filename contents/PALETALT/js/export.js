@@ -72,13 +72,36 @@ const Exporter = (() => {
 
   /* ---------- 量子化画像 PNG ---------- */
 
-  function quantizedPng() {
+  /**
+   * 倍率は整数のみ。drawImage の拡大に任せず画素を直接複製することで、
+   * 実装依存の補間が挟まる余地をなくしている（ドット絵が潰れるため）。
+   */
+  function quantizedPng(scale) {
     const q = Render.getQuantized();
     if (!q) return showError('No quantized image');
+    const s = Math.max(1, Math.round(scale || 1));
+
+    const w = q.w * s, h = q.h * s;
+    const out = new Uint8ClampedArray(w * h * 4);
+    const src = q.data;
+    for (let y = 0; y < q.h; y++) {
+      for (let x = 0; x < q.w; x++) {
+        const o = (y * q.w + x) * 4;
+        const r = src[o], g = src[o + 1], b = src[o + 2], a = src[o + 3];
+        for (let dy = 0; dy < s; dy++) {
+          let k = ((y * s + dy) * w + x * s) * 4;
+          for (let dx = 0; dx < s; dx++) {
+            out[k] = r; out[k + 1] = g; out[k + 2] = b; out[k + 3] = a;
+            k += 4;
+          }
+        }
+      }
+    }
+
     const cv = document.createElement('canvas');
-    cv.width = q.w; cv.height = q.h;
-    cv.getContext('2d').putImageData(new ImageData(q.data, q.w, q.h), 0, 0);
-    cv.toBlob((blob) => download(blob, baseName() + '_quantized.png'));
+    cv.width = w; cv.height = h;
+    cv.getContext('2d').putImageData(new ImageData(out, w, h), 0, 0);
+    cv.toBlob((blob) => download(blob, baseName() + '_quantized_' + s + 'x.png'));
   }
 
   /* ---------- テキスト形式 ---------- */

@@ -1,7 +1,14 @@
 /* ============================================================
    PALETALT-K — CHROMALT-Q Design System Port
    ============================================================ */
+/* 見出し用。実体はサイト共通の /fonts/ を参照する（ツール内に複製は置かない） */
+@font-face {
+  font-family: 'TenoText 8x8';
+  src: url('/fonts/TenoText 8x8.otf') format('opentype');
+}
+
 :root {
+  --font-heading: 'TenoText 8x8', 'Courier New', Courier, monospace;
   --bg:      #ffffff;
   --panel:   #f5f8fa;
   --border:  #99bbcc;
@@ -25,7 +32,9 @@ header {
   border-bottom: 2px solid var(--border); padding: 8px 20px;
   display: flex; align-items: baseline; gap: 16px; flex-shrink: 0;
 }
-.logo { font-size: 17px; font-weight: bold; color: var(--accent); letter-spacing: 3px; }
+/* TenoText8x8 は 8px グリッドなので font-size は 8 の倍数。
+   元からボールド調のフォントなので font-weight は付けない */
+.logo { font-family: var(--font-heading); font-size: 16px; color: var(--accent); letter-spacing: 3px; }
 .logo em { color: var(--text); font-style: normal; }
 .tagline { font-size: 10px; color: var(--sub); letter-spacing: 1px; }
 
@@ -39,6 +48,9 @@ header {
 .canvas-area {
   display: flex; flex-direction: column; align-items: center;
   justify-content: flex-start; padding: 12px; gap: 8px; overflow: auto; background: var(--bg);
+  /* grid item は既定で auto。0 にしないと行が中身に押し広げられ、
+     overflow:auto が効かず縦長画像の下端が切れて届かなくなる */
+  min-height: 0;
 }
 
 /* ── Section ── */
@@ -163,9 +175,31 @@ hr.divider { border: none; border-top: 1px solid var(--border); flex-shrink: 0; 
 .overlay-toggle input { accent-color: var(--accent); cursor: pointer; }
 .overlay-toggle.on { border-color: var(--accent); color: var(--accent); background: #eef5f5; }
 
+/* ── Dither controls (view toolbar 右端) ── */
+/* 1280px でツールバーが1段に収まるよう詰めてある。緩めると2段に折り返し、
+   その分キャンバスの表示倍率が1段階下がることがある */
+.dither-bar {
+  display: flex; align-items: center; gap: 5px;
+  flex-wrap: wrap; justify-content: flex-end; margin-left: auto;
+}
+.dither-bar .overlay-toggle { margin-left: 0; }
+.dither-fine {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 9px; color: var(--sub); letter-spacing: 1px;
+  padding: 4px 6px; border: 1px solid var(--border);
+  border-radius: var(--radius); background: var(--bg); user-select: none;
+}
+.dither-fine input[type=range] { width: 60px; }
+.dither-fine .dither-val { color: var(--text); font-weight: bold; min-width: 15px; text-align: right; }
+.dither-fine.disabled { opacity: 0.4; pointer-events: none; }
+
 /* ── Canvas ── */
-.canvas-stack { position: relative; background: #111; border: 1px solid var(--border); max-width: 100%; }
-.canvas-stack canvas { display: block; max-width: 100%; image-rendering: pixelated; }
+/* 等倍表示で枠に収まらないときは縮小せずスクロールさせる。
+   max-width:100% を canvas に付けると非整数縮小になりドット絵が潰れるため */
+/* flex-shrink:0 がないと、縦に入りきらないとき枠が高さ0に潰れる。
+   潰さず自然な高さを保ち、あふれた分は canvas-area 側でスクロールさせる */
+.canvas-stack { position: relative; background: #111; border: 1px solid var(--border); max-width: 100%; overflow: auto; flex-shrink: 0; }
+.canvas-stack canvas { display: block; image-rendering: pixelated; image-rendering: -moz-crisp-edges; }
 #placeholder {
   width: 400px; max-width: 100%; height: 200px;
   display: flex; flex-direction: column;
