@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>送電世界 - ANIMALT-Δ</title>
+<meta name="description" content="画像・動画を色付きASCII/ANSIアートに変換">
+<meta property="og:type" content="website">
+<meta property="og:title" content="送電世界 - ANIMALT-Δ">
+<meta property="og:description" content="画像・動画を色付きASCII/ANSIアートに変換">
+<meta property="og:image" content="https://tenomicromochi.github.io/images/OGP.png">
+<meta property="og:url" content="https://tenomicromochi.github.io/contents/ANIMALT/index.html">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="/main.css">
+<script src="/menu.js" defer></script>
+</head>
+<body>
+<!-- クラスを付けて選択子を絞ってある。サイト共通の上部ナビ（#sodenmir-topbar）も
+     <header> 要素なので、素の header{} で書くとそちらまで巻き込む -->
+<header class="app-header">
+  <!-- Δ は TenoText 8x8 に収録されている（--font-heading で出る） -->
+  <div class="logo">ANIM<em>ALT</em>-Δ</div>
+  <div class="tagline">animated image to colored text art</div>
+  <div class="pipeline">FONT → PALETTE → FG/BG PAIR → FRAMES</div>
+</header>
+
+<div class="workspace">
+
+<!-- 画面端に貼り付く縦タブ。パネルより手前に置くので、開いていても押せる -->
+<button class="edge-tab edge-tab-left" id="tabLeft" type="button" aria-label="Toggle input and glyph panel"><span id="tabLeftLabel">INPUT / GLYPH</span></button>
+<button class="edge-tab edge-tab-right" id="tabRight" type="button" aria-label="Toggle color and palette panel"><span id="tabRightLabel">COLOR / PALETTE</span></button>
+
+<!-- ══ LEFT PANEL ═════════════════════════════════════ -->
+<aside class="panel panel-left hidden" id="panelLeft">
+  <div class="panel-col">
+
+    <div class="section">
+      <div class="section-title">SOURCE</div>
+      <div class="drop-zone" id="dropZone">
+        <input type="file" accept="image/*,video/*" id="fileInput">
+        <div class="drop-icon">▷</div>
+        <div class="drop-label">Drop GIF / image / video</div>
+        <div class="drop-name" id="fileName"></div>
+      </div>
+      <div class="hint" id="srcInfo">no source</div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">FPS — video only</div>
+        <select id="videoFps">
+          <option value="8">8</option>
+          <option value="12" selected>12</option>
+          <option value="24">24</option>
+          <option value="30">30</option>
+          <option value="45">45</option>
+          <option value="60">60</option>
+        </select>
+      </div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">SPEED (x)</div>
+        <div class="ctrl-inputs">
+          <input type="range" id="srcSpeed" min="1" max="4" value="1" step="0.1">
+          <input type="number" class="ctrl-number" id="srcSpeedN" min="1" max="4" value="1" step="0.1">
+        </div>
+      </div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">START (s)</div>
+        <div class="ctrl-inputs">
+          <input type="range" id="clipStart" min="0" max="16" value="0" step="0.1">
+          <input type="number" class="ctrl-number" id="clipStartN" min="0" max="16" value="0" step="0.1">
+        </div>
+      </div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">LENGTH (s)</div>
+        <div class="ctrl-inputs">
+          <input type="range" id="clipLen" min="0.5" max="16" value="4" step="0.1">
+          <input type="number" class="ctrl-number" id="clipLenN" min="0.5" max="16" value="4" step="0.1">
+        </div>
+      </div>
+      <div class="hint" id="clipInfo">—</div>
+      <div class="hint">Frame count is capped at 256. Animated GIF / WebP keep their own frame timing — FPS is for video, but START, LENGTH and SPEED still apply.</div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="section">
+      <div class="section-title">OUTPUT</div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">WIDTH (cells)</div>
+        <div class="ctrl-inputs">
+          <input type="range" id="cols" min="8" max="200" value="64">
+          <input type="number" class="ctrl-number" id="colsN" min="8" max="200" value="64" step="1">
+        </div>
+      </div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">TEMPORAL HOLD (%)</div>
+        <div class="ctrl-inputs">
+          <input type="range" id="hyst" min="0" max="60" value="12">
+          <input type="number" class="ctrl-number" id="hystN" min="0" max="60" value="12" step="1">
+        </div>
+      </div>
+      <div class="hint">How much extra error is tolerated to keep the previous frame's choice. Higher = calmer, less accurate.</div>
+      <label class="chk strong"><input type="checkbox" id="preview" checked> PREVIEW — ONE FRAME</label>
+      <div class="hint">Converts a single frame so palette, font and adjustments can be dialled in without rendering the whole clip. The palette is still built from every frame, so what you see is what the full render gives.</div>
+      <button class="btn" id="convertBtn" disabled>CONVERT</button>
+    </div>
+
+  </div>
+  <div class="panel-col">
+
+    <div class="section">
+      <div class="section-title">GLYPH</div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">FONT</div>
+        <select id="font"></select>
+      </div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">PRESET</div>
+        <select id="charsetPreset"></select>
+      </div>
+      <div class="ctrl-row btn-row">
+        <button class="btn small secondary" id="addPresetBtn">ADD</button>
+        <button class="btn small secondary" id="replacePresetBtn">OVERWRITE</button>
+      </div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">CHARS <span id="charCount">0</span></div>
+        <textarea id="customChars" rows="4" spellcheck="false" placeholder="the character set — edit freely"></textarea>
+      </div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">FEATURE SPLIT</div>
+        <select id="split">
+          <option value="1x1">1 — flat</option>
+          <option value="1x2">2 — L / R</option>
+          <option value="2x1">2 — T / B</option>
+          <option value="2x2" selected>4 — quad</option>
+          <option value="4x4">16 — fine</option>
+        </select>
+      </div>
+      <div class="hint">Each cell is compared block by block, so the glyph is chosen for its shape, not only its density.</div>
+      <div class="glyph-preview" id="glyphPreview"></div>
+      <div class="hint" id="glyphInfo">—</div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="section">
+      <div class="section-title">RENDER</div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">COLOR MODE</div>
+        <select id="colorMode">
+          <option value="ansi" selected>ANSI — bg + fg per cell</option>
+          <option value="ascii">ASCII — fg only</option>
+        </select>
+      </div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">PAPER</div>
+        <select id="paperMode">
+          <option value="black" selected>BLACK</option>
+          <option value="white">WHITE</option>
+          <option value="palette">FROM PALETTE</option>
+        </select>
+      </div>
+      <div class="swatches paper-pick" id="paperSwatches"></div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">CELL GAP (px)</div>
+        <div class="ctrl-inputs">
+          <input type="range" id="gap" min="0" max="2" value="0">
+          <input type="number" class="ctrl-number" id="gapN" min="0" max="2" value="0" step="1">
+        </div>
+      </div>
+      <div class="hint">PAPER is the fixed background in ASCII mode and the color filling CELL GAP. The gap is measured in art pixels, so SCALE 4x draws it 4px wide.</div>
+    </div>
+
+  </div>
+</aside>
+
+<!-- ══ CANVAS ═════════════════════════════════════════ -->
+<main class="canvas-area">
+  <div class="toolbar">
+    <button class="btn small" id="playBtn" disabled>▶ PLAY</button>
+    <input type="range" id="frameSlider" min="0" max="0" value="0" disabled>
+    <span class="counter" id="frameCounter">0 / 0</span>
+    <button class="btn small secondary" id="compareBtn" disabled>SOURCE</button>
+    <label class="inline">SPEED
+      <select id="speed">
+        <option value="0.25">0.25x</option>
+        <option value="0.5">0.5x</option>
+        <option value="1" selected>1x</option>
+        <option value="2">2x</option>
+        <option value="4">4x</option>
+      </select>
+    </label>
+    <label class="inline">ZOOM
+      <select id="zoom">
+        <option value="1">1x</option>
+        <option value="2" selected>2x</option>
+        <option value="3">3x</option>
+        <option value="4">4x</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="stage" id="stage">
+    <canvas id="out"></canvas>
+    <div class="placeholder" id="placeholder">Drop a GIF to begin</div>
+  </div>
+
+  <div class="toolbar">
+    <button class="btn small" id="pngBtn" disabled>PNG (frame)</button>
+    <button class="btn small" id="gifBtn" disabled>GIF (all frames)</button>
+    <button class="btn small" id="txtBtn" disabled>TXT (frame)</button>
+    <label class="inline">SCALE
+      <select id="exportScale">
+        <option value="1" selected>1x</option>
+        <option value="2">2x</option>
+        <option value="3">3x</option>
+        <option value="4">4x</option>
+      </select>
+    </label>
+    <span class="counter wide" id="exportSize">—</span>
+    <label class="chk"><input type="checkbox" id="gifDiff" checked> DIFF ENCODE</label>
+  </div>
+
+  <div class="progress" id="progressWrap"><div class="progress-bar" id="progressBar"></div></div>
+  <div class="status" id="status">Loading fonts…</div>
+  <div class="info" id="info"></div>
+</main>
+
+<!-- ══ RIGHT PANEL ════════════════════════════════════ -->
+<aside class="panel panel-right hidden" id="panelRight">
+  <div class="panel-col">
+
+    <div class="section">
+      <div class="section-title row">IMAGE ADJUST
+        <button class="btn tiny secondary" id="adjustReset" type="button" title="Reset only this section">RESET</button>
+      </div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">BLUR</div>
+        <div class="ctrl-inputs">
+          <input type="range" id="bl" min="0" max="100" value="0">
+          <input type="number" class="ctrl-number" id="blN" min="0" max="100" value="0" step="1">
+        </div>
+      </div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">SOBEL</div>
+        <div class="ctrl-inputs">
+          <input type="range" id="so" min="0" max="100" value="0">
+          <input type="number" class="ctrl-number" id="soN" min="0" max="100" value="0" step="1">
+        </div>
+      </div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">BRIGHTNESS</div>
+        <div class="ctrl-inputs">
+          <input type="range" id="br" min="-100" max="100" value="0">
+          <input type="number" class="ctrl-number" id="brN" min="-100" max="100" value="0" step="1">
+        </div>
+      </div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">CONTRAST</div>
+        <div class="ctrl-inputs">
+          <input type="range" id="ct" min="-100" max="100" value="0">
+          <input type="number" class="ctrl-number" id="ctN" min="-100" max="100" value="0" step="1">
+        </div>
+      </div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">SATURATION</div>
+        <div class="ctrl-inputs">
+          <input type="range" id="sa" min="-100" max="100" value="0">
+          <input type="number" class="ctrl-number" id="saN" min="-100" max="100" value="0" step="1">
+        </div>
+      </div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">HUE (°)</div>
+        <div class="ctrl-inputs">
+          <input type="range" id="hu" min="-180" max="180" value="0">
+          <input type="number" class="ctrl-number" id="huN" min="-180" max="180" value="0" step="1">
+        </div>
+      </div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">GAMMA (%)</div>
+        <div class="ctrl-inputs">
+          <input type="range" id="ga" min="20" max="300" value="100">
+          <input type="number" class="ctrl-number" id="gaN" min="20" max="300" value="100" step="1">
+        </div>
+      </div>
+      <label class="chk"><input type="checkbox" id="inv"> INVERT</label>
+      <div class="hint">Applied before the palette is sampled, so colors follow the adjustment. Blur and Sobel run in the workers, one frame each.</div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="section">
+      <div class="section-title">PALETTE</div>
+      <div class="ctrl-row">
+        <div class="ctrl-label">SOURCE</div>
+        <select id="paletteMode">
+          <option value="auto" selected>AUTO — extract from clip</option>
+          <option value="file">FILE — fixed palette</option>
+        </select>
+      </div>
+
+      <div id="autoParams">
+        <div class="ctrl-row">
+          <div class="ctrl-label">TARGET COLORS</div>
+          <div class="ctrl-inputs">
+            <input type="range" id="target" min="2" max="16" value="16">
+            <input type="number" class="ctrl-number" id="targetN" min="2" max="16" value="16" step="1">
+          </div>
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">WORK SPACE</div>
+          <select id="space"><option value="oklab">OKLAB</option><option value="rgb">RGB</option></select>
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">REPRESENTATIVE</div>
+          <select id="strategy">
+            <option value="centroid">CENTROID</option>
+            <option value="median">MEDIAN</option>
+            <option value="mode">MODE</option>
+          </select>
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">CHROMA BIAS</div>
+          <div class="ctrl-inputs">
+            <input type="range" id="cb" min="0" max="100" value="0">
+            <input type="number" class="ctrl-number" id="cbN" min="0" max="100" value="0" step="1">
+          </div>
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">K-MEANS ITER</div>
+          <div class="ctrl-inputs">
+            <input type="range" id="km" min="0" max="30" value="12">
+            <input type="number" class="ctrl-number" id="kmN" min="0" max="30" value="12" step="1">
+          </div>
+        </div>
+        <div class="ctrl-row">
+          <div class="ctrl-label">SAMPLE FRAMES</div>
+          <div class="ctrl-inputs">
+            <input type="range" id="sf" min="1" max="32" value="8">
+            <input type="number" class="ctrl-number" id="sfN" min="1" max="32" value="8" step="1">
+          </div>
+        </div>
+        <div class="hint">One palette is built from the whole clip, not per frame. That is what keeps colors from crawling.</div>
+      </div>
+
+      <div class="ctrl-label" style="margin-top:4px">IN USE — click to disable</div>
+      <div class="swatches" id="swatches"></div>
+      <div class="hint" id="paletteInfo">—</div>
+    </div>
+
+  </div>
+  <div class="panel-col">
+
+    <div class="section">
+      <div class="section-title">PALETTE LIBRARY</div>
+      <div class="hint">Click one to load it. A palette is read at its natural size, so an 8-color strip loads 8 colors — the rest stay empty.</div>
+      <div class="pal-library" id="palLibrary">loading…</div>
+      <hr class="divider">
+      <div class="ctrl-label">CUSTOM PNG</div>
+      <div class="drop-zone small" id="palDrop">
+        <input type="file" accept="image/*" id="palInput">
+        <div class="drop-label">Drop a palette image</div>
+        <div class="drop-name" id="palName"></div>
+      </div>
+      <div class="hint">Any image works — colors are collected in scan order, duplicates dropped, capped at 16.</div>
+    </div>
+
+  </div>
+</aside>
+
+</div>
+
+<script src="js/charset.js"></script>
+<script src="js/color.js"></script>
+<script src="js/quantize.js"></script>
+<script src="js/image.js"></script>
+<script src="js/matcher.js"></script>
+<script src="js/glyphs.js"></script>
+<script src="js/source.js"></script>
+<script src="js/palette.js"></script>
+<script src="js/palettes.js"></script>
+<script src="js/convert.js"></script>
+<script src="js/render.js"></script>
+<script src="js/gif.js"></script>
+<script src="js/export.js"></script>
+<script src="js/view.js"></script>
+<script src="js/pipeline.js"></script>
+<script src="js/controls.js"></script>
+<script src="js/main.js"></script>
+
+<!-- サイト共通シェルとの繋ぎ。
+     このページだけ body が 100vh の全画面レイアウトなので、モバイルナビを
+     上部ナビの真下へ被せる必要がある（通常フローのままだと作業領域を潰す）。
+     バナー画像の大きさでナビの高さが変わるため、数値を決め打ちにせず実測を流す。
+     menu.js も DOMContentLoaded で組み立てるが、あちらのリスナが先に
+     登録されるので、こちらが走る時点では既に挿入されている。 -->
+<script>
+addEventListener('DOMContentLoaded', () => {
+  const bar = document.getElementById('sodenmir-topbar');
+  if (!bar) return;
+  const sync = () => document.documentElement.style
+    .setProperty('--sodenmir-topbar-h', bar.offsetHeight + 'px');
+  sync();
+  addEventListener('resize', sync);
+});
+</script>
+</body>
+</html>
