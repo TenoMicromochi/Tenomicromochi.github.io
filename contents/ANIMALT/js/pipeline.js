@@ -120,10 +120,12 @@ function buildGlyphs() {
   // 空のまま変換すると当てる字がなくなるので、最低限スペースだけ入れて回す
   state.glyphs = Glyphs.build(ui.font.value, chars.length ? chars : ' ', rows, cols);
   const g = state.glyphs;
-  // シートは U+00FF までなので、範囲外の字（かなや漢字）は落ちる。
-  // 黙って消えると「打ったのに出ない」になるので数を出しておく
-  const dropped = g.outOfRange
-    ? ` | ${g.outOfRange} dropped (beyond U+00FF)` : '';
+  // このフォントが持っていないページの字は落ちる。8x8 に罫線ページが無いのと、
+  // かな漢字にそもそも字形が無いのが主な原因。黙って消えると
+  // 「打ったのに出ない」になるので、数と収録ページを出しておく
+  const pages = Glyphs.pagesOf(ui.font.value)
+    .map((p) => 'U+' + p.toString(16).toUpperCase().padStart(2, '0') + 'xx').join(' ');
+  const dropped = g.missing ? ` | ${g.missing} dropped (has ${pages})` : '';
   ui.glyphInfo.textContent = chars.length
     ? `${g.cellW}x${g.cellH}px | ${g.chars.length} unique shapes | ${g.quadCount} blocks/cell${dropped}`
     : `${g.cellW}x${g.cellH}px | CHARS is empty — add a preset`;
