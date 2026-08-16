@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>送電世界 - FLAKALT</title>
+    <meta name="description" content="ワイヤーフレームの地対空射撃シミュレーター">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="送電世界 - FLAKALT">
+    <meta property="og:description" content="ワイヤーフレームの地対空射撃シミュレーター">
+    <meta property="og:image" content="https://tenomicromochi.github.io/images/OGP.png">
+    <meta property="og:url" content="https://tenomicromochi.github.io/contents/FLAKALT/index.html">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/main.css">
+    <script src="/menu.js" defer></script>
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="logo">FLAK<em>ALT</em></div>
+        <div class="tagline">Anti-aircraft gunnery simulator</div>
+    </header>
+
+    <main>
+
+        <!-- ゲーム画面は本文の段組みに縛られず、画面幅いっぱいまで拡大できるようにする -->
+        <div id="wrap">
+            <div id="stage">
+                <canvas id="screen" width="640" height="400"></canvas>
+                <div id="crt" aria-hidden="true"></div>
+            </div>
+
+            <div class="scale-btn-group" id="scaleGroup">
+                <button class="scale-btn" data-scale="1" title="ORIGINAL (x1)">
+                    <img data-asset="original(x1)" src="/images/buttons/button_original(x1)_OFF.png" alt="ORIGINAL (x1)"></button>
+                <button class="scale-btn" data-scale="2" title="x2">
+                    <img data-asset="x2" src="/images/buttons/button_x2_OFF.png" alt="x2"></button>
+                <button class="scale-btn" data-scale="3" title="x3">
+                    <img data-asset="x3" src="/images/buttons/button_x3_OFF.png" alt="x3"></button>
+            </div>
+        </div>
+
+        <div class="page-content wide">
+
+        <p id="toosmall">FLAKALT REQUIRES A 640x400 DISPLAY, A MOUSE AND A KEYBOARD.</p>
+        <pre id="fatal" hidden></pre>
+
+        <div class="panel flak-about">
+            <div class="panel-header">ABOUT</div>
+            <div class="panel-body">
+                <p>16色640x400のワイヤーフレームで動く地対空射撃シミュレーター。
+                   紙飛行機を偏差射撃で撃ち落とす。</p>
+                <p>弾は瞬間的には届かない。二乗抗力と指数大気で弾道を積分しているので、
+                   12.7mmが1000m先へ届くのに約1.5秒かかる。秒速90mで横切る機体は
+                   その間に130m以上進む。<strong>いまいる場所ではなく、これから行く場所を撃つ。</strong></p>
+
+                <dl class="flak-keys">
+                    <dt>MOUSE</dt><dd>砲の旋回・俯仰</dd>
+                    <dt>LEFT / SPACE</dt><dd>発砲</dd>
+                    <dt>RIGHT / Z</dt><dd>望遠照準</dd>
+                    <dt>1 2 3 4 / WHEEL</dt><dd>兵装選択（7.7mm 4連装 / 12.7mm 2連装 / 20mm機関砲 / 88mm高射砲）</dd>
+                    <dt>R</dt><dd>装填</dd>
+                    <dt>TAB</dt><dd>目標の切り替え</dd>
+                    <dt>P</dt><dd>ポーズ</dd>
+                    <dt>M</dt><dd>ミュート</dd>
+                </dl>
+
+                <p class="flak-note">画面をクリックすると照準を掴む。ESCで離す。
+                   出撃前にEASY（見越し点を表示）/ HARD（表示しない）を選べる。</p>
+            </div>
+        </div>
+
+        </div>
+
+    </main>
+
+    <footer>
+        <span>Micromochi_Teno's website</span>
+        <span>hosted on GitHub Pages</span>
+    </footer>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+@import url('/theme.css');
+
+/* ============================================================
+   FLAKALT — style.css
+
+   ゲームの絵は全部 canvas の中でピクセル単位に描いているので、
+   ここの仕事は「640x400 のフレームバッファを整数倍で置く」ことと、
+   その周りをサイト共通の意匠に合わせることだけ。
+   縮尺や色をここでいじると台無しになる。
+   ============================================================ */
+
+/* --- 画面本体 ------------------------------------------------ */
+
+#wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 20px 20px 0;
+    margin: 0 auto;
+}
+
+#stage {
+    position: relative;
+    line-height: 0;
+    /* ブラウン管の筐体っぽい縁。ここだけは滲ませてよい */
+    box-shadow:
+        0 0 0 2px #222,
+        0 0 0 4px #0a0a0a,
+        0 0 40px 8px rgba(85, 255, 255, 0.10);
+    background: #000;
+    max-width: 100%;
+}
+
+#screen {
+    display: block;
+    /* ドット絵の不変条件：補間を絶対にかけない */
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    background: #000;
+    /* 実サイズは JS が整数倍で設定する */
+    width: 640px;
+    height: 400px;
+    cursor: crosshair;
+}
+
+#screen.locked { cursor: none; }
+
+/* --- CRT フィルタ -------------------------------------------- */
+/* 走査線とビネット。ゲーム内オプションで off にできる（body.nocrt） */
+
+#crt {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(ellipse at center,
+            rgba(0, 0, 0, 0) 55%,
+            rgba(0, 0, 0, 0.45) 100%),
+        repeating-linear-gradient(
+            to bottom,
+            rgba(0, 0, 0, 0.00) 0px,
+            rgba(0, 0, 0, 0.00) 2px,
+            rgba(0, 0, 0, 0.22) 3px,
+            rgba(0, 0, 0, 0.22) 4px);
+    mix-blend-mode: multiply;
+}
+
+body.nocrt #crt { display: none; }
+
+/* --- 表示倍率ボタン ------------------------------------------ */
+/* GALLERY のビューアと同じ部品を使う（/images/buttons/）。 */
+
+.scale-btn-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.scale-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    line-height: 0;
+    cursor: pointer;
+}
+
+.scale-btn img {
+    image-rendering: pixelated;
+    display: block;
+    height: 32px;
+}
+
+.scale-btn[data-scale="1"] img { width: 160px; }
+.scale-btn:not([data-scale="1"]) img { width: 48px; }
+
+/* --- 説明パネル ---------------------------------------------- */
+
+.flak-about { max-width: 720px; margin: 0 auto; }
+.flak-about .panel-body p { margin-bottom: 10px; line-height: 1.7; }
+.flak-about .panel-body p:last-child { margin-bottom: 0; }
+
+.flak-keys {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: 4px 12px;
+    margin: 14px 0;
+    line-height: 1.6;
+}
+
+.flak-keys dt {
+    font-family: var(--font-heading);
+    font-size: 8px;
+    color: var(--accent);
+    letter-spacing: 1px;
+}
+
+.flak-keys dd { color: var(--sub); }
+
+.flak-note { font-size: 12px; color: var(--sub); }
+
+/* --- 小さい画面向けの案内 ------------------------------------ */
+/* 640px 未満に縮めて表示するとドットが非整数倍になって壊れるので、
+   縮めずに「これはマウス用」と伝えるだけにしてある。 */
+
+#toosmall {
+    display: none;
+    margin: 0 auto 16px;
+    padding: 10px 12px;
+    max-width: 720px;
+    background: #0000aa;
+    color: #ffff55;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-align: center;
+}
+
+@media (max-width: 720px) {
+    #toosmall { display: block; }
+    #wrap { align-items: flex-start; overflow-x: auto; }
+}
+
+/* --- 起動に失敗したときの表示 -------------------------------- */
+
+#fatal {
+    margin: 0 auto 16px;
+    padding: 16px;
+    max-width: 720px;
+    background: #0000aa;
+    color: #ffffff;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+}

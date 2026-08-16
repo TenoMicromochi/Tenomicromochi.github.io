@@ -1,0 +1,416 @@
+/* ============================================================
+   FLAKALT — game.js
+   ゲーム全体の状態。ウェーブ、得点、陣地の耐久、目標の指定。
+
+   物理は 200Hz 固定ステップで回す（main.js のループ側）。弾速 900m/s の
+   弾でも 1 ステップ 4.5m しか進まないので、線分と球の判定で取りこぼさない。
+
+   目標の指定は「砲軸にいちばん近い機体」。一度掴んだら少し粘るように
+   してあるので、蛇行しても表示が飛ばない。
+   ============================================================ */
+
+import { C } from './palette.js';
+import { Camera, clamp, wrapDeg, DEG, RAD } from './camera.js';
+import { Scene } from './scene.js';
+import { BulletSystem, solveIntercept } from './ballistics.js';
+import { Mount } from './guns.js';
+import { Aircraft, TYPES } from './aircraft.js';
+import { Fx } from './fx.js';
+import { drawHud, VIEW } from './hud.js';
+
+export const DIFFICULTY = {
+  ROOKIE: { speed: 0.85, jink: 0.5, runs: 2, hp: 0.85, ammo: 1.4, strike: 0.7, label: 'ROOKIE' },
+  VETERAN: { speed: 1.0, jink: 1.0, runs: 3, hp: 1.0, ammo: 1.0, strike: 1.0, label: 'VETERAN' },
+  ACE: { speed: 1.15, jink: 1.6, runs: 4, hp: 1.15, ammo: 0.8, strike: 1.35, label: 'ACE' },
+};
+
+const STRIKE_DAMAGE = { DART: 7, GLIDER: 10, HEAVY: 16 };
+const GUN_HEIGHT = 1.9;
+
+export class Game {
+  constructor(gunSpecs, sfx, opts) {
+    this.gunSpecs = gunSpecs;
+    this.sfx = sfx;
+    this.opts = opts;
+
+    this.cam = new Camera();
+    this.cam.setViewport(VIEW.x, VIEW.y, VIEW.w, VIEW.h);
+    this.scene = new Scene(20250817);
+    this.bullets = new BulletSystem(900);
+    this.fx = new Fx();
+    this.gunPos = { x: 0, y: GUN_HEIGHT, z: 0 };
+    this.mount = new Mount(gunSpecs);
+    this.solution = { x: 0, y: 0, z: 0, t: 0, range: 0 };
+    this.reset();
+  }
+
+  reset() {
+    this.mount = new Mount(this.gunSpecs);
+    this.mount.realistic = this.opts.realistic;
+    this.bullets.reset();
+    this.fx.reset();
+    this.aircraft = [];
+    this.spawnQueue = [];
+    this.target = null;
+    this.hasSolution = false;
+    this.solveT = 0;
+    this.solvedFor = null;
+    this.solvedGun = null;
+
+    this.wave = 0;
+    this.score = 0;
+    this.kills = 0;
+    this.shots = 0;
+    this.hits = 0;
+    this.integrity = 100;
+    this.elapsed = 0;
+    this.log = [];
+    this.hitMarker = 0;
+    this.damageFlash = 0;
+    this.state = 'BRIEF';
+    this.stateT = 0;
+    this.over = false;
+
+    const d = DIFFICULTY[this.opts.difficulty] || DIFFICULTY.VETERAN;
+    for (const g of this.mount.guns) {
+      g.reserve = Math.round(g.reserve * d.ammo);
+      g.stock = g.reserve;
+    }
+    this.pushLog('BATTERY ONLINE. AWAITING CONTACT.', C.LGREEN);
+  }
+
+  pushLog(text, c = C.LGREEN) {
+    this.log.push({ text, c, t: this.elapsed });
+    if (this.log.length > 24) this.log.shift();
+  }
+
+  /* --- ウェーブ ---------------------------------------------- */
+
+  beginWave(n) {
+    this.wave = n;
+    const d = DIFFICULTY[this.opts.difficulty] || DIFFICULTY.VETERAN;
+    const total = Math.min(9, 2 + Math.floor(n * 0.7));
+    const pool = [];
+    for (let i = 0; i < total; i++) {
+      let key = 'DART';
+      if (n >= 4 && i % 4 === 3) key = 'HEAVY';
+      else if (n >= 2 && i % 3 === 2) key = 'GLIDER';
+      pool.push(key);
+    }
+    const spd = d.speed * (1 + (n - 1) * 0.025);
+    const jink = d.jink * (1 + (n - 1) * 0.04);
+    this.spawnQueue = pool.map((key, i) => ({
+      t: i * (2.6 - Math.min(1.4, n * 0.12)),
+      key,
+      bearing: Math.random() * 360,
+      range: 2300 + Math.random() * 900,
+      alt: 220 + Math.random() * 420,
+      opts: {
+        speedScale: spd, turnScale: 1 + (n - 1) * 0.02, jinkScale: jink,
+        hpScale: d.hp * (1 + (n - 1) * 0.05), maxRuns: d.runs,
+      },
+    }));
+    this.state = 'FIGHT';
+    this.stateT = 0;
+    this.pushLog('WAVE ' + n + ' INBOUND -- ' + total + ' CONTACTS', C.YELLOW);
+    this.sfx.beep(700, 0.08); setTimeout(() => this.sfx.beep(950, 0.12), 110);
+  }
+
+  endWave() {
+    this.state = 'REARM';
+    this.stateT = 0;
+    const bonus = 250 * this.wave + this.integrity * 10;
+    this.score += bonus;
+    this.pushLog('WAVE ' + this.wave + ' CLEAR. BONUS ' + bonus, C.LCYAN);
+    for (const g of this.mount.guns) g.resupply();
+    this.integrity = Math.min(100, this.integrity + 8);
+  }
+
+  /* --- 入力（フレームごとに 1 回） ---------------------------- */
+
+  applyInput(input, dt) {
+    if (this.over) return;
+    const zoom = input.zoom || input.down('KeyZ');
+    const wantFov = zoom ? 21 : 52;
+    this.cam.fov += (wantFov - this.cam.fov) * clamp(dt * 14, 0, 1);
+
+    // 感度は画角に比例させる。望遠にすると自動的に細かく狙える
+    const sens = this.opts.sensitivity * (this.cam.fov / 52);
+    const m = input.takeMouse();
+    if (input.locked) this.mount.aimCmd(m.x * sens, -m.y * sens);
+
+    // 方向キーでの微調整
+    const kb = 22 * (this.cam.fov / 52) * dt;
+    let ky = 0, kp = 0;
+    if (input.down('ArrowLeft')) ky -= kb;
+    if (input.down('ArrowRight')) ky += kb;
+    if (input.down('ArrowUp')) kp += kb;
+    if (input.down('ArrowDown')) kp -= kb;
+    if (ky || kp) this.mount.aimCmd(ky, kp);
+
+    this.mount.firing = input.locked && (input.fire || input.down('Space'));
+
+    const nGuns = this.mount.guns.length;
+    for (let i = 0; i < nGuns; i++) {
+      if (input.pressed('Digit' + (i + 1)) && this.mount.select(i)) {
+        this.pushLog('SELECTED ' + this.mount.gun.name, C.CYAN);
+        this.sfx.beep(520, 0.05);
+      }
+    }
+    const w = input.takeWheel();
+    if (w) {
+      const n = (this.mount.index + (w > 0 ? 1 : -1) + nGuns) % nGuns;
+      if (this.mount.select(n)) this.sfx.beep(520, 0.05);
+    }
+    if (input.pressed('KeyR')) {
+      if (this.mount.gun.startReload()) {
+        this.sfx.reload();
+        this.pushLog('RELOADING ' + this.mount.gun.name, C.YELLOW);
+      } else {
+        this.sfx.empty();
+      }
+    }
+    if (input.pressed('Tab')) this.cycleTarget();
+  }
+
+  cycleTarget() {
+    const live = this.aircraft.filter((a) => a.alive);
+    if (!live.length) return;
+    const i = live.indexOf(this.target);
+    this.target = live[(i + 1) % live.length];
+    this.sfx.beep(880, 0.04);
+  }
+
+  /* --- 更新（固定ステップ） ---------------------------------- */
+
+  update(dt) {
+    this.elapsed += dt;
+    this.stateT += dt;
+    this.hitMarker = Math.max(0, this.hitMarker - dt * 4);
+    this.damageFlash = Math.max(0, this.damageFlash - dt * 1.6);
+
+    this.mount.realistic = this.opts.realistic;
+    this.mount.slew(dt);
+
+    // 視点は砲身の向き。発砲の揺れだけ乗せる
+    this.cam.x = this.gunPos.x; this.cam.y = this.gunPos.y; this.cam.z = this.gunPos.z;
+    this.cam.yaw = this.mount.yaw + this.mount.shakeX;
+    this.cam.pitch = clamp(this.mount.pitch + this.mount.shakeY, -8, 89);
+    this.cam.update();
+
+    if (!this.over) {
+      this.mount.update(dt, this.gunPos, this.bullets, this.events);
+    } else {
+      this.mount.firing = false;
+    }
+
+    // 出撃予定
+    for (let i = this.spawnQueue.length - 1; i >= 0; i--) {
+      const s = this.spawnQueue[i];
+      s.t -= dt;
+      if (s.t <= 0) {
+        const ac = new Aircraft(s.key, s.opts);
+        ac.spawnAt(s.bearing, s.range, s.alt);
+        this.aircraft.push(ac);
+        this.spawnQueue.splice(i, 1);
+        this.pushLog('CONTACT ' + ac.tag + ' BRG ' +
+          String(Math.round((s.bearing + 360) % 360)).padStart(3, '0'), C.YELLOW);
+      }
+    }
+
+    for (const ac of this.aircraft) ac.update(dt, this.elapsed, this.actx);
+    this.bullets.update(dt, this.bctx);
+    this.fx.update(dt);
+
+    // 撃墜・離脱した機体を外す
+    for (let i = this.aircraft.length - 1; i >= 0; i--) {
+      const ac = this.aircraft[i];
+      if (!ac.alive) {
+        if (ac.escaped) this.pushLog(ac.tag + ' EGRESSED', C.DGRAY);
+        if (this.target === ac) this.target = null;
+        this.aircraft.splice(i, 1);
+      }
+    }
+
+    this.updateTarget(dt);
+
+    // ウェーブの進行
+    if (this.state === 'BRIEF' && this.stateT > 2.5) this.beginWave(1);
+    else if (this.state === 'FIGHT' && !this.aircraft.length && !this.spawnQueue.length) this.endWave();
+    else if (this.state === 'REARM' && this.stateT > 8) this.beginWave(this.wave + 1);
+
+    if (this.integrity <= 0 && !this.over) {
+      this.integrity = 0;
+      this.over = true;
+      this.state = 'DOWN';
+      this.stateT = 0;
+      this.pushLog('*** BATTERY DESTROYED ***', C.LRED);
+      this.sfx.explode(1.4);
+    }
+  }
+
+  /* 砲軸にいちばん近い機体を選ぶ。掴んだら少し粘る。 */
+  updateTarget(dt = 0) {
+    const mnt = this.mount;
+    let best = this.target && this.target.alive ? this.target : null;
+    let bestAng = best ? this.angleTo(best) : 999;
+    if (bestAng > 30) { best = null; bestAng = 999; }
+
+    for (const ac of this.aircraft) {
+      if (!ac.alive) continue;
+      const a = this.angleTo(ac);
+      if (a > 22) continue;
+      // いま掴んでいる機体には少し下駄を履かせる
+      if (a < bestAng * (ac === this.target ? 1 : 0.75)) { best = ac; bestAng = a; }
+    }
+    this.target = best;
+
+    if (best) {
+      /* 射撃解は実弾道での検算を含むので、物理と同じ 200Hz で回すと無駄が大きい。
+         目標は滑らかに動くので 30Hz で十分（目標か砲が変わったら即座に解き直す）。 */
+      const g = mnt.gun;
+      this.solveT -= dt;
+      if (this.solveT <= 0 || best !== this.solvedFor || g !== this.solvedGun) {
+        this.solveT = 1 / 30;
+        this.solvedFor = best;
+        this.solvedGun = g;
+        solveIntercept(
+          this.gunPos.x, this.gunPos.y, this.gunPos.z,
+          best.x, best.y, best.z, best.vx, best.vy, best.vz,
+          g.v0, g.k, this.solution);
+      }
+      this.hasSolution = true;
+      // 時限信管はこの弾着時間をそのまま使う
+      mnt.fuzeTime = this.solution.t;
+    } else {
+      this.hasSolution = false;
+      this.solvedFor = null;
+      mnt.fuzeTime = 0;
+    }
+  }
+
+  angleTo(ac) {
+    const dx = ac.x - this.gunPos.x, dy = ac.y - this.gunPos.y, dz = ac.z - this.gunPos.z;
+    const d = Math.hypot(dx, dy, dz) || 1;
+    const dot = (dx * this.mount.fx + dy * this.mount.fy + dz * this.mount.fz) / d;
+    return Math.acos(clamp(dot, -1, 1)) * RAD;
+  }
+
+  /* --- イベント ---------------------------------------------- */
+
+  get events() {
+    if (!this._events) {
+      this._events = {
+        onShot: (g, m) => {
+          this.shots++;
+          this.sfx.shot(g.sound);
+          this.fx.sparkle(m.x, m.y, m.z, 1, 6, 0.08, C.YELLOW);
+        },
+        onOverheat: (g) => {
+          this.sfx.overheat();
+          this.pushLog('!! ' + g.name + ' OVERHEATED -- CEASE FIRE', C.LRED);
+        },
+        onReload: (g) => {
+          this.sfx.reload();
+          this.pushLog('AUTO RELOAD ' + g.name, C.YELLOW);
+        },
+      };
+    }
+    return this._events;
+  }
+
+  get actx() {
+    if (!this._actx) {
+      this._actx = {
+        fx: this.fx,
+        onStrike: (ac) => {
+          const d = DIFFICULTY[this.opts.difficulty] || DIFFICULTY.VETERAN;
+          const dmg = Math.round((STRIKE_DAMAGE[ac.type] || 8) * d.strike);
+          this.integrity = Math.max(0, this.integrity - dmg);
+          this.damageFlash = 1;
+          this.sfx.explode(1.1);
+          this.fx.groundHit((Math.random() - 0.5) * 40, (Math.random() - 0.5) * 40, true);
+          this.pushLog('!! POST HIT BY ' + ac.tag + ' -- ' + dmg + '% DAMAGE', C.LRED);
+        },
+      };
+    }
+    return this._actx;
+  }
+
+  get bctx() {
+    if (!this._bctx) {
+      this._bctx = {
+        targets: this.aircraft,
+        onAircraftHit: (ac, b, x, y, z, scale = 1) => {
+          const dmg = b.dmg * scale;
+          if (scale === 1) { this.hits++; this.hitMarker = 1; }
+          this.fx.sparkle(x, y, z, b.he ? 10 : 3, b.he ? 26 : 11, 0.3,
+            b.he ? C.YELLOW : C.WHITE);
+          if (b.he) {
+            this.fx.burst(x, y, z, 7, 0.4);
+            this.sfx.explode(0.5);
+          } else {
+            this.sfx.hit();
+          }
+          if (ac.hit(dmg)) this.kill(ac, b);
+        },
+        onGroundHit: (x, z, b) => {
+          this.fx.groundHit(x, z, b.he);
+          if (b.he && Math.hypot(x, z) < 900) this.sfx.explode(0.45);
+        },
+        /* 空中炸裂。88mm の時限信管と 20mm の自爆信管が通る。
+           破片は球状に飛ぶので、半径内の機体をまとめて減衰つきで殴る。 */
+        onAirburst: (x, y, z, b) => {
+          const big = b.splash > 12;
+          this.fx.burst(x, y, z, big ? b.splash * 0.85 : 9, big ? 0.7 : 0.45);
+          this.fx.sparkle(x, y, z, big ? 30 : 10, big ? 70 : 24, big ? 0.6 : 0.4, C.YELLOW);
+          if (big) this.fx.smoke(x, y, z, false);
+          this.sfx.explode(big ? 1.2 : 0.4);
+
+          let any = false;
+          for (const ac of this.aircraft) {
+            if (!ac.alive || b.splash <= 0) continue;
+            const d = Math.hypot(ac.x - x, ac.y - y, ac.z - z);
+            if (d >= b.splash) continue;
+            any = true;
+            if (ac.hit(b.dmg * (1 - d / b.splash))) this.kill(ac, b);
+          }
+          if (any) { this.hits++; this.hitMarker = 1; }
+        },
+      };
+      // targets は配列参照なので毎フレーム差し替える
+      Object.defineProperty(this._bctx, 'targets', {
+        get: () => this.aircraft,
+      });
+    }
+    return this._bctx;
+  }
+
+  kill(ac, b) {
+    if (!ac.alive) return;
+    ac.alive = false;
+    this.kills++;
+    this.fx.wreck(ac);
+    this.sfx.explode(1);
+
+    const rangeMult = 1 + ac.slant / 1600;
+    const gunMult = this.mount.gun.score;
+    const pts = Math.round(ac.t.score * rangeMult * gunMult * (1 + this.wave * 0.05));
+    this.score += pts;
+    this.pushLog('SPLASH ' + ac.tag + ' (' + ac.t.name + ') ' +
+      Math.round(ac.slant) + 'M  +' + pts, C.LCYAN);
+    if (this.target === ac) this.target = null;
+  }
+
+  /* --- 描画 -------------------------------------------------- */
+
+  render(r) {
+    r.clip(VIEW.x, VIEW.y, VIEW.w, VIEW.h);
+    this.scene.draw(r, this.cam, this.elapsed);
+    for (const ac of this.aircraft) ac.draw(r, this.cam, ac === this.target);
+    this.bullets.draw(r, this.cam);
+    this.fx.draw(r, this.cam);
+    r.clipAll();
+    drawHud(r, this);
+  }
+}

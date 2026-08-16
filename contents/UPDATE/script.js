@@ -1,5 +1,9 @@
 const UPDATE_LOGS = [
     {
+        date: "2026/08/17",
+        text: "追加//Added: FLAKALT"
+    },
+    {
         date: "2026/08/08",
         text: "追加//Added: PALETALT-K"
     },
