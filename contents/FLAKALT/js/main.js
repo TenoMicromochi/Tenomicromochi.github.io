@@ -55,14 +55,16 @@ class App {
     this.opts = loadOpts();
     document.body.classList.toggle('nocrt', !this.opts.crt);
 
+    this.fsCtl = { isActive: () => this.isFullscreen(), toggle: () => this.toggleFullscreen() };
     this.game = new Game(gunSpecs, this.sfx, this.opts);
-    this.screens = new Screens(this.sfx, this.opts, gunSpecs);
+    this.screens = new Screens(this.sfx, this.opts, gunSpecs, this.fsCtl);
 
     this.mode = 'BOOT';
     this.acc = 0;
     this.last = performance.now();
 
     this.initScaleBar();
+    this.initFullscreen();
     this.fit();
     addEventListener('resize', () => this.fit());
 
@@ -106,26 +108,85 @@ class App {
     }
   }
 
+  /* --- フルスクリーン ------------------------------------------ */
+  /* #stage（キャンバス+CRTフィルタ）だけをフルスクリーンにする。ページ全体を
+     フルスクリーンにしても、画面の中に小さいキャンバスが浮くだけでは
+     1600x900 のような並のモニタで何も解決しない。狙いは「フルスクリーンに
+     した瞬間、実画面に収まる最大の整数倍を自動で選ぶ」ところにある。
+
+     x1/x2/x3 ボタンは #stage の外（兄弟要素）にあるため、フルスクリーン中は
+     ブラウザの仕様でそもそも描画されない（フルスクリーン要素の外は消える）。
+     ボタンは「入る」ためのものと割り切り、「出る」は標準の Esc に任せる。
+     ゲーム内オプション画面にも同じ切替を用意してあるのはそのため
+     （キャンバスの中の描画なのでフルスクリーン中も出続ける）。 */
+
+  isFullscreen() {
+    return !!(document.fullscreenElement || document.webkitFullscreenElement);
+  }
+
+  toggleFullscreen() {
+    if (this.isFullscreen()) {
+      const exit = document.exitFullscreen || document.webkitExitFullscreen;
+      if (exit) exit.call(document);
+      return;
+    }
+    const el = this.stageEl;
+    const req = el.requestFullscreen || el.webkitRequestFullscreen;
+    if (!req) { this.sfx.beep(160, 0.15); return; } // 対応していない環境
+    const p = req.call(el);
+    if (p && p.catch) p.catch(() => {});
+  }
+
+  initFullscreen() {
+    this.stageEl = document.getElementById('stage');
+    this.fsBtn = document.getElementById('fullscreenBtn');
+    if (this.fsBtn) {
+      this.fsBtn.addEventListener('click', () => this.toggleFullscreen());
+    }
+    const onChange = () => {
+      const active = this.isFullscreen();
+      if (this.fsBtn) {
+        this.fsBtn.textContent = active ? 'EXIT FULLSCREEN' : 'FULLSCREEN';
+        this.fsBtn.classList.toggle('on', active);
+      }
+      this.fit();
+    };
+    document.addEventListener('fullscreenchange', onChange);
+    document.addEventListener('webkitfullscreenchange', onChange);
+  }
+
   /* 整数倍のみ。半端に伸ばすとドットが潰れる。
      倍率は「実機ピクセル」で数える。DPR が 1 でない環境（Windows の
      125% 表示やスマホ）で CSS ピクセルに直接入れると等倍にならないため、
      GALLERY のビューアと同じく DPR を割り戻して指定する。 */
   fit() {
     const dpr = window.devicePixelRatio || 1;
-    // ページの中に置かれているので、使える幅は親要素・高さは画面から
-    // 画面本体の上端までを差し引いた残りで見る
-    const wrap = document.getElementById('wrap');
-    const host = wrap && wrap.parentElement;
-    const availW = Math.min(host ? host.clientWidth : innerWidth, innerWidth) - 40;
-    // 上部ナビと見出しのぶんだけ差し引く。少しはみ出してスクロールするのは許す
-    const availH = Math.max(H, innerHeight - 130);
-    const fitMax = Math.max(1, Math.min(3,
-      Math.floor(Math.min(availW * dpr / W, availH * dpr / H))));
-    const s = this.opts.scale > 0 ? this.opts.scale : fitMax;
+    const fs = this.isFullscreen();
+    let availW, availH, capMax;
+    if (fs) {
+      // フルスクリーン中はページの段組みを無視して、画面そのものに合わせる。
+      // ボタンの上限(x3)はページ内で選べる範囲の上限でしかないので、
+      // フルスクリーンならもっと大きい画面まで面倒を見てよい。
+      availW = this.stageEl.clientWidth || innerWidth;
+      availH = this.stageEl.clientHeight || innerHeight;
+      capMax = 6;
+    } else {
+      // ページの中に置かれているので、使える幅は親要素・高さは画面から
+      // 画面本体の上端までを差し引いた残りで見る
+      const wrap = document.getElementById('wrap');
+      const host = wrap && wrap.parentElement;
+      availW = Math.min(host ? host.clientWidth : innerWidth, innerWidth) - 40;
+      // 上部ナビと見出しのぶんだけ差し引く。少しはみ出してスクロールするのは許す
+      availH = Math.max(H, innerHeight - 130);
+      capMax = 3;
+    }
+    const fitMax = Math.max(1, Math.min(capMax, Math.floor(Math.min(availW * dpr / W, availH * dpr / H))));
+    // フルスクリーン中は x1/x2/x3 の手動指定より自動フィットを優先する
+    const s = (!fs && this.opts.scale > 0) ? this.opts.scale : fitMax;
     this.canvas.style.width = (W * s / dpr) + 'px';
     this.canvas.style.height = (H * s / dpr) + 'px';
     this.scale = s;
-    this.syncScaleBar(s);
+    this.syncScaleBar(fs ? 0 : s);
   }
 
   startMission() {
@@ -147,6 +208,7 @@ class App {
       this.sfx.setMuted(!this.opts.sound);
       saveOpts(this.opts);
     }
+    if (this.input.pressed('KeyF')) this.toggleFullscreen();
 
     switch (this.mode) {
       case 'BOOT': this.doBoot(dt); break;

@@ -13,7 +13,9 @@ const SHOT_PRESETS = {
   small: { band: 1900, q: 0.9, decay: 0.055, thump: 150, tgain: 0.22, gain: 0.30 },
   medium: { band: 950, q: 0.8, decay: 0.105, thump: 95, tgain: 0.34, gain: 0.42 },
   large: { band: 430, q: 0.7, decay: 0.230, thump: 58, tgain: 0.50, gain: 0.55 },
-  flak: { band: 240, q: 0.6, decay: 0.62, thump: 38, tgain: 0.70, gain: 0.80 },
+  // 40mm ボフォースは 2発/秒で連射するので、大口径にしては減衰を短くしてある。
+  // 長い残響を乗せると 0.5 秒間隔の次弾と重なって音が濁る。
+  bofors: { band: 320, q: 0.65, decay: 0.34, thump: 50, tgain: 0.62, gain: 0.70 },
 };
 
 export class Sfx {
@@ -115,12 +117,6 @@ export class Sfx {
     const p = SHOT_PRESETS[kind] || SHOT_PRESETS.small;
     this.noiseBurst(p.band * (0.9 + Math.random() * 0.2), p.q, p.decay, p.gain);
     this.tone(p.thump, p.decay * 1.6, p.tgain, kind === 'small' ? 'sine' : 'sawtooth');
-    // 大砲は谷に反響が返ってくる
-    if (kind === 'flak') {
-      setTimeout(() => {
-        if (this.ready && !this.muted) this.noiseBurst(180, 0.5, 1.1, 0.20, 'lowpass');
-      }, 230);
-    }
     // 薬莢の跳ねる音をたまに混ぜる
     if (Math.random() < 0.22) {
       setTimeout(() => {

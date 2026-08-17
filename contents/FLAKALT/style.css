@@ -32,6 +32,17 @@
     max-width: 100%;
 }
 
+/* フルスクリーン中は #stage が画面いっぱいに広がるので、
+   その中でキャンバスを中央に置く（整数倍で余った分は黒帯になる）。 */
+#stage:fullscreen,
+#stage:-webkit-full-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: none;
+    background: #000;
+}
+
 #screen {
     display: block;
     /* ドット絵の不変条件：補間を絶対にかけない */
@@ -69,8 +80,16 @@
 
 body.nocrt #crt { display: none; }
 
-/* --- 表示倍率ボタン ------------------------------------------ */
-/* GALLERY のビューアと同じ部品を使う（/images/buttons/）。 */
+/* --- 表示倍率・フルスクリーン --------------------------------- */
+/* 表示倍率ボタンは GALLERY のビューアと同じ部品を使う（/images/buttons/）。 */
+
+.flak-controls {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
 
 .scale-btn-group {
     display: flex;
@@ -94,6 +113,22 @@ body.nocrt #crt { display: none; }
 
 .scale-btn[data-scale="1"] img { width: 160px; }
 .scale-btn:not([data-scale="1"]) img { width: 48px; }
+
+.fs-btn {
+    height: 32px;
+    padding: 0 14px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--accent2);
+    font-family: var(--font-body);
+    font-size: 12px;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+}
+
+.fs-btn:hover { background: var(--panel2); }
+.fs-btn.on { background: var(--accent); border-color: var(--accent2); color: #fff; }
 
 /* --- 説明パネル ---------------------------------------------- */
 

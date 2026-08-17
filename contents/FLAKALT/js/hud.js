@@ -148,14 +148,14 @@ const BARREL_SETS = {
   ring: [[-64, -168, 3], [-24, -58, 3], [24, 58, 3], [64, 168, 3]],
   mil: [[-30, -84, 5], [30, 84, 5]],
   scope: [[-22, -58, 7], [22, 58, 7]],
-  flak: [[0, 0, 13]],
+  flak: [[0, 0, 10]],
 };
-const MUZZLE_Y = { ring: 92, mil: 92, scope: 96, flak: 106 };
+const MUZZLE_Y = { ring: 92, mil: 92, scope: 96, flak: 100 };
 
 function drawBarrels(r, cam, gun, t) {
   const set = BARREL_SETS[gun.sight] || BARREL_SETS.mil;
   const bottom = VIEW.y + VIEW.h;
-  // 後座量は反動の大きさに比例させる。88mm はごっそり下がる
+  // 後座量は反動の大きさに比例させる。反動 recoil が大きい砲ほどごっそり下がる
   const recoil = gun.recoilT * (4 + gun.recoil * 1.8);
   const muzzleY = Math.round(cam.ccy + (MUZZLE_Y[gun.sight] || 92) + recoil);
   const baseY = bottom + 6 + recoil;
@@ -355,7 +355,8 @@ function drawArmament(r, g) {
   r.text(x + 72, 366, 'V0', C.CYAN);
   r.text(x + 92, 366, pad(gun.v0, 3) + ' M/S', C.LGRAY);
 
-  // 次弾までの待ち。88mm は 4 秒に 1 発なのでバーで見せる
+  // 次弾までの待ち。発射間隔が長い砲（0.5 秒超）だけバーで見せる。
+  // いまのところ該当する砲はないが、将来もっと遅い砲を足したときのため残してある。
   if (gun.shotInterval > 0.5) {
     const wait = clamp(-gun.shotT / gun.shotInterval, 0, 1);
     bar(r, x + 150, 365, 40, 7, 1 - wait, wait > 0 ? C.YELLOW : C.LGREEN);

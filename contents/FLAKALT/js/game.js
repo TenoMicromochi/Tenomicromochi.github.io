@@ -358,7 +358,7 @@ export class Game {
           this.fx.groundHit(x, z, b.he);
           if (b.he && Math.hypot(x, z) < 900) this.sfx.explode(0.45);
         },
-        /* 空中炸裂。88mm の時限信管と 20mm の自爆信管が通る。
+        /* 空中炸裂。40mm ボフォースの時限信管と 20mm の自爆信管が通る。
            破片は球状に飛ぶので、半径内の機体をまとめて減衰つきで殴る。 */
         onAirburst: (x, y, z, b) => {
           const big = b.splash > 12;

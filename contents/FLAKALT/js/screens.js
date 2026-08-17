@@ -72,10 +72,11 @@ class Menu {
 /* --- 画面 ------------------------------------------------------ */
 
 export class Screens {
-  constructor(sfx, opts, gunSpecs) {
+  constructor(sfx, opts, gunSpecs, fsCtl) {
     this.sfx = sfx;
     this.opts = opts;
     this.gunSpecs = gunSpecs;
+    this.fsCtl = fsCtl; // { isActive(), toggle() } — main.js 側の Fullscreen API 窓口
     this.t = 0;
 
     this.bootLines = this.makeBootLines();
@@ -126,6 +127,14 @@ export class Screens {
         id: 'crt', label: 'CRT FILTER',
         value: () => (opts.crt ? 'ON' : 'OFF'),
         toggle: () => { opts.crt = !opts.crt; document.body.classList.toggle('nocrt', !opts.crt); },
+      },
+      {
+        // 画面外のボタンはフルスクリーン中だと非表示になる（ブラウザの仕様で
+        // フルスクリーン要素の外側は描画されない）ので、キャンバスの中に
+        // 常に効くこの項目を用意してある。ここは ON/OFF ではなく実際の状態を見せる。
+        id: 'fullscr', label: 'FULLSCREEN',
+        value: () => (fsCtl && fsCtl.isActive() ? 'ON' : 'OFF'),
+        toggle: () => { fsCtl && fsCtl.toggle(); },
       },
       {
         id: 'snd', label: 'SOUND',
@@ -320,6 +329,7 @@ export class Screens {
       diff: 'ENEMY SPEED, JINK, ATTACK RUNS AND AMMO SUPPLY',
       sens: 'DEGREES OF TRAVERSE PER MOUSE PIXEL',
       crt: 'SCANLINES AND VIGNETTE',
+      fullscr: 'FILLS THE SCREEN AT THE BEST INTEGER SCALE. ESC EXITS',
       snd: 'SYNTHESIZED SOUND EFFECTS',
       back: 'RETURN',
     }[m.id];
@@ -356,6 +366,7 @@ export class Screens {
     line('TAB', 'CYCLE DESIGNATED TARGET');
     line('P / ESC', 'PAUSE');
     line('M', 'MUTE');
+    line('F', 'TOGGLE FULLSCREEN');
     y += 4;
     r.hline(x, box.x + box.w - 18, y, C.CYAN); y += 7;
     r.text(x, y, 'DEFLECTION SHOOTING', C.LCYAN); y += 11;
@@ -374,10 +385,10 @@ export class Screens {
       'THE GREY CROSS IS WHERE YOU ARE COMMANDING; THE SIGHT IS',
       'WHERE THE BARRELS ACTUALLY POINT. LEAD THE MOUNT TOO.',
       '',
-      'THE 88MM FIRES A TIME-FUZED SHELL AT 15 ROUNDS PER',
-      'MINUTE. THE FUZE IS SET FROM THE DESIGNATED TARGET, SO',
-      'IT BURSTS AT THAT RANGE WHEREVER THE BARREL POINTS.',
-      'NO TARGET DESIGNATED MEANS NO FUZE AND NO BURST.',
+      'THE 40MM BOFORS FIRES A TIME-FUZED SHELL AT 120 ROUNDS',
+      'PER MINUTE (2 PER SECOND). THE FUZE IS SET FROM THE',
+      'DESIGNATED TARGET, SO IT BURSTS AT THAT RANGE WHEREVER',
+      'THE BARREL POINTS. NO TARGET DESIGNATED MEANS NO FUZE.',
     ];
     for (const d of doc) { r.text(x, y, d, C.LGRAY); y += 9; }
 
