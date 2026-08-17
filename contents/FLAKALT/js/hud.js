@@ -428,6 +428,10 @@ function drawTargetPanel(r, g) {
     r.text(x + 84, 382, pad(leadMil, 3) + ' MIL', C.LMAGENTA);
     r.text(x, 390, 'DROP', C.CYAN);
     r.text(x + 34, 390, fixed(sol.drop, 1) + ' M', C.LMAGENTA);
+    // 見越し点を出せる装備のときだけ、いまの入切と切替キーを出す
+    if (g.opts.aid === 'EASY') {
+      r.text(x + 96, 390, g.leadOn ? 'Q:ON' : 'Q:OFF', g.leadOn ? C.LMAGENTA : C.DGRAY);
+    }
 
     // 時限信管の砲は、この解の弾着時間がそのまま信管の秒数になる
     const gun = g.mount.gun;
@@ -485,10 +489,16 @@ function drawRadar(r, g, t) {
 function drawTopBar(r, g) {
   r.fillRect(0, 0, 640, 9, C.BLUE);
   r.text(4, 1, 'FLAKALT', C.LCYAN);
-  r.text(56, 1, 'WAVE ' + pad(g.wave, 2), C.YELLOW);
+  if (g.freeRange) {
+    r.text(52, 1, 'FREE RANGE', C.LCYAN);
+  } else {
+    r.text(56, 1, 'WAVE ' + pad(g.wave, 2), C.YELLOW);
+  }
   r.text(116, 1, 'SCORE ' + pad(g.score, 7), C.WHITE);
   const ic = g.integrity < 34 ? C.LRED : g.integrity < 67 ? C.YELLOW : C.LGREEN;
-  r.text(212, 1, 'POST ' + pad(g.integrity, 3) + '%', ic);
+  // 攻撃されないモードでは陣地の耐久を出しても意味がない
+  if (g.freeRange) r.text(212, 1, 'POST ----', C.DGRAY);
+  else r.text(212, 1, 'POST ' + pad(g.integrity, 3) + '%', ic);
   const acc = g.shots > 0 ? (g.hits / g.shots) * 100 : 0;
   r.text(290, 1, 'HIT ' + pad(g.hits, 4) + '/' + pad(g.shots, 5), C.LGRAY);
   r.text(400, 1, 'ACC ' + pad(acc, 2) + '%', C.LGRAY);
@@ -520,7 +530,7 @@ export function drawHud(r, g) {
   drawBarrels(r, cam, g.mount.gun, t);
   drawCompass(r, cam);
   drawElevScale(r, cam);
-  if (g.target) drawTargetBox(r, cam, g.target, g.solution, g.opts.aid === 'EASY');
+  if (g.target) drawTargetBox(r, cam, g.target, g.solution, g.leadOn);
   if (g.mount.realistic) drawCommandMark(r, cam, g.mount);
   drawSight(r, cam, g.mount.gun, t);
   drawMessages(r, g);

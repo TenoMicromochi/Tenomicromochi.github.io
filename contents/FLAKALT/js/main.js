@@ -23,7 +23,8 @@ const STORE_KEY = 'flakalt.options.v1';
 
 const DEFAULT_OPTS = {
   realistic: true,
-  aid: 'EASY',          // EASY = 見越し点を出す / HARD = 一切出さない
+  aid: 'EASY',          // EASY = 見越し点を出せる / HARD = 一切出さない
+  freeRange: false,     // 攻撃されない練習場モード
   difficulty: 'VETERAN',
   sensitivity: 0.10,
   crt: true,

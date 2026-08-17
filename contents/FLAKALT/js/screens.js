@@ -98,8 +98,9 @@ export class Screens {
     this.modeMenu = new Menu([
       { id: 'EASY', label: 'EASY' },
       { id: 'HARD', label: 'HARD' },
+      { id: 'FREE', label: 'FREE RANGE' },
     ]);
-    this.modeMenu.i = opts.aid === 'HARD' ? 1 : 0;
+    this.modeMenu.i = opts.freeRange ? 2 : (opts.aid === 'HARD' ? 1 : 0);
 
     this.optMenu = new Menu([
       {
@@ -249,7 +250,7 @@ export class Screens {
     r.textCenter(W / 2, H - 30, '(C) 1998 TENO MICROMOCHI SOFTWORKS   BUILD 0817', C.DGRAY);
     r.textCenter(W / 2, H - 18,
       'MOUNT: ' + (this.opts.realistic ? 'GEARED' : 'DIRECT') +
-      '   AID: ' + this.opts.aid +
+      '   MISSION: ' + (this.opts.freeRange ? 'FREE RANGE' : this.opts.aid) +
       '   ENEMY: ' + this.opts.difficulty, C.DGRAY);
 
     const sel = this.mainMenu.handle(input, this.sfx);
@@ -261,26 +262,34 @@ export class Screens {
   modeSelect(r, dt, input) {
     this.t += dt;
     this.drawTitleBackdrop(r);
-    const box = centerBox(r, 430, 196, 'MISSION SETUP', C.CYAN);
+    const box = centerBox(r, 468, 248, 'MISSION SETUP', C.CYAN);
     const x = box.x + 22;
-    r.text(x, box.y + 20, 'GUNNERY AID', C.LCYAN);
+    r.text(x, box.y + 20, 'SELECT MISSION', C.LCYAN);
     r.hline(x, box.x + box.w - 22, box.y + 30, C.CYAN);
 
     const rows = [
       {
         head: 'EASY', c: C.LGREEN,
         lines: [
-          'THE LEAD POINT IS DRAWN ON THE DESIGNATED TARGET',
-          'WHILE IT IS ON SCREEN AND WITHIN ' + LEAD_AID_RANGE + ' METRES.',
-          'AIM AT THE BOX:   ' + PLANE_GLYPH + ' - - - - []',
+          'CAMPAIGN. THE LEAD POINT IS DRAWN ON THE DESIGNATED',
+          'TARGET ON SCREEN WITHIN ' + LEAD_AID_RANGE + ' METRES. AIM AT THE',
+          'BOX:  ' + PLANE_GLYPH + ' - - - - []      Q TOGGLES IT IN FLIGHT',
         ],
       },
       {
         head: 'HARD', c: C.LRED,
         lines: [
-          'NO LEAD POINT AT ANY RANGE. THE PANEL STILL GIVES',
-          'TIME OF FLIGHT AND THE LEAD IN MILS -- MEASURE IT',
-          'AGAINST THE SIGHT RINGS AND JUDGE IT YOURSELF.',
+          'CAMPAIGN. NO LEAD POINT AT ANY RANGE. THE PANEL STILL',
+          'GIVES TIME OF FLIGHT AND THE LEAD IN MILS -- MEASURE',
+          'IT AGAINST THE SIGHT RINGS AND JUDGE IT YOURSELF.',
+        ],
+      },
+      {
+        head: 'FREE RANGE', c: C.LCYAN,
+        lines: [
+          'FOR PRACTICE AND IDLING. NOTHING SHOOTS BACK -- THE',
+          'PAPER PLANES JUST DRIFT NEARER AND FURTHER. TARGETS',
+          'ARE REPLACED AS YOU DOWN THEM. AMMUNITION IS FREE.',
         ],
       },
     ];
@@ -309,7 +318,10 @@ export class Screens {
     if (input.pressed('Escape')) return 'back';
     const sel = this.modeMenu.handle(input, this.sfx);
     if (sel) {
-      this.opts.aid = sel.id;
+      // FREE RANGE は「攻撃されない練習場」であって照準補助の段階ではないので、
+      // 見越し点は EASY 相当（＝Q で入切できる状態）から始める
+      this.opts.freeRange = sel.id === 'FREE';
+      this.opts.aid = sel.id === 'HARD' ? 'HARD' : 'EASY';
       return 'launch';
     }
     return null;
@@ -364,6 +376,7 @@ export class Screens {
     line('1 / 2 / 3 / 4 / WHEEL', 'SELECT ARMAMENT');
     line('R', 'RELOAD');
     line('TAB', 'CYCLE DESIGNATED TARGET');
+    line('Q', 'LEAD POINT ON / OFF (EASY & FREE RANGE)');
     line('P / ESC', 'PAUSE');
     line('M', 'MUTE');
     line('F', 'TOGGLE FULLSCREEN');
@@ -461,9 +474,15 @@ export class Screens {
 
   banner(r, g) {
     if (g.state === 'BRIEF') {
-      const box = centerBox(r, 300, 60, null, C.CYAN);
-      r.textCenter(W / 2, box.y + 14, 'STAND BY', C.YELLOW, 2);
-      r.textCenter(W / 2, box.y + 36, 'RADAR CONTACT EXPECTED', C.LGRAY);
+      if (g.freeRange) {
+        const box = centerBox(r, 340, 60, null, C.LCYAN);
+        r.textCenter(W / 2, box.y + 14, 'FREE RANGE', C.LCYAN, 2);
+        r.textCenter(W / 2, box.y + 36, 'RELEASING TARGETS -- TAKE YOUR TIME', C.LGRAY);
+      } else {
+        const box = centerBox(r, 300, 60, null, C.CYAN);
+        r.textCenter(W / 2, box.y + 14, 'STAND BY', C.YELLOW, 2);
+        r.textCenter(W / 2, box.y + 36, 'RADAR CONTACT EXPECTED', C.LGRAY);
+      }
     } else if (g.state === 'REARM') {
       const box = centerBox(r, 320, 74, null, C.LGREEN);
       r.textCenter(W / 2, box.y + 10, 'WAVE ' + g.wave + ' CLEAR', C.LGREEN, 2);

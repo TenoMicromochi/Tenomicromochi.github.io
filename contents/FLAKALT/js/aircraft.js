@@ -64,10 +64,23 @@ export class Aircraft {
     this.state = 'INGRESS';
     this.stateT = 0;
     this.runs = 0;
-    this.maxRuns = opts.maxRuns || 3;
+    /* passive = FREE RANGE 用の的。攻撃行動に一切入らない。
+       maxRuns 0 なら ORBIT から ATTACK へ遷移する条件が成立しないので、
+       状態機械はそのままで「延々と旋回し続ける機体」になる。 */
+    this.passive = !!opts.passive;
+    this.maxRuns = this.passive ? 0 : (opts.maxRuns || 3);
     this.orbitDir = Math.random() < 0.5 ? 1 : -1;
     this.orbitR = 600 + Math.random() * 700;
     this.orbitAlt = 180 + Math.random() * 380;
+
+    /* 的として漂うための緩い揺らぎ。旋回半径と高度をゆっくり上下させて、
+       近づいてきたり離れたりを作る。周期は 35〜80 秒くらい。 */
+    this.driftPh = Math.random() * 6.28;
+    this.driftFreq = 0.08 + Math.random() * 0.10;
+    this.driftR0 = 700 + Math.random() * 450;
+    this.driftRAmp = 300 + Math.random() * 220;
+    this.driftA0 = 260 + Math.random() * 150;
+    this.driftAAmp = 120 + Math.random() * 90;
     this.jinkPh = Math.random() * 6.28;
     this.jinkFreq = 0.35 + Math.random() * 0.5;
     this.jinkAmp = 26 * this.t.jink * (opts.jinkScale || 1);
@@ -148,6 +161,13 @@ export class Aircraft {
     if (!this.alive) return;
     this.stateT += dt;
     this.hitFlash = Math.max(0, this.hitFlash - dt * 6);
+
+    // 的モードは旋回半径と高度をゆっくり動かして、寄ったり離れたりさせる
+    if (this.passive) {
+      const p = t * this.driftFreq + this.driftPh;
+      this.orbitR = this.driftR0 + Math.sin(p) * this.driftRAmp;
+      this.orbitAlt = this.driftA0 + Math.sin(p * 0.7 + 1.3) * this.driftAAmp;
+    }
 
     let [wantHdg, wantAlt, wantSpd] = this.desired(t);
 

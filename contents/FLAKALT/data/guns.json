@@ -3,7 +3,7 @@
   "guns": [
     {
       "id": "MG77",
-      "name": "7.7MM QUAD",
+      "name": "7.7MM MACHINEGUN",
       "designation": "TYPE 92  4 X 7.7MM",
       "caliber": 7.7,
       "barrels": 4,
@@ -33,7 +33,7 @@
     },
     {
       "id": "MG127",
-      "name": "12.7MM TWIN",
+      "name": "12.7MM MACHINEGUN",
       "designation": "TYPE 93  2 X 12.7MM",
       "caliber": 12.7,
       "barrels": 2,
@@ -93,7 +93,7 @@
     },
     {
       "id": "BOFORS40",
-      "name": "40MM BOFORS",
+      "name": "40MM CANNON",
       "designation": "40 MM L/60 BOFORS",
       "caliber": 40.0,
       "barrels": 1,

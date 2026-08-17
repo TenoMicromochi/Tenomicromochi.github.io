@@ -27,6 +27,9 @@ export const DIFFICULTY = {
 const STRIKE_DAMAGE = { DART: 7, GLIDER: 10, HEAVY: 16 };
 const GUN_HEIGHT = 1.9;
 
+/* FREE RANGE で空に浮かべておく的の数。ウェーブ 10 相当。 */
+export const FREE_RANGE_TARGETS = 10;
+
 export class Game {
   constructor(gunSpecs, sfx, opts) {
     this.gunSpecs = gunSpecs;
@@ -71,12 +74,22 @@ export class Game {
     this.stateT = 0;
     this.over = false;
 
+    this.freeRange = !!this.opts.freeRange;
+    /* 見越し点を今この瞬間出すかどうか。HARD では最初から false のまま、
+       Q キーでも上げられない（それをやると HARD の意味が消えるため）。 */
+    this.leadOn = this.opts.aid === 'EASY';
+
     const d = DIFFICULTY[this.opts.difficulty] || DIFFICULTY.VETERAN;
     for (const g of this.mount.guns) {
       g.reserve = Math.round(g.reserve * d.ammo);
       g.stock = g.reserve;
     }
-    this.pushLog('BATTERY ONLINE. AWAITING CONTACT.', C.LGREEN);
+    if (this.freeRange) {
+      this.pushLog('FREE RANGE -- PRACTICE AREA. NOTHING SHOOTS BACK.', C.LCYAN);
+    } else {
+      this.pushLog('BATTERY ONLINE. AWAITING CONTACT.', C.LGREEN);
+    }
+    if (this.leadOn) this.pushLog('LEAD AID ON -- PRESS Q TO TOGGLE', C.LMAGENTA);
   }
 
   pushLog(text, c = C.LGREEN) {
@@ -114,6 +127,37 @@ export class Game {
     this.stateT = 0;
     this.pushLog('WAVE ' + n + ' INBOUND -- ' + total + ' CONTACTS', C.YELLOW);
     this.sfx.beep(700, 0.08); setTimeout(() => this.sfx.beep(950, 0.12), 110);
+  }
+
+  /* --- FREE RANGE ---------------------------------------------- */
+
+  /* 攻撃してこない的を空に浮かべておくだけのモード。ウェーブも耐久も無い。
+     撃ち落とした分はしばらくしてから静かに補充される。 */
+  beginFreeRange() {
+    this.state = 'FREE';
+    this.stateT = 0;
+    this.wave = 0;
+    for (let i = 0; i < FREE_RANGE_TARGETS; i++) this.queueFreeTarget(i * 0.4);
+    this.pushLog('TARGETS ADRIFT -- ' + FREE_RANGE_TARGETS + ' CONTACTS', C.LCYAN);
+    this.sfx.beep(760, 0.08);
+  }
+
+  queueFreeTarget(delay) {
+    // ダーツが多め。たまに大きいのを混ぜて的の大きさに幅を出す
+    const pool = ['DART', 'DART', 'DART', 'GLIDER', 'GLIDER', 'HEAVY'];
+    this.spawnQueue.push({
+      t: delay,
+      key: pool[Math.floor(Math.random() * pool.length)],
+      bearing: Math.random() * 360,
+      range: 1100 + Math.random() * 1400,
+      alt: 200 + Math.random() * 380,
+      quiet: true, // 「CONTACT ...」のログを出さない
+      opts: {
+        passive: true,
+        speedScale: 0.85 + Math.random() * 0.35,
+        jinkScale: 0.7 + Math.random() * 0.6,
+      },
+    });
   }
 
   endWave() {
@@ -171,6 +215,19 @@ export class Game {
       }
     }
     if (input.pressed('Tab')) this.cycleTarget();
+
+    // 見越し点の表示切り替え。HARD では最初から積んでいない扱い
+    if (input.pressed('KeyQ')) {
+      if (this.opts.aid === 'EASY') {
+        this.leadOn = !this.leadOn;
+        this.pushLog('LEAD AID ' + (this.leadOn ? 'ON' : 'OFF'),
+          this.leadOn ? C.LMAGENTA : C.DGRAY);
+        this.sfx.beep(this.leadOn ? 900 : 560, 0.05);
+      } else {
+        this.sfx.empty();
+        this.pushLog('NO LEAD COMPUTER FITTED (HARD)', C.DGRAY);
+      }
+    }
   }
 
   cycleTarget() {
@@ -213,8 +270,10 @@ export class Game {
         ac.spawnAt(s.bearing, s.range, s.alt);
         this.aircraft.push(ac);
         this.spawnQueue.splice(i, 1);
-        this.pushLog('CONTACT ' + ac.tag + ' BRG ' +
-          String(Math.round((s.bearing + 360) % 360)).padStart(3, '0'), C.YELLOW);
+        if (!s.quiet) {
+          this.pushLog('CONTACT ' + ac.tag + ' BRG ' +
+            String(Math.round((s.bearing + 360) % 360)).padStart(3, '0'), C.YELLOW);
+        }
       }
     }
 
@@ -234,12 +293,22 @@ export class Game {
 
     this.updateTarget(dt);
 
-    // ウェーブの進行
-    if (this.state === 'BRIEF' && this.stateT > 2.5) this.beginWave(1);
-    else if (this.state === 'FIGHT' && !this.aircraft.length && !this.spawnQueue.length) this.endWave();
-    else if (this.state === 'REARM' && this.stateT > 8) this.beginWave(this.wave + 1);
+    if (this.freeRange) {
+      // 弾は尽きない。撃墜されたぶんだけ的を補充する
+      for (const g of this.mount.guns) g.stock = g.reserve;
+      if (this.state === 'BRIEF' && this.stateT > 2.0) this.beginFreeRange();
+      else if (this.state === 'FREE' &&
+        this.aircraft.length + this.spawnQueue.length < FREE_RANGE_TARGETS) {
+        this.queueFreeTarget(2 + Math.random() * 3);
+      }
+    } else {
+      // ウェーブの進行
+      if (this.state === 'BRIEF' && this.stateT > 2.5) this.beginWave(1);
+      else if (this.state === 'FIGHT' && !this.aircraft.length && !this.spawnQueue.length) this.endWave();
+      else if (this.state === 'REARM' && this.stateT > 8) this.beginWave(this.wave + 1);
+    }
 
-    if (this.integrity <= 0 && !this.over) {
+    if (this.integrity <= 0 && !this.over && !this.freeRange) {
       this.integrity = 0;
       this.over = true;
       this.state = 'DOWN';
