@@ -45,6 +45,7 @@ export class Gun {
     this.heat = 0;
     this.overheated = false;
     this.reloadT = 0;
+    this.bgReload = false;  // マガジンを撃ち切って始まった装填。持ち替えても裏で進む
     this.shotT = 0;
     this.barrelIdx = 0;
     this.shotCount = 0;
@@ -75,11 +76,29 @@ export class Gun {
     this.heat = 0;
     this.overheated = false;
     this.reloadT = 0;
+    this.bgReload = false;
   }
 
   startReload() {
     if (this.reloadT > 0 || this.stock <= 0 || this.ammo === this.magazine) return false;
+    /* 撃ち切ってから始めた装填だけが、持ち替えたあとも裏で進む。
+       残弾があるうちに R で入れ直したぶんは、その砲を構えている間しか進まない。
+       そうしないと「弾が減ったら全部の砲を順に叩いておく」のが最適手になってしまう。 */
+    this.bgReload = this.ammo <= 0;
     this.reloadT = this.reloadTime;
+    return true;
+  }
+
+  /* 装填の進行。完了したフレームだけ true を返す。 */
+  advanceReload(dt) {
+    if (this.reloadT <= 0) return false;
+    this.reloadT -= dt;
+    if (this.reloadT > 0) return false;
+    this.reloadT = 0;
+    this.bgReload = false;
+    const take = Math.min(this.magazine - this.ammo, this.stock);
+    this.ammo += take;
+    this.stock -= take;
     return true;
   }
 
@@ -89,17 +108,17 @@ export class Gun {
     this.heat = Math.max(0, this.heat - cool * dt);
     if (this.overheated && this.heat < 42) this.overheated = false;
 
-    if (this.reloadT > 0) {
-      this.reloadT -= dt;
-      if (this.reloadT <= 0) {
-        this.reloadT = 0;
-        const take = Math.min(this.magazine - this.ammo, this.stock);
-        this.ammo += take;
-        this.stock -= take;
-      }
-    }
+    this.advanceReload(dt);
     this.recoilT = Math.max(0, this.recoilT - dt * 9);
     this.flashT = Math.max(0, this.flashT - dt);
+  }
+
+  /* 選択されていない砲。撃っていないので冷却はそのまま効き、
+     装填は撃ち切って始まったものだけ進む。 */
+  idle(dt) {
+    this.heat = Math.max(0, this.heat - this.coolRate * dt);
+    if (this.overheated && this.heat < 42) this.overheated = false;
+    return this.bgReload ? this.advanceReload(dt) : false;
   }
 
   canFire() {
@@ -193,6 +212,14 @@ export class Mount {
     const g = this.gun;
     g.update(dt, this.firing);
 
+    // 構えていない砲も、冷却と（撃ち切って始まった）装填だけは進める。
+    // 弾切れのたびに手が空くのを待たされるより、持ち替えて撃てたほうが素直。
+    for (const other of this.guns) {
+      if (other !== g && other.idle(dt)) {
+        events.onReloadDone && events.onReloadDone(other);
+      }
+    }
+
     // 発砲による揺れの減衰
     this.shakeX *= Math.pow(0.02, dt);
     this.shakeY *= Math.pow(0.02, dt);
@@ -212,9 +239,8 @@ export class Mount {
       if (g.shotT < -g.shotInterval) g.shotT = -g.shotInterval;
     }
 
-    // 弾切れなら自動で装填
-    if (g.ammo <= 0 && g.stock > 0 && g.reloadT <= 0) {
-      g.reloadT = g.reloadTime;
+    // 弾切れなら自動で装填（startReload が bgReload を立てるので裏でも進む）
+    if (g.ammo <= 0 && g.stock > 0 && g.startReload()) {
       events.onReload && events.onReload(g);
     }
     return shots;

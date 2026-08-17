@@ -375,7 +375,7 @@ export class Screens {
     line('RIGHT BUTTON / Z', 'TELESCOPIC SIGHT (ZOOM)');
     line('1 / 2 / 3 / 4 / WHEEL', 'SELECT ARMAMENT');
     line('R', 'RELOAD');
-    line('TAB', 'CYCLE DESIGNATED TARGET');
+    line('TAB', 'LOCK CONTACT IN RETICLE / RELEASE ON EMPTY SKY');
     line('Q', 'LEAD POINT ON / OFF (EASY & FREE RANGE)');
     line('P / ESC', 'PAUSE');
     line('M', 'MUTE');

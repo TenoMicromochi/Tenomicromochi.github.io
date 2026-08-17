@@ -55,6 +55,8 @@ export class Game {
     this.aircraft = [];
     this.spawnQueue = [];
     this.target = null;
+    this.lock = null;       // TAB で固定した目標。null なら砲軸に近い機体を自動で拾う
+    this.targetHold = 0;    // 自動追尾の粘り。乗り換えた直後は動かさない
     this.hasSolution = false;
     this.solveT = 0;
     this.solvedFor = null;
@@ -214,7 +216,7 @@ export class Game {
         this.sfx.empty();
       }
     }
-    if (input.pressed('Tab')) this.cycleTarget();
+    if (input.pressed('Tab')) this.toggleLock();
 
     // 見越し点の表示切り替え。HARD では最初から積んでいない扱い
     if (input.pressed('KeyQ')) {
@@ -230,12 +232,37 @@ export class Game {
     }
   }
 
-  cycleTarget() {
-    const live = this.aircraft.filter((a) => a.alive);
-    if (!live.length) return;
-    const i = live.indexOf(this.target);
-    this.target = live[(i + 1) % live.length];
-    this.sfx.beep(880, 0.04);
+  /* TAB。レティクルの中に機体を入れて押すとロック、何もない空で押すと解除。
+     複数機が重なると自動追尾が細かく乗り換えて見越し点が暴れるので、
+     「この一機だけ見る」と宣言できる手段がいる。 */
+  toggleLock() {
+    /* 掴む円錐は画角に比例させる。望遠にしても画面上の見かけの広さが
+       変わらないので、レティクルの中央付近という感覚がずれない。 */
+    const cone = clamp(6 * (this.cam.fov / 52), 2.2, 6);
+    let best = null, bestAng = cone;
+    for (const ac of this.aircraft) {
+      if (!ac.alive) continue;
+      const a = this.angleTo(ac);
+      if (a < bestAng) { best = ac; bestAng = a; }
+    }
+
+    if (best) {
+      const again = best === this.lock;
+      this.lock = best;
+      this.target = best;
+      this.targetHold = 0;
+      if (!again) {
+        this.pushLog('LOCKED ' + best.tag + ' -- ' + Math.round(best.slant) + 'M', C.WHITE);
+        this.sfx.beep(1150, 0.06);
+      }
+    } else if (this.lock) {
+      this.lock = null;
+      this.pushLog('LOCK RELEASED -- AUTO TRACK', C.DGRAY);
+      this.sfx.beep(520, 0.05);
+    } else {
+      this.sfx.empty();
+      this.pushLog('NO CONTACT IN RETICLE', C.DGRAY);
+    }
   }
 
   /* --- 更新（固定ステップ） ---------------------------------- */
@@ -287,6 +314,8 @@ export class Game {
       if (!ac.alive) {
         if (ac.escaped) this.pushLog(ac.tag + ' EGRESSED', C.DGRAY);
         if (this.target === ac) this.target = null;
+        // ロック相手が居なくなったら黙って自動追尾に戻る
+        if (this.lock === ac) this.lock = null;
         this.aircraft.splice(i, 1);
       }
     }
@@ -318,19 +347,31 @@ export class Game {
     }
   }
 
-  /* 砲軸にいちばん近い機体を選ぶ。掴んだら少し粘る。 */
+  /* ロック中はその一機。していなければ砲軸にいちばん近い機体を選ぶ。 */
   updateTarget(dt = 0) {
     const mnt = this.mount;
-    let best = this.target && this.target.alive ? this.target : null;
-    let bestAng = best ? this.angleTo(best) : 999;
-    if (bestAng > 30) { best = null; bestAng = 999; }
+    let best;
 
-    for (const ac of this.aircraft) {
-      if (!ac.alive) continue;
-      const a = this.angleTo(ac);
-      if (a > 22) continue;
-      // いま掴んでいる機体には少し下駄を履かせる
-      if (a < bestAng * (ac === this.target ? 1 : 0.75)) { best = ac; bestAng = a; }
+    if (this.lock && this.lock.alive) {
+      // ロック中は砲をどこへ向けても目標は動かない
+      best = this.lock;
+    } else {
+      best = this.target && this.target.alive ? this.target : null;
+      let bestAng = best ? this.angleTo(best) : 999;
+      if (bestAng > 30) { best = null; bestAng = 999; }
+      this.targetHold = Math.max(0, this.targetHold - dt);
+
+      /* 乗り換えた直後は少し粘る。角度の下駄（0.75 倍）だけだと、
+         複数機が近い角度で重なったときに目標が毎フレーム往復して
+         見越し点がちらついてしまう。 */
+      if (!best || this.targetHold <= 0) {
+        for (const ac of this.aircraft) {
+          if (!ac.alive || ac === best) continue;
+          const a = this.angleTo(ac);
+          if (a < 22 && a < bestAng * 0.75) { best = ac; bestAng = a; }
+        }
+      }
+      if (best !== this.target) this.targetHold = 0.5;
     }
     this.target = best;
 
@@ -382,6 +423,11 @@ export class Game {
         onReload: (g) => {
           this.sfx.reload();
           this.pushLog('AUTO RELOAD ' + g.name, C.YELLOW);
+        },
+        // 構えていない砲の装填が裏で終わったとき。持ち替えてよいことを知らせる
+        onReloadDone: (g) => {
+          this.sfx.beep(680, 0.04);
+          this.pushLog(g.name + ' RELOADED', C.LGREEN);
         },
       };
     }

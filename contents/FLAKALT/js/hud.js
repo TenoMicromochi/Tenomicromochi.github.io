@@ -146,7 +146,7 @@ function drawSight(r, cam, gun, t) {
 const BARREL_SETS = {
   // [muzzleX, baseX, 太さ]
   ring: [[-64, -168, 3], [-24, -58, 3], [24, 58, 3], [64, 168, 3]],
-  mil: [[-30, -84, 5], [30, 84, 5]],
+  mil: [[-58, -150, 5], [-20, -50, 5], [20, 50, 5], [58, 150, 5]],
   scope: [[-22, -58, 7], [22, 58, 7]],
   flak: [[0, 0, 10]],
 };
@@ -257,7 +257,16 @@ function arrow(r, x0, y0, ux, uy, len, c) {
   }
 }
 
-function drawTargetBox(r, cam, ac, sol, showLead) {
+/* ロック中の表示。照準環の外側、いちばん目に入る位置に置く。 */
+function drawLockMark(r, cam, t) {
+  const cx = Math.round(cam.ccx);
+  // 環の大きさは画角で変わるので、外周に張り付かせつつ上限を切る
+  const y = Math.round(cam.ccy - Math.min(mil(cam, 112), 76)) - 9;
+  if (y < VIEW.y + 24) return;
+  r.textCenter(cx, y, '- LOCK -', Math.floor(t * 2) % 2 ? C.WHITE : C.LCYAN);
+}
+
+function drawTargetBox(r, cam, ac, sol, showLead, locked) {
   const q = cam.project(ac.x, ac.y, ac.z, _p);
   if (!q) return;
   // 画面の中に捉えているときだけ表示する
@@ -267,13 +276,15 @@ function drawTargetBox(r, cam, ac, sol, showLead) {
   const px = Math.round(q.x), py = Math.round(q.y);
   // 画面上での見かけの大きさに枠を合わせる
   const h = Math.round(clamp((ac.hitR * 1.9 * cam.focal) / q.z, 7, 60));
-  const c = C.YELLOW;
+  // ロックしている機体は枠を白くして、自動で拾っているだけの表示と区別する
+  const c = locked ? C.WHITE : C.YELLOW;
   const L = Math.max(3, Math.round(h * 0.35));
   for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
     const x = px + sx * h, y = py + sy * h;
     r.hline(x, x - sx * L, y, c);
     r.vline(x, y, y - sy * L, c);
   }
+  if (locked) r.rect(px - h - 2, py - h - 2, h * 2 + 5, h * 2 + 5, C.DGRAY);
   r.text(px + h + 3, py - h - 1, ac.tag, c);
   r.text(px + h + 3, py - h + 7, pad(ac.slant, 4) + 'M', C.LGREEN);
 
@@ -381,6 +392,9 @@ function drawArmament(r, g) {
     if (sel) {
       r.fillRect(bx - 2, 388, 44, 9, C.CYAN);
       r.text(bx, 389, label, C.BLACK);
+    } else if (gi.bgReload) {
+      // 裏で装填が進んでいる砲。戻ってよい頃合いが分かるように光らせる
+      r.text(bx, 389, label, C.YELLOW);
     } else {
       r.text(bx, 389, label, gi.ammo > 0 || gi.stock > 0 ? C.DGRAY : C.RED);
     }
@@ -390,10 +404,11 @@ function drawArmament(r, g) {
 function drawTargetPanel(r, g) {
   const x = 204, x2 = 336;
   r.text(x, 326, 'TARGET', C.CYAN);
+  r.text(x + 132, 326, g.lock ? 'LOCK' : 'AUTO', g.lock ? C.WHITE : C.DGRAY);
   const ac = g.target;
   if (!ac) {
     r.text(x, 344, 'NO TARGET DESIGNATED', C.DGRAY);
-    r.text(x, 354, 'AIM AT A CONTACT TO TRACK', C.DGRAY);
+    r.text(x, 354, 'AIM AT A CONTACT, TAB TO LOCK', C.DGRAY);
     return;
   }
   const sol = g.solution;
@@ -530,9 +545,10 @@ export function drawHud(r, g) {
   drawBarrels(r, cam, g.mount.gun, t);
   drawCompass(r, cam);
   drawElevScale(r, cam);
-  if (g.target) drawTargetBox(r, cam, g.target, g.solution, g.leadOn);
+  if (g.target) drawTargetBox(r, cam, g.target, g.solution, g.leadOn, g.lock === g.target);
   if (g.mount.realistic) drawCommandMark(r, cam, g.mount);
   drawSight(r, cam, g.mount.gun, t);
+  if (g.lock) drawLockMark(r, cam, t);
   drawMessages(r, g);
 
   // 命中したときの手応え
