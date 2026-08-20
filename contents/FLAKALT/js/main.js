@@ -14,6 +14,7 @@ import { Input } from './input.js';
 import { Sfx } from './audio.js';
 import { Game } from './game.js';
 import { Screens } from './screens.js';
+import { nationOf } from './guns.js';
 import { C } from './palette.js';
 
 const W = 640, H = 400;
@@ -26,6 +27,8 @@ const DEFAULT_OPTS = {
   aid: 'EASY',          // EASY = 見越し点を出せる / HARD = 一切出さない
   freeRange: false,     // 攻撃されない練習場モード
   difficulty: 'VETERAN',
+  nation: 'USA',        // 兵装セット。data/guns.json の nations の id
+  mouseAim: true,       // OFF にすると砲は方向キーだけで動かす
   sensitivity: 0.10,
   crt: true,
   sound: true,
@@ -47,7 +50,8 @@ function saveOpts(o) {
 }
 
 class App {
-  constructor(canvas, gunSpecs) {
+  constructor(canvas, data) {
+    this.data = data;
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d', { alpha: false });
     this.r = new Raster(W, H);
@@ -56,9 +60,12 @@ class App {
     this.opts = loadOpts();
     document.body.classList.toggle('nocrt', !this.opts.crt);
 
+    // 保存されていた国が data 側から消えていることもあるので、必ず引き直す
+    this.opts.nation = nationOf(data, this.opts.nation).id;
+
     this.fsCtl = { isActive: () => this.isFullscreen(), toggle: () => this.toggleFullscreen() };
-    this.game = new Game(gunSpecs, this.sfx, this.opts);
-    this.screens = new Screens(this.sfx, this.opts, gunSpecs, this.fsCtl);
+    this.game = new Game(nationOf(data, this.opts.nation).guns, this.sfx, this.opts);
+    this.screens = new Screens(this.sfx, this.opts, data, this.fsCtl);
 
     this.mode = 'BOOT';
     this.acc = 0;
@@ -191,11 +198,13 @@ class App {
   }
 
   startMission() {
+    // 出撃のたびに国の兵装セットを積み直す。reset() が Mount を作り直す
+    this.game.gunSpecs = nationOf(this.data, this.opts.nation).guns;
     this.game.reset();
     this.mode = 'PLAY';
     this.sfx.init();
     this.sfx.resume();
-    this.input.lock();
+    if (this.opts.mouseAim) this.input.lock();
   }
 
   /* --- ループ ------------------------------------------------- */
@@ -262,6 +271,9 @@ class App {
 
   doPlay(dt) {
     const g = this.game;
+    // MOUSE AIM を切っているときは Pointer Lock を要求しない。
+    // 方向キーだけで砲を回すので、マウスから掴む相手がそもそも無い
+    const active = this.input.locked || !this.opts.mouseAim;
 
     if (this.input.pressed('KeyP')) {
       this.input.unlock();
@@ -269,7 +281,7 @@ class App {
       return;
     }
 
-    if (this.input.locked && !g.over) {
+    if (active && !g.over) {
       g.applyInput(this.input, dt);
       this.acc += dt;
       let n = 0;
@@ -293,7 +305,7 @@ class App {
         this.screens.t = 0;
         this.mode = 'OVER';
       }
-    } else if (!this.input.locked) {
+    } else if (!active) {
       this.drawTakeControl();
       if (this.input.takeClick()) this.input.lock();
     }
@@ -340,9 +352,13 @@ async function boot() {
     const res = await fetch('data/guns.json');
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    if (!data.guns || !data.guns.length) throw new Error('data/guns.json に guns がない');
+    if (!data.nations || !data.nations.length) throw new Error('data/guns.json に nations がない');
+    for (const n of data.nations) {
+      if (!n.guns || !n.guns.length) throw new Error(n.id + ' に guns がない');
+    }
+    if (data.defaultNation) DEFAULT_OPTS.nation = data.defaultNation;
     // 動作確認用。コンソールから中身を覗けるようにしておく
-    window.FLAKALT = new App(canvas, data.guns);
+    window.FLAKALT = new App(canvas, data);
   } catch (err) {
     const el = document.getElementById('fatal');
     el.hidden = false;

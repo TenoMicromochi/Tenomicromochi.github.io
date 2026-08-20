@@ -11,6 +11,7 @@ import { C } from './palette.js';
 import { Camera, orientation, clamp } from './camera.js';
 import { DART, GLIDER, drawMesh } from './models.js';
 import { dragFactor } from './ballistics.js';
+import { nationOf } from './guns.js';
 import { DIFFICULTY } from './game.js';
 import { LEAD_AID_RANGE } from './hud.js';
 
@@ -72,10 +73,12 @@ class Menu {
 /* --- 画面 ------------------------------------------------------ */
 
 export class Screens {
-  constructor(sfx, opts, gunSpecs, fsCtl) {
+  constructor(sfx, opts, data, fsCtl) {
     this.sfx = sfx;
     this.opts = opts;
-    this.gunSpecs = gunSpecs;
+    this.data = data;
+    // 起動画面に流す弾道表は、いま選んでいる国の砲のもの
+    this.gunSpecs = nationOf(data, opts.nation).guns;
     this.fsCtl = fsCtl; // { isActive(), toggle() } — main.js 側の Fullscreen API 窓口
     this.t = 0;
 
@@ -95,12 +98,31 @@ export class Screens {
       { id: 'help', label: 'CONTROLS & DOCTRINE' },
     ]);
 
-    this.modeMenu = new Menu([
+    /* MISSION SETUP の縦カーソル。上 3 つが任務、その下が兵装と難易度。
+       任務の行はカーソルを乗せた時点で選択が確定する（左右で選ぶ列と
+       違って、任務は 1 つしか選べないため）。ENTER はどの行にいても出撃。 */
+    this.setupMenu = new Menu([
       { id: 'EASY', label: 'EASY' },
       { id: 'HARD', label: 'HARD' },
       { id: 'FREE', label: 'FREE RANGE' },
+      {
+        id: 'nation', label: 'WEAPON SET',
+        toggle: (d) => {
+          const ns = this.data.nations;
+          const i = ns.findIndex((n) => n.id === opts.nation);
+          opts.nation = ns[(i + (d || 1) + ns.length) % ns.length].id;
+        },
+      },
+      {
+        id: 'diff', label: 'DIFFICULTY',
+        toggle: (d) => {
+          const keys = Object.keys(DIFFICULTY);
+          const i = keys.indexOf(opts.difficulty);
+          opts.difficulty = keys[(i + (d || 1) + keys.length) % keys.length];
+        },
+      },
     ]);
-    this.modeMenu.i = opts.freeRange ? 2 : (opts.aid === 'HARD' ? 1 : 0);
+    this.setupMenu.i = opts.freeRange ? 2 : (opts.aid === 'HARD' ? 1 : 0);
 
     this.optMenu = new Menu([
       {
@@ -109,13 +131,11 @@ export class Screens {
         toggle: () => { opts.realistic = !opts.realistic; },
       },
       {
-        id: 'diff', label: 'DIFFICULTY',
-        value: () => opts.difficulty,
-        toggle: (d) => {
-          const keys = Object.keys(DIFFICULTY);
-          const i = keys.indexOf(opts.difficulty);
-          opts.difficulty = keys[(i + (d || 1) + keys.length) % keys.length];
-        },
+        // マウスを切ると Pointer Lock を要求しなくなり、砲は方向キーだけで動く。
+        // 難易度と兵装は MISSION SETUP に移したので、ここは操作の設定だけ
+        id: 'maim', label: 'MOUSE AIM',
+        value: () => (opts.mouseAim ? 'ON' : 'ARROW KEYS'),
+        toggle: () => { opts.mouseAim = !opts.mouseAim; },
       },
       {
         id: 'sens', label: 'MOUSE SENSITIVITY',
@@ -249,7 +269,7 @@ export class Screens {
     r.textCenter(W / 2, H - 42, 'ARROW KEYS TO SELECT  /  ENTER TO CONFIRM', C.DGRAY);
     r.textCenter(W / 2, H - 30, '(C) 1998 TENO MICROMOCHI SOFTWORKS   BUILD 0817', C.DGRAY);
     r.textCenter(W / 2, H - 18,
-      'MOUNT: ' + (this.opts.realistic ? 'GEARED' : 'DIRECT') +
+      'GUNS: ' + this.opts.nation +
       '   MISSION: ' + (this.opts.freeRange ? 'FREE RANGE' : this.opts.aid) +
       '   ENEMY: ' + this.opts.difficulty, C.DGRAY);
 
@@ -262,7 +282,7 @@ export class Screens {
   modeSelect(r, dt, input) {
     this.t += dt;
     this.drawTitleBackdrop(r);
-    const box = centerBox(r, 468, 248, 'MISSION SETUP', C.CYAN);
+    const box = centerBox(r, 468, 292, 'MISSION SETUP', C.CYAN);
     const x = box.x + 22;
     r.text(x, box.y + 20, 'SELECT MISSION', C.LCYAN);
     r.hline(x, box.x + box.w - 22, box.y + 30, C.CYAN);
@@ -293,38 +313,95 @@ export class Screens {
         ],
       },
     ];
+    const cur = this.setupMenu.i;
+    // 任務の選択はカーソル位置そのもの。カーソルが下の 2 行にいるときは
+    // 直前に通った任務が選ばれたままになる
+    const chosen = this.opts.freeRange ? 2 : (this.opts.aid === 'HARD' ? 1 : 0);
+
     let y = box.y + 38;
     for (let i = 0; i < rows.length; i++) {
-      const sel = this.modeMenu.i === i;
+      const sel = cur === i;
       const row = rows[i];
       if (sel) {
         r.fillRect(x - 10, y - 3, box.w - 24, 13, C.BLUE);
         r.text(x - 8, y, '►', C.YELLOW);
+      } else if (chosen === i) {
+        r.text(x - 8, y, '►', C.CYAN);
       }
-      r.text(x + 6, y, row.head, sel ? C.WHITE : row.c);
+      r.text(x + 6, y, row.head, sel ? C.WHITE : (chosen === i ? row.c : C.DGRAY));
       y += 14;
       for (const line of row.lines) {
         r.text(x + 18, y, line, sel ? C.LGRAY : C.DGRAY);
         y += 9;
       }
-      y += 8;
+      y += 6;
     }
+
+    // --- 兵装セット --------------------------------------------
+    const nations = this.data.nations;
+    const nIdx = Math.max(0, nations.findIndex((n) => n.id === this.opts.nation));
+    y = this.pickerRow(r, x, y, box.w - 44, 'WEAPON SET',
+      nations.map((n) => n.id), nIdx, cur === 3);
+    r.text(x + 6, y, nations[nIdx].blurb || '', C.DGRAY);
+    y += 14;
+
+    // --- 難易度 ------------------------------------------------
+    const dKeys = Object.keys(DIFFICULTY);
+    const dIdx = Math.max(0, dKeys.indexOf(this.opts.difficulty));
+    y = this.pickerRow(r, x, y, box.w - 44, 'DIFFICULTY', dKeys, dIdx, cur === 4);
+    r.text(x + 6, y, 'ENEMY SPEED, JINK, ATTACK RUNS AND AMMO SUPPLY', C.DGRAY);
 
     r.text(x, box.y + box.h - 30, 'MOUNT DRIVE', C.CYAN);
     r.text(x + 78, box.y + box.h - 30, this.opts.realistic ? 'GEARED' : 'DIRECT', C.LGRAY);
-    r.textRight(box.x + box.w - 22, box.y + box.h - 30, 'ENEMY  ' + this.opts.difficulty, C.LGRAY);
-    r.textCenter(W / 2, box.y + box.h - 16, 'ENTER: LAUNCH    ESC: BACK', C.YELLOW);
+    r.textRight(box.x + box.w - 22, box.y + box.h - 30,
+      this.opts.mouseAim ? 'MOUSE AIM' : 'ARROW KEYS', C.LGRAY);
+    r.textCenter(W / 2, box.y + box.h - 16,
+      'UP/DOWN: SELECT   LEFT/RIGHT: CHANGE   ENTER: LAUNCH   ESC: BACK', C.YELLOW);
 
     if (input.pressed('Escape')) return 'back';
-    const sel = this.modeMenu.handle(input, this.sfx);
-    if (sel) {
-      // FREE RANGE は「攻撃されない練習場」であって照準補助の段階ではないので、
-      // 見越し点は EASY 相当（＝Q で入切できる状態）から始める
-      this.opts.freeRange = sel.id === 'FREE';
-      this.opts.aid = sel.id === 'HARD' ? 'HARD' : 'EASY';
-      return 'launch';
+
+    const item = this.setupMenu.items[cur];
+    if (item.toggle) {
+      if (input.pressed('ArrowLeft')) { item.toggle(-1); this.sfx.beep(520, 0.03); }
+      if (input.pressed('ArrowRight')) { item.toggle(1); this.sfx.beep(760, 0.03); }
     }
+
+    const sel = this.setupMenu.handle(input, this.sfx);
+    // カーソルが任務の行に乗ったら、その時点で任務が決まる。
+    // FREE RANGE は「攻撃されない練習場」であって照準補助の段階ではないので、
+    // 見越し点は EASY 相当（＝Q で入切できる状態）から始める
+    const now = this.setupMenu.i;
+    if (now < 3) {
+      this.opts.freeRange = now === 2;
+      this.opts.aid = now === 1 ? 'HARD' : 'EASY';
+    }
+    if (sel) return 'launch';
     return null;
+  }
+
+  /* 横並びの選択列。1 行の見出しと、その下に候補を等間隔で並べる。
+     選ばれている候補を反転、行そのものにカーソルがあれば見出しを黄色にする。 */
+  pickerRow(r, x, y, w, label, items, idx, rowSel) {
+    if (rowSel) {
+      r.fillRect(x - 10, y - 3, w + 22, 11, C.BLUE);
+      r.text(x - 8, y, '►', C.YELLOW);
+    }
+    r.text(x + 6, y, label, rowSel ? C.WHITE : C.LCYAN);
+    y += 12;
+    const cell = w / items.length;
+    for (let i = 0; i < items.length; i++) {
+      const s = items[i];
+      const cx = Math.round(x + 6 + cell * (i + 0.5));
+      const tw = r.textW(s);
+      const tx = Math.round(cx - tw / 2);
+      if (i === idx) {
+        r.fillRect(tx - 3, y - 2, tw + 6, 11, rowSel ? C.CYAN : C.DGRAY);
+        r.text(tx, y, s, rowSel ? C.BLACK : C.WHITE);
+      } else {
+        r.text(tx, y, s, C.DGRAY);
+      }
+    }
+    return y + 13;
   }
 
   /* --- OPTIONS ------------------------------------------------ */
@@ -338,7 +415,7 @@ export class Screens {
     const m = this.optMenu.items[this.optMenu.i];
     const hintEn = {
       drive: 'GEARED = REAL TRAVERSE RATE LIMIT.  DIRECT = INSTANT',
-      diff: 'ENEMY SPEED, JINK, ATTACK RUNS AND AMMO SUPPLY',
+      maim: 'OFF: THE MOUSE IS RELEASED AND ARROW KEYS LAY THE GUN',
       sens: 'DEGREES OF TRAVERSE PER MOUSE PIXEL',
       crt: 'SCANLINES AND VIGNETTE',
       fullscr: 'FILLS THE SCREEN AT THE BEST INTEGER SCALE. ESC EXITS',
@@ -364,13 +441,15 @@ export class Screens {
   help(r, dt, input) {
     this.t += dt;
     this.drawTitleBackdrop(r);
-    const box = centerBox(r, 500, 348, 'CONTROLS & DOCTRINE', C.CYAN);
+    const box = centerBox(r, 500, 380, 'CONTROLS & DOCTRINE', C.CYAN);
     const x = box.x + 18;
     let y = box.y + 18;
     const line = (a, b, ca = C.YELLOW, cb = C.LGRAY) => {
       r.text(x, y, a, ca); r.text(x + 132, y, b, cb); y += 10;
     };
     line('MOUSE', 'TRAVERSE AND ELEVATE THE MOUNT');
+    line('ARROW KEYS', 'LAY THE MOUNT AS WELL -- FINE ADJUSTMENT, OR');
+    line('', 'THE ONLY CONTROL WITH MOUSE AIM OFF (OPTIONS)');
     line('LEFT BUTTON / SPACE', 'FIRE');
     line('RIGHT BUTTON / Z', 'TELESCOPIC SIGHT (ZOOM)');
     line('1 / 2 / 3 / 4 / WHEEL', 'SELECT ARMAMENT');
@@ -398,10 +477,14 @@ export class Screens {
       'THE GREY CROSS IS WHERE YOU ARE COMMANDING; THE SIGHT IS',
       'WHERE THE BARRELS ACTUALLY POINT. LEAD THE MOUNT TOO.',
       '',
-      'THE 40MM BOFORS FIRES A TIME-FUZED SHELL AT 120 ROUNDS',
-      'PER MINUTE (2 PER SECOND). THE FUZE IS SET FROM THE',
-      'DESIGNATED TARGET, SO IT BURSTS AT THAT RANGE WHEREVER',
-      'THE BARREL POINTS. NO TARGET DESIGNATED MEANS NO FUZE.',
+      'THE HEAVY GUNS FIRE TIME-FUZED SHELLS. THE FUZE IS SET',
+      'FROM THE DESIGNATED TARGET, SO THE SHELL BURSTS AT THAT',
+      'RANGE WHEREVER THE BARREL POINTS. NO TARGET DESIGNATED',
+      'MEANS NO FUZE, AND THE ROUND SIMPLY FLIES ON.',
+      '',
+      'THE WEAPON SET IS PICKED IN MISSION SETUP. EACH NATION',
+      'FIGHTS DIFFERENTLY: MAGAZINE SIZE, RATE OF FIRE AND HOW',
+      'FAST THE MOUNT TRAVERSES ALL CHANGE WITH IT.',
     ];
     for (const d of doc) { r.text(x, y, d, C.LGRAY); y += 9; }
 

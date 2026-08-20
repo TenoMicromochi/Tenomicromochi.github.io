@@ -12,7 +12,7 @@
    ============================================================ */
 
 import { C } from './palette.js';
-import { clamp, wrapDeg, DEG, RAD } from './camera.js';
+import { clamp, wrapDeg, DEG, RAD, lerpByCaliber } from './camera.js';
 
 export const VIEW = { x: 0, y: 0, w: 640, h: 320 };
 export const PANEL_Y = 320;
@@ -143,32 +143,94 @@ function drawSight(r, cam, gun, t) {
 
 /* --- 砲身 ------------------------------------------------------ */
 
-const BARREL_SETS = {
-  // [muzzleX, baseX, 太さ]
-  ring: [[-64, -168, 3], [-24, -58, 3], [24, 58, 3], [64, 168, 3]],
-  mil: [[-58, -150, 5], [-20, -50, 5], [20, 50, 5], [58, 150, 5]],
-  scope: [[-22, -58, 7], [22, 58, 7]],
-  flak: [[0, 0, 10]],
-};
-const MUZZLE_Y = { ring: 92, mil: 92, scope: 96, flak: 100 };
+/* 砲身の見た目は口径と砲架の並びから作る。
+
+   以前は照準器の種類（ring/mil/scope/flak）から本数まで引いていたので、
+   20mm の 4 連装（Flakvierling）や 25mm の 3 連装が描けなかった。
+   下の 3 つのアンカー表は元の 4 門の値そのままなので、7.7 / 12.7 / 20 / 40mm
+   の砲は以前と 1px も変わらない絵が出る。 */
+const BARREL_W = [[7.7, 3], [12.7, 5], [20, 7], [40, 10], [88, 13]];
+const BARREL_PITCH = [[7.7, 40], [12.7, 38], [20, 44], [40, 52], [88, 60]];
+const BARREL_MY = [[7.7, 92], [12.7, 92], [20, 96], [40, 100], [88, 104]];
+
+/* 根元の開き具合。根元X = 銃口X * FAN なので、この値が大きいほど
+   砲身が扇状に開き、全部の中心線が画面中央の一点へ集まる。
+
+   横一列は 2.7 のまま。横にしか広がらないので、一点へ集まっていても
+   気にならない（元の 4 連装の絵がまさにこれ）。
+   縦に重なる square と triangle は上下の段が同じ点へ吸い込まれて
+   「1 つの基点から全部生えている」ように見えてしまうので、扇を弱めて
+   段ごとに自分の根元を持たせる。 */
+const MOUNT_FAN = { row: 2.7, square: 1.45, triangle: 1.45, single: 1 };
+
+/* [muzzleX, baseX, 太さ, 上への段差] を砲身の数だけ返す。
+   段差が付くのは square の上段 2 門と triangle の頂点 1 門だけ。 */
+export function barrelSet(gun) {
+  const cal = gun.caliber;
+  const n = gun.barrels;
+  const w = Math.max(3, Math.round(lerpByCaliber(BARREL_W, cal)));
+  const p = lerpByCaliber(BARREL_PITCH, cal);
+  const fan = MOUNT_FAN[gun.mount] || MOUNT_FAN.row;
+  const P = p * fan;
+  const step = -(w * 2 + 14);     // 上段の持ち上げ量
+  const at = (k) => [Math.round(k * p), Math.round(k * P), w, 0];
+
+  if (gun.mount === 'single' || n === 1) return [[0, 0, w, 0]];
+  if (gun.mount === 'square' && n === 4) {
+    /* 実物どおり 2x2。上段は奥にあるぶん細くし、下段の真上ではなく
+       半歩だけ外へずらす。真上に重ねると下段の輪郭と線が食い合って
+       1 本に見えてしまうため。下段より短く描いて根元を見せないのは、
+       真後ろから見上げている以上、上段の付け根が下段と防盾の陰に
+       入るのが物として正しいから。 */
+    const u = Math.max(3, w - 1);
+    const q = (p / 2 + w + 2) / (p / 2);   // 上段を外へずらす比
+    return [
+      [Math.round(-p / 2), Math.round(-P / 2), w, 0],
+      [Math.round(p / 2), Math.round(P / 2), w, 0],
+      [Math.round(-p * q / 2), Math.round(-P * q / 2), u, step],
+      [Math.round(p * q / 2), Math.round(P * q / 2), u, step],
+    ];
+  }
+  if (gun.mount === 'triangle' && n === 3) {
+    // 下に 2 門、その上の中央に 1 門
+    const u = Math.max(3, w - 1);
+    return [
+      [Math.round(-p / 2), Math.round(-P / 2), w, 0],
+      [Math.round(p / 2), Math.round(P / 2), w, 0],
+      [0, 0, u, step],
+    ];
+  }
+  // 横一列。偶数なら ±p/2, ±3p/2 …、奇数なら中央を挟んで ±p, ±2p …
+  const set = [];
+  for (let i = 0; i < n; i++) set.push(at(i - (n - 1) / 2));
+  return set;
+}
 
 function drawBarrels(r, cam, gun, t) {
-  const set = BARREL_SETS[gun.sight] || BARREL_SETS.mil;
+  const set = gun.barrelSet || (gun.barrelSet = barrelSet(gun));
   const bottom = VIEW.y + VIEW.h;
   // 後座量は反動の大きさに比例させる。反動 recoil が大きい砲ほどごっそり下がる
   const recoil = gun.recoilT * (4 + gun.recoil * 1.8);
-  const muzzleY = Math.round(cam.ccy + (MUZZLE_Y[gun.sight] || 92) + recoil);
-  const baseY = bottom + 6 + recoil;
+  const muzzleY0 = Math.round(cam.ccy + lerpByCaliber(BARREL_MY, gun.caliber) + recoil);
+  const baseY0 = bottom + 6 + recoil;
   const cx = Math.round(cam.ccx);
-  if (muzzleY > bottom - 4) return;
+  if (muzzleY0 > bottom - 4) return;
 
-  for (const [mx, bx, w] of set) {
+  for (const [mx, bx, w, dy] of set) {
+    const muzzleY = muzzleY0 + dy;
+    /* 上段の砲身は根元も一緒に上がる。段差ぶんより大きく上げているのは、
+       下段と同じ長さで下端まで伸ばすと 2 本が重なって潰れるため。
+       真後ろから見上げている絵なので、上段の付け根が下段の陰に隠れるのは
+       物としても正しい。 */
+    const baseY = baseY0 + dy * 1.35;
     const x0 = cx + mx, x1 = cx + bx;
     r.line(x0 - w, muzzleY, x1 - w * 2.4, baseY, C.LGRAY);
     r.line(x0 + w, muzzleY, x1 + w * 2.4, baseY, C.LGRAY);
     r.hline(x0 - w, x0 + w, muzzleY, C.WHITE);
-    // 大口径にはマズルブレーキを付ける
-    if (w >= 10) {
+    /* 大口径にはマズルブレーキを付ける。砲身の太さではなく口径で決めるのは、
+       上段の砲身だけ 1px 細く描いてあるぶん、太さで判定すると同じ砲なのに
+       下段にだけブレーキが付いてしまうため。 */
+    if (gun.caliber >= 40) {
       r.rect(x0 - w - 3, muzzleY, w * 2 + 7, 9, C.LGRAY);
       r.vline(x0 - w + 4, muzzleY + 2, muzzleY + 7, C.DGRAY);
       r.vline(x0 + w - 4, muzzleY + 2, muzzleY + 7, C.DGRAY);
@@ -182,11 +244,11 @@ function drawBarrels(r, cam, gun, t) {
     }
   }
 
-  // 銃口炎
+  // 銃口炎。撃った砲身の位置に出す（配置は guns.js の layout と同じ順）
   if (gun.flashT > 0) {
     const i = gun.flashBarrel % set.length;
-    const [mx, , w] = set[i];
-    const x = cx + mx, y = muzzleY - 1;
+    const [mx, , w, dy] = set[i];
+    const x = cx + mx, y = muzzleY0 + dy - 1;
     const s = 5 + w * 2.2;
     r.discDither(x, y, s * 0.55, C.YELLOW, C.WHITE, 9);
     for (let a = 0; a < 8; a++) {

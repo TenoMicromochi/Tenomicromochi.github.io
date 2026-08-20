@@ -13,6 +13,28 @@ export const DEG = Math.PI / 180;
 export const RAD = 180 / Math.PI;
 const NEAR = 0.35;
 
+/* 口径の対数上でアンカー表を補間する。表は [口径, 値] の昇順。
+
+   節点そのものの口径では表の値がそのまま返るので、砲を増やしても
+   既存の調整値（発砲音の 7.7 / 12.7 / 20 / 40mm や砲身の太さ）は
+   1 も動かないまま、間の口径だけが埋まる。
+   geometric を立てると値も対数側で補間する（周波数のように
+   桁で効く量に使う）。 */
+export function lerpByCaliber(table, cal, geometric = false) {
+  const n = table.length;
+  if (cal <= table[0][0]) return table[0][1];
+  if (cal >= table[n - 1][0]) return table[n - 1][1];
+  for (let i = 1; i < n; i++) {
+    const [c0, v0] = table[i - 1];
+    const [c1, v1] = table[i];
+    if (cal > c1) continue;
+    const f = (Math.log(cal) - Math.log(c0)) / (Math.log(c1) - Math.log(c0));
+    if (geometric) return Math.exp(Math.log(v0) + (Math.log(v1) - Math.log(v0)) * f);
+    return v0 + (v1 - v0) * f;
+  }
+  return table[n - 1][1];
+}
+
 export function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
 export function lerp(a, b, t) { return a + (b - a) * t; }
 

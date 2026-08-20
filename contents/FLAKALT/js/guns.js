@@ -18,12 +18,34 @@ import { clamp, wrapDeg, DEG } from './camera.js';
 export const ELEV_MIN = -4;
 export const ELEV_MAX = 85;
 
-/* 銃口の配置（右, 上, 前）[m]。見た目と弾道の両方でこれを使う。 */
+/* 銃口の配置（右, 上, 前）[m]。見た目と弾道の両方でこれを使う。
+
+   砲によって並びが違う。M45 も Flakvierling も 4M マキシムも実物は 2x2 の
+   四角に組んであるので、横一列に並べると弾の出る位置が嘘になる。
+   MG151 の Drilling は上に 1・下に 2 の三角。 */
 const BARREL_LAYOUT = {
-  1: [[0, 0, 1.6]],
-  2: [[-0.19, 0, 1.7], [0.19, 0, 1.7]],
-  4: [[-0.24, -0.11, 1.5], [0.24, -0.11, 1.5], [-0.24, 0.13, 1.5], [0.24, 0.13, 1.5]],
+  single: [[0, 0, 1.6]],
+  row2: [[-0.19, 0, 1.7], [0.19, 0, 1.7]],
+  row3: [[-0.34, 0, 1.68], [0, 0, 1.74], [0.34, 0, 1.68]],
+  row4: [[-0.50, 0, 1.66], [-0.17, 0, 1.70], [0.17, 0, 1.70], [0.50, 0, 1.66]],
+  square: [[-0.24, -0.11, 1.5], [0.24, -0.11, 1.5], [-0.24, 0.13, 1.5], [0.24, 0.13, 1.5]],
+  triangle: [[-0.22, -0.10, 1.58], [0.22, -0.10, 1.58], [0, 0.17, 1.64]],
 };
+
+/* 選んだ国の兵装セットを引く。知らない id なら先頭の国に落とす。
+   data/guns.json を読むところ（main.js）と、画面に出すところ（screens.js）の
+   両方から要るので、砲の側に置いてある。 */
+export function nationOf(data, id) {
+  return data.nations.find((n) => n.id === id) || data.nations[0];
+}
+
+/* mount と砲身数から配置を引く。data 側の指定が無ければ横一列とみなす。 */
+export function barrelLayout(mount, barrels) {
+  if (mount === 'single' || barrels === 1) return BARREL_LAYOUT.single;
+  if (mount === 'square' && barrels === 4) return BARREL_LAYOUT.square;
+  if (mount === 'triangle' && barrels === 3) return BARREL_LAYOUT.triangle;
+  return BARREL_LAYOUT['row' + barrels] || BARREL_LAYOUT.row2;
+}
 
 function gauss() {
   // Box-Muller の片側だけ使う
@@ -38,7 +60,7 @@ export class Gun {
     this.k = dragFactor(this.caliber, this.projectileMass, this.dragCd);
     this.v0 = this.muzzleVelocity;
     this.shotInterval = 60 / (this.rpmPerBarrel * this.barrels);
-    this.layout = BARREL_LAYOUT[this.barrels] || BARREL_LAYOUT[1];
+    this.layout = barrelLayout(this.mount, this.barrels);
 
     this.ammo = this.magazine;
     this.stock = this.reserve;

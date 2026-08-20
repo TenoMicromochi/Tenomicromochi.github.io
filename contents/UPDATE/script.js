@@ -1,5 +1,9 @@
 const UPDATE_LOGS = [
     {
+        date: "2026/08/21",
+        text: "変更//Updated: FLAKALT (WEAPON SET: USA / JAPAN / GERMANY / BRITAIN / USSR)"
+    },
+    {
         date: "2026/08/17",
         text: "追加//Added: FLAKALT"
     },

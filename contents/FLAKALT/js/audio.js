@@ -9,6 +9,8 @@
    メニュー音だけは矩形波にしてある（PC スピーカーの音）。
    ============================================================ */
 
+import { lerpByCaliber } from './camera.js';
+
 const SHOT_PRESETS = {
   small: { band: 1900, q: 0.9, decay: 0.055, thump: 150, tgain: 0.22, gain: 0.30 },
   medium: { band: 950, q: 0.8, decay: 0.105, thump: 95, tgain: 0.34, gain: 0.42 },
@@ -16,7 +18,56 @@ const SHOT_PRESETS = {
   // 40mm ボフォースは 2発/秒で連射するので、大口径にしては減衰を短くしてある。
   // 長い残響を乗せると 0.5 秒間隔の次弾と重なって音が濁る。
   bofors: { band: 320, q: 0.65, decay: 0.34, thump: 50, tgain: 0.62, gain: 0.70 },
+  // 高射砲。4 秒に 1 発しか撃たないので残響を長く取れる
+  heavy: { band: 180, q: 0.60, decay: 0.90, thump: 32, tgain: 0.75, gain: 0.85 },
 };
+
+/* 上の 5 つを口径軸のアンカーとして、その間を対数補間する。
+
+   7.7 / 12.7 / 20 / 40mm の砲はアンカーそのものなので、以前と同じ音が
+   1 サンプルも変わらずに出る。13.2mm は medium のほぼ真上、15mm は
+   medium と large の間、25mm は large と bofors の間、というふうに
+   間の口径だけが自動で埋まる。 */
+const ANCHOR_CAL = [7.7, 12.7, 20, 40, 88];
+const ANCHOR_KEY = ['small', 'medium', 'large', 'bofors', 'heavy'];
+
+/* 減衰は口径だけでは決まらない。同じ 40mm でもボフォース単装（0.5秒間隔）と
+   ポンポン砲 4 連装（0.13秒間隔）では、後者に長い尾を付けると次弾に食い込んで
+   濁る。そこで「何発ぶんまで重なってよいか」も口径のアンカーにして、
+   decay <= 許容重なり数 x 発射間隔 で頭打ちにする。
+   この数値は現行 4 門の実際の重なり具合（decay / 発射間隔）から取ってある
+   ので、現行 4 門ではこの頭打ちが働かない。 */
+const ANCHOR_OVERLAP = [1.85, 3.9, 3.5, 0.68, 0.5];
+
+function anchorTable(field) {
+  return ANCHOR_CAL.map((c, i) => [c, SHOT_PRESETS[ANCHOR_KEY[i]][field]]);
+}
+const TABLES = {
+  band: anchorTable('band'), q: anchorTable('q'), decay: anchorTable('decay'),
+  thump: anchorTable('thump'), tgain: anchorTable('tgain'), gain: anchorTable('gain'),
+  overlap: ANCHOR_CAL.map((c, i) => [c, ANCHOR_OVERLAP[i]]),
+};
+
+/* 砲 1 門ぶんの合成パラメータ。Gun に焼き付けて使い回す。 */
+export function shotParams(gun) {
+  if (gun.sound && SHOT_PRESETS[gun.sound]) return SHOT_PRESETS[gun.sound];
+  const cal = gun.caliber;
+  const p = {
+    band: lerpByCaliber(TABLES.band, cal, true),
+    q: lerpByCaliber(TABLES.q, cal),
+    decay: lerpByCaliber(TABLES.decay, cal),
+    thump: lerpByCaliber(TABLES.thump, cal, true),
+    tgain: lerpByCaliber(TABLES.tgain, cal),
+    gain: lerpByCaliber(TABLES.gain, cal),
+    // 10mm 未満は乾いた音にしたいので正弦、それ以上は鋸歯
+    wave: cal < 10 ? 'sine' : 'sawtooth',
+  };
+  const interval = gun.shotInterval || 0;
+  if (interval > 0) {
+    p.decay = Math.min(p.decay, lerpByCaliber(TABLES.overlap, cal) * interval);
+  }
+  return p;
+}
 
 export class Sfx {
   constructor() {
@@ -111,12 +162,13 @@ export class Sfx {
     o.stop(t + decay + 0.02);
   }
 
-  shot(kind) {
+  /* 引数は砲そのもの。合成パラメータは口径から作って Gun に焼き付ける。 */
+  shot(gun) {
     if (!this.ready || this.muted) return;
     if (this.voices > 16) return; // 連射で詰まらせない
-    const p = SHOT_PRESETS[kind] || SHOT_PRESETS.small;
+    const p = gun ? (gun.shotSfx || (gun.shotSfx = shotParams(gun))) : SHOT_PRESETS.small;
     this.noiseBurst(p.band * (0.9 + Math.random() * 0.2), p.q, p.decay, p.gain);
-    this.tone(p.thump, p.decay * 1.6, p.tgain, kind === 'small' ? 'sine' : 'sawtooth');
+    this.tone(p.thump, p.decay * 1.6, p.tgain, p.wave || 'sawtooth');
     // 薬莢の跳ねる音をたまに混ぜる
     if (Math.random() < 0.22) {
       setTimeout(() => {

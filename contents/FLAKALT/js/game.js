@@ -181,12 +181,14 @@ export class Game {
     this.cam.fov += (wantFov - this.cam.fov) * clamp(dt * 14, 0, 1);
 
     // 感度は画角に比例させる。望遠にすると自動的に細かく狙える
+    const mouseAim = this.opts.mouseAim !== false;
     const sens = this.opts.sensitivity * (this.cam.fov / 52);
     const m = input.takeMouse();
-    if (input.locked) this.mount.aimCmd(m.x * sens, -m.y * sens);
+    if (mouseAim && input.locked) this.mount.aimCmd(m.x * sens, -m.y * sens);
 
-    // 方向キーでの微調整
-    const kb = 22 * (this.cam.fov / 52) * dt;
+    /* 方向キー。マウスと併用しているときは微調整の速さ、マウスを切って
+       いるときは砲を主に動かす手段になるので倍以上まで上げる。 */
+    const kb = (mouseAim ? 22 : 52) * (this.cam.fov / 52) * dt;
     let ky = 0, kp = 0;
     if (input.down('ArrowLeft')) ky -= kb;
     if (input.down('ArrowRight')) ky += kb;
@@ -194,7 +196,7 @@ export class Game {
     if (input.down('ArrowDown')) kp -= kb;
     if (ky || kp) this.mount.aimCmd(ky, kp);
 
-    this.mount.firing = input.locked && (input.fire || input.down('Space'));
+    this.mount.firing = (input.locked || !mouseAim) && (input.fire || input.down('Space'));
 
     const nGuns = this.mount.guns.length;
     for (let i = 0; i < nGuns; i++) {
@@ -413,7 +415,7 @@ export class Game {
       this._events = {
         onShot: (g, m) => {
           this.shots++;
-          this.sfx.shot(g.sound);
+          this.sfx.shot(g);
           this.fx.sparkle(m.x, m.y, m.z, 1, 6, 0.08, C.YELLOW);
         },
         onOverheat: (g) => {
