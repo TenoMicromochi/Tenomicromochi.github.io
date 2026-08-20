@@ -60,7 +60,7 @@
     {
       "id": "JAPAN",
       "name": "EMPIRE OF JAPAN",
-      "blurb": "SMALL MAGAZINES. EVERY BURST IS COUNTED.",
+      "blurb": "BUILT WITH CARE. MADE IN JAPAN.",
       "guns": [
         {
           "id": "JP77", "name": "7.7MM TYPE 92", "designation": "TYPE 92  2 X 7.7MM",
@@ -112,7 +112,7 @@
     {
       "id": "GERMANY",
       "name": "GERMANY",
-      "blurb": "FLAT TRAJECTORIES AND FOUR BARRELS.",
+      "blurb": "PRECISION OPTICS. HEAVY METAL.",
       "guns": [
         {
           "id": "DE79", "name": "7.92MM MG34", "designation": "ZWILLINGSSOCKEL 36  2 X 7.92MM",
@@ -164,7 +164,7 @@
     {
       "id": "BRITAIN",
       "name": "UNITED KINGDOM",
-      "blurb": "QUADRUPLE MOUNTS AND THE POM-POM.",
+      "blurb": "STEADY HANDS. KEEP CALM AND KEEP FIRING.",
       "guns": [
         {
           "id": "GB77", "name": "7.7MM VICKERS", "designation": "VICKERS .303  4 X 7.7MM",
@@ -215,7 +215,7 @@
     {
       "id": "USSR",
       "name": "SOVIET UNION",
-      "blurb": "CLIP-FED. RELOADS COST ALMOST NOTHING.",
+      "blurb": "MASS PRODUCTION. MASSIVE SALVATION.",
       "guns": [
         {
           "id": "SU76", "name": "7.62MM MAXIM", "designation": "4M MAXIM  4 X 7.62MM",

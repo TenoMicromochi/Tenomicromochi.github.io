@@ -17,8 +17,12 @@ import { clamp, wrapDeg, DEG, RAD, lerpByCaliber } from './camera.js';
 export const VIEW = { x: 0, y: 0, w: 640, h: 320 };
 export const PANEL_Y = 320;
 
-/* EASY で見越し点を出す上限距離。これより遠い目標は自分で見積もる */
+/* EASY で見越し点を出す上限距離。これより遠い目標は自分で見積もる。
+   既定値であって、実際に使うのは opts.leadRange。
+   OPTIONS から 1.0〜3.0km を 0.1km 刻みで変えられる。 */
 export const LEAD_AID_RANGE = 2000;
+export const LEAD_RANGE_MIN = 1000;
+export const LEAD_RANGE_MAX = 3000;
 
 const _p = { x: 0, y: 0, z: 0 };
 const _p2 = { x: 0, y: 0, z: 0 };
@@ -328,12 +332,102 @@ function drawLockMark(r, cam, t) {
   r.textCenter(cx, y, '- LOCK -', Math.floor(t * 2) % 2 ? C.WHITE : C.LCYAN);
 }
 
-function drawTargetBox(r, cam, ac, sol, showLead, locked) {
+/* 画面の外へ出たロック目標を、視界の縁に張り付けて示す。
+
+   透視投影はニアプレーンより手前（＝真後ろ）にある点を返せないので、
+   位置ではなく「砲軸から見た角度差」から向きを作る。これなら真後ろでも
+   定義できる。ロックしている機体だけの表示 — 自動追尾のぶんまで縁に
+   出すと、視界の外の情報で画面が埋まってしまう。 */
+function drawOffscreenLock(r, cam, ac) {
+  const dx = ac.x - cam.x, dy = ac.y - cam.y, dz = ac.z - cam.z;
+  const da = wrapDeg(Math.atan2(dx, dz) * RAD - cam.yaw);
+  const db = Math.atan2(dy, Math.hypot(dx, dz)) * RAD - cam.pitch;
+  let ux = da, uy = -db;
+  const m = Math.hypot(ux, uy);
+  if (m < 1e-3) return;
+  ux /= m; uy /= m;
+
+  // 中心から縁へ伸ばして、最初にぶつかった辺で止める
+  const x0 = VIEW.x + 16, x1 = VIEW.x + VIEW.w - 17;
+  const y0 = VIEW.y + 34, y1 = VIEW.y + VIEW.h - 22;
+  const cx = cam.ccx, cy = cam.ccy;
+  let k = Infinity;
+  if (ux > 1e-6) k = Math.min(k, (x1 - cx) / ux);
+  if (ux < -1e-6) k = Math.min(k, (x0 - cx) / ux);
+  if (uy > 1e-6) k = Math.min(k, (y1 - cy) / uy);
+  if (uy < -1e-6) k = Math.min(k, (y0 - cy) / uy);
+  if (!isFinite(k)) return;
+  const px = Math.round(clamp(cx + ux * k, x0, x1));
+  const py = Math.round(clamp(cy + uy * k, y0, y1));
+
+  arrow(r, px, py, ux, uy, 15, C.WHITE);
+  r.rect(px - 4, py - 4, 9, 9, C.WHITE);
+  // 文字は画面の内側へ向けて置く。縁の外へはみ出させない
+  const tx = ux > 0 ? px - 34 : px + 8;
+  r.text(tx, py - 13, ac.tag, C.WHITE);
+  r.text(tx, py + 6, pad(ac.slant, 4) + 'M', C.LGREEN);
+}
+
+/* 機体は画面の外だが、見越し点は画面の中 — という状態の表示。
+
+   倍率を上げるほど画角が狭くなるので（x8 で 6.5 度）、「撃つべき点は
+   見えているのに機体は視界の外」がふつうに起きる。ここで見越し点ごと
+   消してしまうと、望遠がいちばん要る場面で照準補助が無くなる。
+
+   画面内の見越し点に □ を出して、そこから機体のいる方向へ破線を伸ばし、
+   視界の縁で切る。並びは画面内と同じ「✈ - - - - □」のまま、
+   ✈ の側が画面の外に出ているだけ、という見え方になる。 */
+function drawDetachedLead(r, cam, ac, sol, q) {
+  const f = cam.project(sol.x, sol.y, sol.z, _p2);
+  if (!f) return;
+  const fx = Math.round(f.x), fy = Math.round(f.y);
+  if (fx < VIEW.x + 10 || fx > VIEW.x + VIEW.w - 11) return;
+  if (fy < VIEW.y + 30 || fy > VIEW.y + VIEW.h - 11) return;
+
+  // 機体のほうへ向かう向き。真後ろに回られて投影できないときは角度差から作る
+  let ux, uy;
+  if (q) {
+    ux = q.x - fx; uy = q.y - fy;
+  } else {
+    const dx = ac.x - cam.x, dy = ac.y - cam.y, dz = ac.z - cam.z;
+    ux = wrapDeg(Math.atan2(dx, dz) * RAD - cam.yaw);
+    uy = -(Math.atan2(dy, Math.hypot(dx, dz)) * RAD - cam.pitch);
+  }
+  const m = Math.hypot(ux, uy);
+  if (m < 1e-3) return;
+  ux /= m; uy /= m;
+
+  // 見越し点から縁まで
+  const x0 = VIEW.x + 3, x1 = VIEW.x + VIEW.w - 4;
+  const y0 = VIEW.y + 25, y1 = VIEW.y + VIEW.h - 4;
+  let k = Infinity;
+  if (ux > 1e-6) k = Math.min(k, (x1 - fx) / ux);
+  if (ux < -1e-6) k = Math.min(k, (x0 - fx) / ux);
+  if (uy > 1e-6) k = Math.min(k, (y1 - fy) / uy);
+  if (uy < -1e-6) k = Math.min(k, (y0 - fy) / uy);
+  if (isFinite(k) && k > 12) {
+    r.lineDash(fx + ux * 9, fy + uy * 9, fx + ux * k, fy + uy * k, C.MAGENTA, 2, 4);
+  }
+  r.rect(fx - 6, fy - 6, 13, 13, C.LMAGENTA);
+  r.rect(fx - 1, fy - 1, 3, 3, C.WHITE);
+  // 機体が右側にいるときは文字を左へ逃がす。破線と重ねない
+  r.text(ux > 0 ? fx - 28 : fx + 10, fy - 3, 'AIM', C.LMAGENTA);
+}
+
+function drawTargetBox(r, cam, ac, sol, showLead, locked, leadRange) {
   const q = cam.project(ac.x, ac.y, ac.z, _p);
-  if (!q) return;
-  // 画面の中に捉えているときだけ表示する
-  if (q.x < VIEW.x + 2 || q.x > VIEW.x + VIEW.w - 3) return;
-  if (q.y < VIEW.y + 24 || q.y > VIEW.y + VIEW.h - 3) return;
+  const inView = q &&
+    q.x >= VIEW.x + 2 && q.x <= VIEW.x + VIEW.w - 3 &&
+    q.y >= VIEW.y + 24 && q.y <= VIEW.y + VIEW.h - 3;
+  if (!inView) {
+    // ロック中は画面外でもどこにいるか分かるようにしておく
+    if (locked) drawOffscreenLock(r, cam, ac);
+    // 機体が外でも、撃つべき点が画面内にあるなら見越し点だけは出す
+    if (showLead && sol && ac.slant <= (leadRange || LEAD_AID_RANGE)) {
+      drawDetachedLead(r, cam, ac, sol, q);
+    }
+    return;
+  }
 
   const px = Math.round(q.x), py = Math.round(q.y);
   // 画面上での見かけの大きさに枠を合わせる
@@ -365,7 +459,7 @@ function drawTargetBox(r, cam, ac, sol, showLead, locked) {
 
   /* 見越し点。EASY のときだけ、規定距離以内で出す。
      目標 ✈ - - - - □ 照準点 という並びになる。 */
-  if (showLead && sol && ac.slant <= LEAD_AID_RANGE) {
+  if (showLead && sol && ac.slant <= (leadRange || LEAD_AID_RANGE)) {
     const f = cam.project(sol.x, sol.y, sol.z, _p2);
     if (f) {
       const fx = Math.round(f.x), fy = Math.round(f.y);
@@ -607,9 +701,16 @@ export function drawHud(r, g) {
   drawBarrels(r, cam, g.mount.gun, t);
   drawCompass(r, cam);
   drawElevScale(r, cam);
-  if (g.target) drawTargetBox(r, cam, g.target, g.solution, g.leadOn, g.lock === g.target);
+  if (g.target) {
+    drawTargetBox(r, cam, g.target, g.solution, g.leadOn, g.lock === g.target,
+      g.opts.leadRange);
+  }
   if (g.mount.realistic) drawCommandMark(r, cam, g.mount);
   drawSight(r, cam, g.mount.gun, t);
+  // 望遠中は倍率を出す。ホイールと W/S で変えられることの手がかりも兼ねる
+  if (cam.fov < 50) {
+    r.text(VIEW.x + 8, VIEW.y + 26, 'ZOOM X' + fixed(g.zoom, 1), C.LGREEN);
+  }
   if (g.lock) drawLockMark(r, cam, t);
   drawMessages(r, g);
 

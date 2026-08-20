@@ -14,7 +14,7 @@ import { Camera, clamp, wrapDeg, DEG, RAD } from './camera.js';
 import { Scene } from './scene.js';
 import { BulletSystem, solveIntercept } from './ballistics.js';
 import { Mount } from './guns.js';
-import { Aircraft, TYPES } from './aircraft.js';
+import { Aircraft, TYPES, LOW_BAND, HIGH_BAND } from './aircraft.js';
 import { Fx } from './fx.js';
 import { drawHud, VIEW } from './hud.js';
 
@@ -24,8 +24,17 @@ export const DIFFICULTY = {
   ACE: { speed: 1.15, jink: 1.6, runs: 4, hp: 1.15, ammo: 0.8, strike: 1.35, label: 'ACE' },
 };
 
-const STRIKE_DAMAGE = { DART: 7, GLIDER: 10, HEAVY: 16 };
+/* ウェーブの編成に使える機種。褒賞機（PRISM）は予算の外なので入れない。 */
+const LOW_TYPES = Object.keys(TYPES).filter((k) => TYPES[k].band === 'LOW' && !TYPES[k].bonus);
+const HIGH_TYPES = Object.keys(TYPES).filter((k) => TYPES[k].band === 'HIGH');
 const GUN_HEIGHT = 1.9;
+
+/* 望遠照準の倍率。素の画角 52 度を割って画角を作るので、
+   x2.5 が以前の固定値（画角 21 度）とほぼ同じ見え方になる。 */
+export const BASE_FOV = 52;
+export const ZOOM_MIN = 2.0;
+export const ZOOM_MAX = 8.0;
+export const ZOOM_STEP = 0.5;
 
 /* FREE RANGE で空に浮かべておく的の数。ウェーブ 10 相当。 */
 export const FREE_RANGE_TARGETS = 10;
@@ -76,6 +85,9 @@ export class Game {
     this.stateT = 0;
     this.over = false;
 
+    // 望遠の倍率は前回の続きから。保存されていなければ以前の固定値相当
+    this.zoom = clamp(this.opts.zoom || 2.5, ZOOM_MIN, ZOOM_MAX);
+
     this.freeRange = !!this.opts.freeRange;
     /* 見越し点を今この瞬間出すかどうか。HARD では最初から false のまま、
        Q キーでも上げられない（それをやると HARD の意味が消えるため）。 */
@@ -101,34 +113,125 @@ export class Game {
 
   /* --- ウェーブ ---------------------------------------------- */
 
+  /* 敵側に予算を与えて、その範囲で編成を買わせる。
+
+     財布を低空と高空で分けているのがこの方式の肝。1 つの財布にすると
+     「爆撃機 2 機だけのウェーブ」が普通に出てしまい、低空の砲が完全に
+     暇になる。高空に回す割合を WAVE とともに増やすことで、
+     「はじめは低空だけ、やがて上からも来る」という進み方になる。
+
+     重み（コスト^bias）の bias が WAVE とともに上がるので、
+     予算が同じでも後半ほど「高いのを 1 機」に寄る。 */
+  waveBudget(n) { return Math.round(20 + 17 * (n - 1) + 0.9 * n * n); }
+  /* 高空に回す割合。WAVE 5 の予算 111 に対して双発が 55 なので、
+     0.42 あたりから始めないと「解禁したのに買えない」状態が続く。
+     0.55 で頭打ちにしてあるのは、半分以上を上空に持っていかれると
+     低空の砲が暇になるため。 */
+  highShare(n) { return n < 5 ? 0 : Math.min(0.55, 0.42 + 0.02 * (n - 5)); }
+
+  buyWave(n) {
+    const bias = Math.min(1.7, 0.25 + 0.11 * (n - 1));
+    const affordable = (pool, budget) =>
+      pool.filter((k) => n >= TYPES[k].from && TYPES[k].cost <= budget);
+    const draw = (pool) => {
+      const w = pool.map((k) => Math.pow(TYPES[k].cost, bias));
+      let r = Math.random() * w.reduce((a, x) => a + x, 0);
+      let i = 0;
+      while (i < w.length - 1 && r > w[i]) { r -= w[i]; i++; }
+      return pool[i];
+    };
+
+    const B = this.waveBudget(n);
+    let high = Math.round(B * this.highShare(n));
+    let low = B - high;
+    const bought = [];
+
+    /* 高空機が解禁されたウェーブ以降は、いちばん安い爆撃機を 1 機だけ
+       予算を無視して先に確保する。高空の財布は WAVE 5 の時点で 22 しかなく、
+       素直に買わせると「初登場した次のウェーブから数回、上空がまた空になる」
+       という妙な間ができる。高射砲の出番を毎回作るための下駄。 */
+    const cheapest = HIGH_TYPES
+      .filter((k) => n >= TYPES[k].from)
+      .sort((a, b) => TYPES[a].cost - TYPES[b].cost)[0];
+    if (cheapest) { bought.push(cheapest); high -= TYPES[cheapest].cost; }
+
+    /* 解禁されたそのウェーブだけは、その新型も 1 機だけ確保する。
+       初登場が予算の綾で数ウェーブ遅れると、何が新しいのか分からなくなる。 */
+    for (const k of HIGH_TYPES) {
+      if (TYPES[k].from === n && !bought.includes(k)) {
+        bought.push(k); high -= TYPES[k].cost;
+      }
+    }
+    // 高空は同時に出せる数を絞る。上から一斉に来ると手がまったく足りない
+    const hcap = Math.min(4, 1 + Math.floor((n - 5) / 3));
+    while (bought.length < hcap) {
+      const pool = affordable(HIGH_TYPES, high);
+      if (!pool.length) break;
+      const k = draw(pool);
+      bought.push(k); high -= TYPES[k].cost;
+    }
+    low += Math.max(0, high);   // 高空で余った予算は低空へ回す
+
+    let lowCount = 0;
+    while (bought.length < 10) {
+      const pool = affordable(LOW_TYPES, low);
+      if (!pool.length) break;
+      const k = draw(pool);
+      bought.push(k); low -= TYPES[k].cost; lowCount++;
+    }
+    // 低空が 2 機を切ったら DART で埋める（爆撃機だけのウェーブを作らない）
+    while (lowCount < 2) { bought.push('DART'); lowCount++; }
+    return bought;
+  }
+
   beginWave(n) {
     this.wave = n;
     const d = DIFFICULTY[this.opts.difficulty] || DIFFICULTY.VETERAN;
-    const total = Math.min(9, 2 + Math.floor(n * 0.7));
-    const pool = [];
-    for (let i = 0; i < total; i++) {
-      let key = 'DART';
-      if (n >= 4 && i % 4 === 3) key = 'HEAVY';
-      else if (n >= 2 && i % 3 === 2) key = 'GLIDER';
-      pool.push(key);
-    }
+    const pool = this.buyWave(n);
     const spd = d.speed * (1 + (n - 1) * 0.025);
     const jink = d.jink * (1 + (n - 1) * 0.04);
-    this.spawnQueue = pool.map((key, i) => ({
-      t: i * (2.6 - Math.min(1.4, n * 0.12)),
-      key,
-      bearing: Math.random() * 360,
-      range: 2300 + Math.random() * 900,
-      alt: 220 + Math.random() * 420,
-      opts: {
-        speedScale: spd, turnScale: 1 + (n - 1) * 0.02, jinkScale: jink,
-        hpScale: d.hp * (1 + (n - 1) * 0.05), maxRuns: d.runs,
-      },
-    }));
+    const gap = 2.6 - Math.min(1.4, n * 0.12);
+    this.spawnQueue = pool.map((key, i) => {
+      const high = TYPES[key].band === 'HIGH';
+      const band = high ? HIGH_BAND : LOW_BAND;
+      return {
+        t: i * gap,
+        key,
+        bearing: Math.random() * 360,
+        // 高空機は遠くから入って真上を抜けるので、進入距離も長めに取る
+        range: high ? 3600 + Math.random() * 700 : 2300 + Math.random() * 900,
+        alt: band[0] + Math.random() * (band[1] - band[0]),
+        opts: {
+          speedScale: spd, turnScale: 1 + (n - 1) * 0.02, jinkScale: jink,
+          hpScale: d.hp * (1 + (n - 1) * 0.05), maxRuns: d.runs,
+        },
+      };
+    });
+    this.queuePrism(n, pool.length * gap);
     this.state = 'FIGHT';
     this.stateT = 0;
-    this.pushLog('WAVE ' + n + ' INBOUND -- ' + total + ' CONTACTS', C.YELLOW);
+    this.pushLog('WAVE ' + n + ' INBOUND -- ' + pool.length + ' CONTACTS', C.YELLOW);
+    const bombers = pool.filter((k) => TYPES[k].band === 'HIGH').length;
+    if (bombers) {
+      this.pushLog('HIGH ALTITUDE FORMATION -- ' + bombers + ' BOMBERS', C.LRED);
+    }
     this.sfx.beep(700, 0.08); setTimeout(() => this.sfx.beep(950, 0.12), 110);
+  }
+
+  /* 虹色の褒賞機。数ウェーブに 1 度だけ、予算とは別枠で湧く。
+     耐久が減っているほど出やすくして、詰みだけは避ける。 */
+  queuePrism(n, after) {
+    if (n < 2) return;
+    const p = this.integrity < 30 ? 0.75 : this.integrity < 60 ? 0.45 : 0.25;
+    if (Math.random() > p) return;
+    this.spawnQueue.push({
+      t: after * 0.5 + 3 + Math.random() * 6,
+      key: 'PRISM',
+      bearing: Math.random() * 360,
+      range: 1900 + Math.random() * 700,
+      alt: 500 + Math.random() * 300,
+      opts: { speedScale: 1, jinkScale: 1 },
+    });
   }
 
   /* --- FREE RANGE ---------------------------------------------- */
@@ -146,7 +249,7 @@ export class Game {
 
   queueFreeTarget(delay) {
     // ダーツが多め。たまに大きいのを混ぜて的の大きさに幅を出す
-    const pool = ['DART', 'DART', 'DART', 'GLIDER', 'GLIDER', 'HEAVY'];
+    const pool = ['DART', 'DART', 'LANCE', 'WEDGE', 'CRANE', 'CONDOR'];
     this.spawnQueue.push({
       t: delay,
       key: pool[Math.floor(Math.random() * pool.length)],
@@ -177,7 +280,25 @@ export class Game {
   applyInput(input, dt) {
     if (this.over) return;
     const zoom = input.zoom || input.down('KeyZ');
-    const wantFov = zoom ? 21 : 52;
+    const wheel = input.takeWheel();
+
+    /* ズーム中だけ、ホイールと W/S が倍率の変更に化ける（そのあいだ
+       兵装の切り替えは効かない）。倍率は撃ち方の癖そのものなので、
+       ズームを解いても覚えたままにしておく — 次にズームしたとき
+       前回の倍率で覗ける。 */
+    if (zoom) {
+      let dz = 0;
+      if (wheel) dz += wheel < 0 ? ZOOM_STEP : -ZOOM_STEP;
+      if (input.pressed('KeyW')) dz += ZOOM_STEP;
+      if (input.pressed('KeyS')) dz -= ZOOM_STEP;
+      if (dz) {
+        const before = this.zoom;
+        this.zoom = clamp(this.zoom + dz, ZOOM_MIN, ZOOM_MAX);
+        this.opts.zoom = this.zoom;
+        if (this.zoom !== before) this.sfx.beep(dz > 0 ? 880 : 660, 0.03);
+      }
+    }
+    const wantFov = zoom ? BASE_FOV / this.zoom : BASE_FOV;
     this.cam.fov += (wantFov - this.cam.fov) * clamp(dt * 14, 0, 1);
 
     // 感度は画角に比例させる。望遠にすると自動的に細かく狙える
@@ -205,9 +326,9 @@ export class Game {
         this.sfx.beep(520, 0.05);
       }
     }
-    const w = input.takeWheel();
-    if (w) {
-      const n = (this.mount.index + (w > 0 ? 1 : -1) + nGuns) % nGuns;
+    // ズーム中のホイールは倍率に取られているので、兵装は切り替わらない
+    if (wheel && !zoom) {
+      const n = (this.mount.index + (wheel > 0 ? 1 : -1) + nGuns) % nGuns;
       if (this.mount.select(n)) this.sfx.beep(520, 0.05);
     }
     if (input.pressed('KeyR')) {
@@ -442,7 +563,7 @@ export class Game {
         fx: this.fx,
         onStrike: (ac) => {
           const d = DIFFICULTY[this.opts.difficulty] || DIFFICULTY.VETERAN;
-          const dmg = Math.round((STRIKE_DAMAGE[ac.type] || 8) * d.strike);
+          const dmg = Math.round((ac.t.strike || 8) * d.strike);
           this.integrity = Math.max(0, this.integrity - dmg);
           this.damageFlash = 1;
           this.sfx.explode(1.1);
@@ -516,6 +637,15 @@ export class Game {
     this.score += pts;
     this.pushLog('SPLASH ' + ac.tag + ' (' + ac.t.name + ') ' +
       Math.round(ac.slant) + 'M  +' + pts, C.LCYAN);
+
+    // 褒賞機を落とすと陣地が戻る。FREE RANGE には耐久が無いので効かない
+    if (ac.t.heal && !this.freeRange) {
+      const before = this.integrity;
+      this.integrity = Math.min(100, this.integrity + ac.t.heal);
+      this.pushLog('*** PRISM DOWN -- POST REPAIRED ' +
+        before + '% -> ' + this.integrity + '% ***', C.LMAGENTA);
+      this.sfx.beep(880, 0.09); setTimeout(() => this.sfx.beep(1320, 0.14), 100);
+    }
     if (this.target === ac) this.target = null;
   }
 

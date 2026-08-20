@@ -29,6 +29,8 @@ const DEFAULT_OPTS = {
   difficulty: 'VETERAN',
   nation: 'USA',        // 兵装セット。data/guns.json の nations の id
   mouseAim: true,       // OFF にすると砲は方向キーだけで動かす
+  zoom: 2.5,            // 望遠の倍率。ズーム中にホイール / W・S で変える
+  leadRange: 2000,      // 見越し点を出す上限距離 [m]
   sensitivity: 0.10,
   crt: true,
   sound: true,

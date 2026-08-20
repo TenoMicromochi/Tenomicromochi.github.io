@@ -9,11 +9,12 @@
 
 import { C } from './palette.js';
 import { Camera, orientation, clamp } from './camera.js';
-import { DART, GLIDER, drawMesh } from './models.js';
+import { DART, CONDOR, drawMesh } from './models.js';
 import { dragFactor } from './ballistics.js';
 import { nationOf } from './guns.js';
+import { TYPES } from './aircraft.js';
 import { DIFFICULTY } from './game.js';
-import { LEAD_AID_RANGE } from './hud.js';
+import { LEAD_AID_RANGE, LEAD_RANGE_MIN, LEAD_RANGE_MAX } from './hud.js';
 
 const W = 640, H = 400;
 const PLANE_GLYPH = '✈';
@@ -138,6 +139,16 @@ export class Screens {
         toggle: () => { opts.mouseAim = !opts.mouseAim; },
       },
       {
+        // 見越し点を出す上限。遠くまで出すほど楽になるので、
+        // 「どこまで甘やかすか」を撃つ側が決められるようにしてある
+        id: 'lead', label: 'LEAD AID RANGE',
+        value: () => (opts.leadRange / 1000).toFixed(1) + ' KM',
+        toggle: (d) => {
+          opts.leadRange = Math.round(
+            clamp(opts.leadRange + (d || 1) * 100, LEAD_RANGE_MIN, LEAD_RANGE_MAX));
+        },
+      },
+      {
         id: 'sens', label: 'MOUSE SENSITIVITY',
         value: () => opts.sensitivity.toFixed(3) + ' D/PX',
         toggle: (d) => {
@@ -172,6 +183,10 @@ export class Screens {
     ]);
   }
 
+  /* LOADING FLAKALT.EXE から下は、実際に読み込んだデータをその場で
+     数えて出している。装飾ではなく、data/guns.json や aircraft.js の
+     TYPES を書き換えるとここの表示もそのまま変わる（弾道定数と同じ扱い）。
+     国選択・5 種の紙飛行機・PRISM が増えたぶん、ここも追随させてある。 */
   makeBootLines() {
     const L = [];
     L.push(['TENO MICROMOCHI SOFTWORKS  BIOS  V2.14', C.LGRAY]);
@@ -184,7 +199,16 @@ export class Screens {
     L.push(['AUDIO: PC SPEAKER / SYNTH ........ OK', C.LGRAY]);
     L.push(['', C.BLACK]);
     L.push(['LOADING FLAKALT.EXE', C.WHITE]);
-    L.push(['MOUNTING EXTERIOR BALLISTIC TABLES', C.CYAN]);
+
+    L.push(['MOUNTING WEAPON DATABASE -- ' + this.data.nations.length + ' NATIONS', C.CYAN]);
+    for (const n of this.data.nations) {
+      L.push(['  ' + n.id.padEnd(8) + n.guns.length + ' WEAPON SETS ............. OK', C.LGREEN]);
+    }
+    L.push(['', C.BLACK]);
+
+    // ここだけは選んでいる国ぶんの実弾道。opts.nation は MISSION SETUP で変わる
+    const nation = nationOf(this.data, this.opts.nation);
+    L.push(['LOADING BALLISTIC TABLES -- ' + nation.name, C.CYAN]);
     for (const g of this.gunSpecs) {
       const k = dragFactor(g.caliber, g.projectileMass, g.dragCd);
       const name = (g.caliber.toFixed(1) + 'MM').padEnd(7);
@@ -192,6 +216,20 @@ export class Screens {
         ' M/S   K ' + k.toExponential(2).toUpperCase() + '   OK', C.LGREEN]);
     }
     L.push(['', C.BLACK]);
+
+    const roster = Object.keys(TYPES);
+    L.push(['LOADING CONTACT DATABASE -- ' + roster.length + ' CLASSES', C.CYAN]);
+    for (const key of roster) {
+      const t = TYPES[key];
+      if (t.bonus) {
+        L.push(['  ' + key.padEnd(7) + 'BONUS CONTACT ................ OK', C.LMAGENTA]);
+      } else {
+        const alt = t.band === 'HIGH' ? 'HIGH ALT' : 'LOW ALT ';
+        L.push(['  ' + key.padEnd(7) + alt + '   WAVE ' + String(t.from).padStart(2) + '+ ... OK', C.LGREEN]);
+      }
+    }
+    L.push(['', C.BLACK]);
+
     L.push(['ALL SYSTEMS NOMINAL', C.LGREEN]);
     L.push(['', C.BLACK]);
     return L;
@@ -248,7 +286,7 @@ export class Screens {
     drawMesh(r, this.titleCam, DART, Math.sin(t * 0.4) * 3, 3.4, 6 + Math.cos(t * 0.3) * 3,
       this.m, 4.4, C.LCYAN);
     orientation(-t * 21 + 60, 8, Math.sin(t * 0.4 + 1) * 26, this.m);
-    drawMesh(r, this.titleCam, GLIDER, -14, -5.5, 24, this.m, 3.2, C.CYAN);
+    drawMesh(r, this.titleCam, CONDOR, -14, -5.5, 24, this.m, 2.4, C.CYAN);
   }
 
   title(r, dt, input) {
@@ -292,7 +330,7 @@ export class Screens {
         head: 'EASY', c: C.LGREEN,
         lines: [
           'CAMPAIGN. THE LEAD POINT IS DRAWN ON THE DESIGNATED',
-          'TARGET ON SCREEN WITHIN ' + LEAD_AID_RANGE + ' METRES. AIM AT THE',
+          'TARGET ON SCREEN WITHIN ' + this.opts.leadRange + ' METRES. AIM AT THE',
           'BOX:  ' + PLANE_GLYPH + ' - - - - []      Q TOGGLES IT IN FLIGHT',
         ],
       },
@@ -409,13 +447,14 @@ export class Screens {
   options(r, dt, input, backdrop) {
     this.t += dt;
     if (backdrop) backdrop(); else this.drawTitleBackdrop(r);
-    const box = centerBox(r, 380, 172, 'OPTIONS', C.CYAN);
+    const box = centerBox(r, 380, 190, 'OPTIONS', C.CYAN);
     this.optMenu.draw(r, box.x + 24, box.y + 22, 16, 336);
 
     const m = this.optMenu.items[this.optMenu.i];
     const hintEn = {
       drive: 'GEARED = REAL TRAVERSE RATE LIMIT.  DIRECT = INSTANT',
       maim: 'OFF: THE MOUSE IS RELEASED AND ARROW KEYS LAY THE GUN',
+      lead: 'HOW FAR OUT THE LEAD POINT IS STILL DRAWN (EASY ONLY)',
       sens: 'DEGREES OF TRAVERSE PER MOUSE PIXEL',
       crt: 'SCANLINES AND VIGNETTE',
       fullscr: 'FILLS THE SCREEN AT THE BEST INTEGER SCALE. ESC EXITS',
@@ -451,8 +490,10 @@ export class Screens {
     line('ARROW KEYS', 'LAY THE MOUNT AS WELL -- FINE ADJUSTMENT, OR');
     line('', 'THE ONLY CONTROL WITH MOUSE AIM OFF (OPTIONS)');
     line('LEFT BUTTON / SPACE', 'FIRE');
-    line('RIGHT BUTTON / Z', 'TELESCOPIC SIGHT (ZOOM)');
-    line('1 / 2 / 3 / 4 / WHEEL', 'SELECT ARMAMENT');
+    line('RIGHT BUTTON / Z', 'TELESCOPIC SIGHT -- HOLD TO LOOK THROUGH IT');
+    line('WHEEL / W / S', 'WHILE ZOOMED: MAGNIFICATION X2 TO X8.');
+    line('', 'IT IS REMEMBERED FOR THE NEXT TIME YOU ZOOM');
+    line('1 / 2 / 3 / 4 / WHEEL', 'SELECT ARMAMENT (WHEEL ONLY WHEN NOT ZOOMED)');
     line('R', 'RELOAD');
     line('TAB', 'LOCK CONTACT IN RETICLE / RELEASE ON EMPTY SKY');
     line('Q', 'LEAD POINT ON / OFF (EASY & FREE RANGE)');
