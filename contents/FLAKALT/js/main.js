@@ -251,7 +251,7 @@ class App {
     // クリックでも先へ進めるようにしておく
     if (this.input.takeClick() || a === 'start') { this.mode = 'MODESEL'; return; }
     if (a === 'options') { this.mode = 'OPTIONS'; }
-    else if (a === 'help') { this.mode = 'HELP'; }
+    else if (a === 'help') { this.mode = 'HELP'; this.screens.helpPage = 0; }
   }
 
   doModeSelect(dt) {

@@ -14,7 +14,7 @@ import { dragFactor } from './ballistics.js';
 import { nationOf } from './guns.js';
 import { TYPES } from './aircraft.js';
 import { DIFFICULTY } from './game.js';
-import { LEAD_AID_RANGE, LEAD_RANGE_MIN, LEAD_RANGE_MAX } from './hud.js';
+import { LEAD_RANGE_MIN, LEAD_RANGE_MAX } from './hud.js';
 
 const W = 640, H = 400;
 const PLANE_GLYPH = '✈';
@@ -82,8 +82,9 @@ export class Screens {
     this.gunSpecs = nationOf(data, opts.nation).guns;
     this.fsCtl = fsCtl; // { isActive(), toggle() } — main.js 側の Fullscreen API 窓口
     this.t = 0;
+    this.helpPage = 0; // CONTROLS & DOCTRINE のページ（main.js が 'help' 選択時に 0 へ戻す）
 
-    this.bootLines = this.makeBootLines();
+    this.bootPages = this.makeBootPages();
     this.bootT = 0;
 
     this.titleCam = new Camera();
@@ -183,22 +184,76 @@ export class Screens {
     ]);
   }
 
-  /* LOADING FLAKALT.EXE から下は、実際に読み込んだデータをその場で
+  /* 起動画面は 2 画面ぶん。実機と同じで、BIOS の POST が流れたあと
+     画面が消えて DOS が起動する。
+
+     1 画面目（POST）は 1997 年の 486 機として辻褄が合う値にしてある。
+     486DX2 は FPU を内蔵しているので「80487 を別に積んでいる」とは
+     書けない（80487 は FPU を持たない 486SX 用の石）。メモリも
+     640K + 7168K + UMA 384K = ちょうど 8192K になる組で並べてある。
+
+     2 画面目の FLAKALT.EXE から下は、実際に読み込んだデータをその場で
      数えて出している。装飾ではなく、data/guns.json や aircraft.js の
-     TYPES を書き換えるとここの表示もそのまま変わる（弾道定数と同じ扱い）。
-     国選択・5 種の紙飛行機・PRISM が増えたぶん、ここも追随させてある。 */
-  makeBootLines() {
+     TYPES を書き換えるとここの表示もそのまま変わる。 */
+  makeBootPages() {
+    return [this.makePostLines(), this.makeLoadLines()];
+  }
+
+  makePostLines() {
     const L = [];
-    L.push(['TENO MICROMOCHI SOFTWORKS  BIOS  V2.14', C.LGRAY]);
-    L.push(['(C) 1998  ALL RIGHTS RESERVED', C.DGRAY]);
+    const dot = (label, value, w = 46) =>
+      (label + ' ').padEnd(w, '.') + ' ' + value;
+
+    L.push(['MICROMOCHI BIOS  V2.14', C.LGRAY]);
+    L.push(['COPYRIGHT (C) 1984-1997  TENO MICROMOCHI SOFTWORKS', C.DGRAY]);
     L.push(['', C.BLACK]);
-    L.push(['CPU  : 486DX2/66   FPU PRESENT', C.LGRAY]);
-    L.push(['MEM  : 8192K EXTENDED ............ OK', C.LGRAY]);
-    L.push(['VIDEO: VGA 640X400 16 COLOR ...... OK', C.LGRAY]);
-    L.push(['INPUT: MOUSE (2 BUTTON) .......... OK', C.LGRAY]);
-    L.push(['AUDIO: PC SPEAKER / SYNTH ........ OK', C.LGRAY]);
+    L.push(['INTEL 80486DX2 CPU AT 66MHZ      COPROCESSOR : INTEGRATED', C.LGRAY]);
     L.push(['', C.BLACK]);
-    L.push(['LOADING FLAKALT.EXE', C.WHITE]);
+    L.push(['MEMORY TEST :', C.LGRAY]);
+    L.push(['   ' + dot('640K BASE MEMORY', 'OK'), C.LGRAY]);
+    L.push(['   ' + dot('7168K EXTENDED MEMORY', 'OK'), C.LGRAY]);
+    L.push(['   ' + dot('256K WRITE-BACK CACHE', 'OK'), C.LGRAY]);
+    L.push(['', C.BLACK]);
+    L.push([dot('DETECTING IDE PRIMARY MASTER', 'IDE-0  540MB  CHS 1050/16/63'), C.LGRAY]);
+    L.push([dot('DETECTING IDE PRIMARY SLAVE', 'NONE'), C.DGRAY]);
+    L.push([dot('DETECTING FLOPPY DRIVE A', '1.44MB  3.5 IN'), C.LGRAY]);
+    L.push([dot('DETECTING DISPLAY ADAPTER', 'VGA 512K  640X400 16 COLOR'), C.LGRAY]);
+    L.push([dot('DETECTING KEYBOARD', '101-KEY AT'), C.LGRAY]);
+    L.push([dot('DETECTING POINTING DEVICE', 'PS/2 MOUSE'), C.LGRAY]);
+    L.push([dot('DETECTING AUDIO ADAPTER', 'MICROMOCHI OPL FM'), C.LGRAY]);
+    L.push(['', C.BLACK]);
+
+    /* Award BIOS が POST の最後に出すあの表。左右 2 段組で、
+       右側は I/O ポートの割り当て。番地は当時の標準どおり。 */
+    const bar = '─'.repeat(66);
+    L.push(['┌' + bar + '┐', C.CYAN]);
+    const row = (a, b) =>
+      L.push(['│ ' + a.padEnd(32) + b.padEnd(32) + ' │', C.LGRAY]);
+    row('BASE MEMORY    :   640K', 'DISPLAY TYPE   : VGA / EGA');
+    row('EXT. MEMORY    :  7168K', 'SERIAL PORTS   : 3F8  2F8');
+    row('CACHE MEMORY   :   256K', 'PARALLEL PORT  : 378');
+    L.push(['└' + bar + '┘', C.CYAN]);
+    L.push(['', C.BLACK]);
+    L.push(['07/14/97-I486-2A4X5MCM-00', C.DGRAY]);
+    return L;
+  }
+
+  makeLoadLines() {
+    const L = [];
+    const drv = (name, value) => (name + ' ').padEnd(14, ' ') + ': ' + value;
+
+    L.push(['STARTING TENO-DOS 6.22...', C.WHITE]);
+    L.push(['', C.BLACK]);
+    L.push([drv('HIMEM.SYS', 'XMS DRIVER INSTALLED'), C.LGRAY]);
+    L.push([drv('EMM386.EXE', '7168K EXPANDED MEMORY AVAILABLE'), C.LGRAY]);
+    L.push([drv('MOUSE.COM', 'PS/2 MOUSE DRIVER V8.20 INSTALLED'), C.LGRAY]);
+    L.push([drv('MMSND.SYS', 'AUDIO PORT 220  IRQ 5  DMA 1'), C.LGRAY]);
+    L.push(['', C.BLACK]);
+    L.push(['C:\\>CD FLAKALT', C.LGREEN]);
+    L.push(['C:\\FLAKALT>FLAKALT.EXE', C.LGREEN]);
+    L.push(['', C.BLACK]);
+    L.push(['FLAKALT  V1.02   (C) 1997 TENO MICROMOCHI SOFTWORKS', C.WHITE]);
+    L.push(['', C.BLACK]);
 
     L.push(['MOUNTING WEAPON DATABASE -- ' + this.data.nations.length + ' NATIONS', C.CYAN]);
     for (const n of this.data.nations) {
@@ -234,20 +289,34 @@ export class Screens {
     L.push(['', C.BLACK]);
     return L;
   }
-
   /* --- BOOT --------------------------------------------------- */
 
+  /* POST → 一拍おいて画面が消え → DOS 起動、という実機の流れをなぞる。
+     ESC でいつでも最後まで飛ばせる。 */
   boot(r, dt, input) {
     this.bootT += dt;
     r.clear(C.BLACK);
-    const shown = Math.min(this.bootLines.length, Math.floor(this.bootT / 0.11));
+
+    const RATE = 0.055;               // 1 行を打つ時間
+    const HOLD = 0.8;                 // POST を読ませる間
+    const post = this.bootPages[0], load = this.bootPages[1];
+    const tPost = post.length * RATE; // POST を打ち終わる時刻
+    const tClear = tPost + HOLD;      // 画面が消える時刻
+
+    const inPost = this.bootT < tClear;
+    const page = inPost ? post : load;
+    const shown = inPost
+      ? Math.min(post.length, Math.floor(this.bootT / RATE))
+      : Math.min(load.length, Math.floor((this.bootT - tClear) / RATE));
+
     for (let i = 0; i < shown; i++) {
-      const [text, c] = this.bootLines[i];
+      const [text, c] = page[i];
       r.text(16, 16 + i * 9, text, c);
     }
-    const done = shown >= this.bootLines.length;
+
+    const done = !inPost && shown >= load.length;
     if (done) {
-      const y = 16 + this.bootLines.length * 9;
+      const y = 16 + load.length * 9;
       if (Math.floor(this.bootT * 2) % 2 === 0) {
         r.text(16, y, 'PRESS ANY KEY TO CONTINUE', C.YELLOW);
       }
@@ -261,7 +330,6 @@ export class Screens {
     }
     return null;
   }
-
   /* --- TITLE -------------------------------------------------- */
 
   drawTitleBackdrop(r) {
@@ -480,27 +548,45 @@ export class Screens {
   help(r, dt, input) {
     this.t += dt;
     this.drawTitleBackdrop(r);
-    const box = centerBox(r, 500, 380, 'CONTROLS & DOCTRINE', C.CYAN);
+    if (this.helpPage === 0) this.helpControls(r);
+    else this.helpThreat(r);
+
+    r.textCenter(W / 2, H - 24, this.helpPage === 0 ? 'PAGE 1/2 -- CONTROLS' : 'PAGE 2/2 -- THE THREAT', C.DGRAY);
+    r.textCenter(W / 2, H - 14, 'LEFT/RIGHT: PAGE   ENTER OR ESC: RETURN', C.YELLOW);
+
+    if (input.pressed('ArrowLeft') || input.pressed('ArrowRight')) {
+      this.helpPage = 1 - this.helpPage;
+      this.sfx.beep(660, 0.03);
+    }
+    if (input.pressed('Enter') || input.pressed('Escape') || input.pressed('Space')) {
+      this.sfx.beep(1040, 0.05);
+      return 'back';
+    }
+    return null;
+  }
+
+  /* --- CONTROLS ページ ----------------------------------------- */
+
+  helpControls(r) {
+    const box = centerBox(r, 500, 356, 'CONTROLS & DOCTRINE', C.CYAN);
     const x = box.x + 18;
-    let y = box.y + 18;
+    let y = box.y + 16;
     const line = (a, b, ca = C.YELLOW, cb = C.LGRAY) => {
       r.text(x, y, a, ca); r.text(x + 132, y, b, cb); y += 10;
     };
     line('MOUSE', 'TRAVERSE AND ELEVATE THE MOUNT');
-    line('ARROW KEYS', 'LAY THE MOUNT AS WELL -- FINE ADJUSTMENT, OR');
-    line('', 'THE ONLY CONTROL WITH MOUSE AIM OFF (OPTIONS)');
+    line('ARROW KEYS', 'LAY THE MOUNT TOO -- SOLE CONTROL IF MOUSE AIM IS OFF');
     line('LEFT BUTTON / SPACE', 'FIRE');
     line('RIGHT BUTTON / Z', 'TELESCOPIC SIGHT -- HOLD TO LOOK THROUGH IT');
-    line('WHEEL / W / S', 'WHILE ZOOMED: MAGNIFICATION X2 TO X8.');
-    line('', 'IT IS REMEMBERED FOR THE NEXT TIME YOU ZOOM');
+    line('WHEEL / W / S', 'ZOOM MAGNIFICATION X2-X8 WHILE ZOOMED (REMEMBERED)');
     line('1 / 2 / 3 / 4 / WHEEL', 'SELECT ARMAMENT (WHEEL ONLY WHEN NOT ZOOMED)');
     line('R', 'RELOAD');
     line('TAB', 'LOCK CONTACT IN RETICLE / RELEASE ON EMPTY SKY');
-    line('Q', 'LEAD POINT ON / OFF (EASY & FREE RANGE)');
+    line('Q', 'LEAD POINT ON / OFF (EASY & FREE RANGE) -- RANGE IN OPTIONS');
     line('P / ESC', 'PAUSE');
     line('M', 'MUTE');
     line('F', 'TOGGLE FULLSCREEN');
-    y += 4;
+    y += 3;
     r.hline(x, box.x + box.w - 18, y, C.CYAN); y += 7;
     r.text(x, y, 'DEFLECTION SHOOTING', C.LCYAN); y += 11;
     const doc = [
@@ -514,27 +600,61 @@ export class Screens {
       'YOU CAN MEASURE THE LEAD AGAINST THEM. IN EASY MODE THE',
       'LEAD POINT IS ALSO DRAWN:   ' + PLANE_GLYPH + ' - - - - []',
       '',
+      'IF THE LEAD POINT FALLS INSIDE THE VIEW BUT THE CONTACT',
+      'DOES NOT, THE BOX STAYS AND THE DASHES RUN TO THE EDGE.',
+      'A LOCKED CONTACT OFF SCREEN GETS ITS OWN ARROW AT THE',
+      'EDGE WITH ITS RANGE, SO YOU NEVER LOSE IT WHILE ZOOMED.',
+      '',
       'WITH GEARED DRIVE THE MOUNT CANNOT SNAP ONTO A TARGET.',
       'THE GREY CROSS IS WHERE YOU ARE COMMANDING; THE SIGHT IS',
       'WHERE THE BARRELS ACTUALLY POINT. LEAD THE MOUNT TOO.',
-      '',
+    ];
+    for (const d of doc) { r.text(x, y, d, C.LGRAY); y += 9; }
+  }
+
+  /* --- THE THREAT ページ ----------------------------------------- */
+
+  helpThreat(r) {
+    const box = centerBox(r, 500, 356, 'THE THREAT', C.CYAN);
+    const x = box.x + 18;
+    let y = box.y + 18;
+    const head = (t) => { r.text(x, y, t, C.LCYAN); y += 11; };
+    const doc = (lines) => { for (const d of lines) { r.text(x, y, d, C.LGRAY); y += 9; } y += 9; };
+
+    head('LOW ALTITUDE  --  220-1000M  --  DART / LANCE / WEDGE');
+    doc([
+      'THESE JINK AND DIVE ON THE POST, DROP THEIR LOAD AT CLOSE',
+      'RANGE, THEN BREAK AWAY. LANCE IS FAST BUT TURNS POORLY --',
+      'ONCE IT OVERSHOOTS A RUN IT TAKES A WHILE TO LINE UP AGAIN.',
+    ]);
+
+    head('HIGH ALTITUDE  --  1200-1900M  --  CRANE / CONDOR');
+    doc([
+      'THE TWIN-ENGINE CRANE AND FOUR-ENGINE CONDOR FLY STRAIGHT',
+      'OVER THE POST WITHOUT JINKING AND RELEASE AT THEIR CLOSEST',
+      'POINT. ONLY A GUN WITH THE REACH TO MATCH WILL CATCH THEM',
+      'IN TIME -- CHECK YOUR HEAVY GUN\'S FUZE RANGE AGAINST THE',
+      'TARGET\'S ALTITUDE BEFORE THE WAVE ARRIVES.',
+    ]);
+
+    head('PRISM  --  BONUS CONTACT');
+    doc([
+      'A RAINBOW-COLOURED CONTACT THAT NEVER ATTACKS. DOWN IT FOR',
+      '+25% POST INTEGRITY. IT LEAVES AFTER 25 SECONDS, SO DECIDE',
+      'QUICKLY WHETHER IT IS WORTH THE DIVERSION.',
+    ]);
+
+    head('ORDNANCE');
+    doc([
       'THE HEAVY GUNS FIRE TIME-FUZED SHELLS. THE FUZE IS SET',
       'FROM THE DESIGNATED TARGET, SO THE SHELL BURSTS AT THAT',
       'RANGE WHEREVER THE BARREL POINTS. NO TARGET DESIGNATED',
       'MEANS NO FUZE, AND THE ROUND SIMPLY FLIES ON.',
-      '',
-      'THE WEAPON SET IS PICKED IN MISSION SETUP. EACH NATION',
-      'FIGHTS DIFFERENTLY: MAGAZINE SIZE, RATE OF FIRE AND HOW',
-      'FAST THE MOUNT TRAVERSES ALL CHANGE WITH IT.',
-    ];
-    for (const d of doc) { r.text(x, y, d, C.LGRAY); y += 9; }
+    ]);
 
-    r.textCenter(W / 2, box.y + box.h - 14, 'PRESS ENTER OR ESC TO RETURN', C.YELLOW);
-    if (input.pressed('Enter') || input.pressed('Escape') || input.pressed('Space')) {
-      this.sfx.beep(1040, 0.05);
-      return 'back';
-    }
-    return null;
+    r.text(x, y, 'THE WEAPON SET IS PICKED IN MISSION SETUP. EACH NATION', C.LGRAY); y += 9;
+    r.text(x, y, 'FIGHTS DIFFERENTLY: MAGAZINE SIZE, RATE OF FIRE AND HOW', C.LGRAY); y += 9;
+    r.text(x, y, 'FAST THE MOUNT TRAVERSES ALL CHANGE WITH IT.', C.LGRAY);
   }
 
   /* --- PAUSE -------------------------------------------------- */
