@@ -2,35 +2,35 @@ const LINK_DATA = [
     {
         title: "Twitter/X",
         url: "https://x.com/_Tenokun_",
-        image: "images/twitter.png",
+        image: "/images/icons/X.png",
         buttonText: "←VISIT！",
         description: "僕のTwitterメインアカウントです\n色々呟いてるよ"
     },
     {
         title: "DISCORD - あーく・そどむ",
         url: "https://t.co/amifWLaZYL",
-        image: "images/discord.png",
+        image: "/images/icons/DISCORD.png",
         buttonText: "←VISIT！",
         description: "僕が管理者のDiscordサーバーです\nもしよければ覗いていってね"
     },
     {
         title: "PIXIV",
         url: "https://www.pixiv.net/users/7435083",
-        image: "images/pixiv.png",
+        image: "/images/icons/PIXIV.png",
         buttonText: "←VISIT！",
         description: "僕のドット絵がいっぱい置いてある場所です\n好きにみていってね"
     },
     {
         title: "VRChat",
         url: "https://vrchat.com/home/user/usr_2c3892bd-bc45-4bdf-b6ff-2a763227d13b",
-        image: "images/vrchat.png",
+        image: "/images/icons/VRCHAT.png",
         buttonText: "←VISIT！",
         description: "僕のVRChatアカウントです\nフレンド登録歓迎だよ"
     },
     {
         title: "YOUTUBE",
         url: "https://www.youtube.com/@Teno_Micromochi",
-        image: "images/youtube.png",
+        image: "/images/icons/YOUTUBE.png",
         buttonText: "←VISIT！",
         description: "僕の音楽がそこそこ置いてある場所です\n好きにみていってね"
     },

@@ -7,29 +7,34 @@ const SODENMIR_TOP_ITEMS = [
 // フォルダ分けされたグループ項目
 const SODENMIR_GROUPS = [
     {
-        label: "TOOLS", icon: "/images/TOOLS.png",
+        label: "TOOLS", icon: "/images/icons/TOOLS.png",
         items: [
-            { label: "GLYPHALT", dir: "/contents/GLYPHALT/", path: "/contents/GLYPHALT/index.html", icon: "/images/TOOLS.png" },
-            { label: "TEXTALT", dir: "/contents/TEXTALT/", path: "/contents/TEXTALT/index.html", icon: "/images/TOOLS.png" },
-            { label: "TENOMOJI", dir: "/contents/TENOMOJI/", path: "/contents/TENOMOJI/index.html", icon: "/images/TOOLS.png" },
-            { label: "PALETALT", dir: "/contents/PALETALT/", path: "/contents/PALETALT/index.html", icon: "/images/TOOLS.png" },
-            { label: "ANIMALT", dir: "/contents/ANIMALT/", path: "/contents/ANIMALT/index.html", icon: "/images/TOOLS.png" },
-            { label: "FLAKALT", dir: "/contents/FLAKALT/", path: "/contents/FLAKALT/index.html", icon: "/images/FLIGHT.png" },
+            { label: "GLYPHALT", dir: "/contents/GLYPHALT/", path: "/contents/GLYPHALT/index.html", icon: "/images/icons/TOOLS.png" },
+            { label: "TEXTALT", dir: "/contents/TEXTALT/", path: "/contents/TEXTALT/index.html", icon: "/images/icons/TOOLS.png" },
+            { label: "TENOMOJI", dir: "/contents/TENOMOJI/", path: "/contents/TENOMOJI/index.html", icon: "/images/icons/TOOLS.png" },
+            { label: "PALETALT", dir: "/contents/PALETALT/", path: "/contents/PALETALT/index.html", icon: "/images/icons/TOOLS.png" },
+            { label: "ANIMALT", dir: "/contents/ANIMALT/", path: "/contents/ANIMALT/index.html", icon: "/images/icons/TOOLS.png" },
         ],
     },
     {
-        label: "WORKS", icon: "/images/FOLDER.png",
+        label: "GAMES", icon: "/images/icons/GAMES.png",
         items: [
-            { label: "GALLERY", dir: "/contents/GALLERY/", path: "/contents/GALLERY/index.html", icon: "/images/GALLARY.png" },
-            { label: "POEM", dir: "/contents/POEM/", path: "/contents/POEM/index.html", icon: "/images/FOLDER.png" },
-            { label: "FONT", dir: "/contents/FONT/", path: "/contents/FONT/index.html", icon: "/images/FONTS.png" },
+            { label: "FLAKALT", dir: "/contents/FLAKALT/", path: "/contents/FLAKALT/index.html", icon: "/images/icons/FLIGHT.png" },
         ],
     },
     {
-        label: "OTHER", icon: "/images/FOLDER.png",
+        label: "WORKS", icon: "/images/icons/FOLDER.png",
         items: [
-            { label: "LINK", dir: "/contents/LINKS/", path: "/contents/LINKS/index.html", icon: "/images/LINK.png" },
-            { label: "UPDATE", dir: "/contents/UPDATE/", path: "/contents/UPDATE/index.html", icon: "/images/UPDATE.png" },
+            { label: "GALLERY", dir: "/contents/GALLERY/", path: "/contents/GALLERY/index.html", icon: "/images/icons/GALLARY.png" },
+            { label: "POEM", dir: "/contents/POEM/", path: "/contents/POEM/index.html", icon: "/images/icons/FOLDER.png" },
+            { label: "FONT", dir: "/contents/FONT/", path: "/contents/FONT/index.html", icon: "/images/icons/FONTS.png" },
+        ],
+    },
+    {
+        label: "OTHER", icon: "/images/icons/FOLDER.png",
+        items: [
+            { label: "LINK", dir: "/contents/LINKS/", path: "/contents/LINKS/index.html", icon: "/images/icons/LINK.png" },
+            { label: "UPDATE", dir: "/contents/UPDATE/", path: "/contents/UPDATE/index.html", icon: "/images/icons/UPDATE.png" },
         ],
     },
 ];

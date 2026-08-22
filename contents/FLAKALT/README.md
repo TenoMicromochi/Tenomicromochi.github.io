@@ -553,7 +553,7 @@ contents/FLAKALT/
 
 統合済み。触った場所は以下。ここを直すときは通しで確認する。
 
-- `/menu.js` … `TOOLS` グループに `FLAKALT`（アイコンは `/images/FLIGHT.png`）
+- `/menu.js` … `GAMES` グループに `FLAKALT`（アイコンは `/images/icons/GAMES.png`）
 - `/contents/HOME/index.html` … カード 1 枚（TENOMOJI の次）
 - `/contents/UPDATE/script.js` … 更新履歴
 - 倍率ボタンは共有素材 `/images/buttons/` を参照（ツール内に複製を置かない）

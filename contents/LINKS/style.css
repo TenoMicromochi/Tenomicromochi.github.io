@@ -24,6 +24,7 @@
     width: 32px;
     height: 32px;
     object-fit: contain;
+    image-rendering: pixelated;
     border: 1px solid var(--border);
     background-color: var(--bg);
     border-radius: var(--radius);
