@@ -68,6 +68,9 @@ export class Gun {
     this.overheated = false;
     this.reloadT = 0;
     this.bgReload = false;  // マガジンを撃ち切って始まった装填。持ち替えても裏で進む
+    /* TRIGGER HAPPY（隠しコマンド）。装填・過熱・弾数を素通しにする。
+       弾を減らさないので、装填が始まる条件そのものが成立しなくなる。 */
+    this.freeFire = false;
     this.shotT = 0;
     this.barrelIdx = 0;
     this.shotCount = 0;
@@ -144,6 +147,7 @@ export class Gun {
   }
 
   canFire() {
+    if (this.freeFire) return true;
     return this.ammo > 0 && !this.overheated && this.reloadT <= 0;
   }
 }
@@ -246,9 +250,19 @@ export class Mount {
     this.shakeX *= Math.pow(0.02, dt);
     this.shakeY *= Math.pow(0.02, dt);
 
+    /* 次弾までの待ちは、引き金を握っていようがいまいが実時間で減らす。
+
+       以前は引き金を離したフレームで待ちを捨てていた（0 に戻していた）ので、
+       88mm のように発射間隔が 4 秒ある砲でも、押して離してを繰り返せば
+       いくらでも連射できてしまっていた。
+
+       待ちが 0 を下回るのは「連射中に 1 フレームで複数発ぶん進んだ」場合
+       だけにして、離しているときと撃てないときは 0 で止める。0 で止める
+       のは、待ち時間を溜め込んで一気に吐き出せないようにするため。 */
     let shots = 0;
+    g.shotT -= dt;
+    if (g.shotT < 0 && (!this.firing || !g.canFire())) g.shotT = 0;
     if (this.firing && g.canFire()) {
-      g.shotT -= dt;
       let guard = 0;
       while (g.shotT <= 0 && g.canFire() && guard++ < 12) {
         this.shoot(gunPos, bullets, events);
@@ -256,9 +270,6 @@ export class Mount {
         g.shotT += g.shotInterval;
       }
       if (!g.canFire()) g.shotT = Math.max(g.shotT, 0);
-    } else {
-      g.shotT = Math.min(g.shotT, 0);
-      if (g.shotT < -g.shotInterval) g.shotT = -g.shotInterval;
     }
 
     // 弾切れなら自動で装填（startReload が bgReload を立てるので裏でも進む）
@@ -294,9 +305,11 @@ export class Mount {
     bullets.fire(m.x, m.y, m.z, dx, dy, dz, g.round, tracer);
 
     g.shotCount++;
-    g.ammo--;
-    g.heat += g.heatPerShot;
-    if (g.heat >= 100) { g.heat = 100; g.overheated = true; events.onOverheat && events.onOverheat(g); }
+    if (!g.freeFire) {
+      g.ammo--;
+      g.heat += g.heatPerShot;
+      if (g.heat >= 100) { g.heat = 100; g.overheated = true; events.onOverheat && events.onOverheat(g); }
+    }
     g.recoilT = 1;
     g.flashT = 0.045;
     g.flashBarrel = i;

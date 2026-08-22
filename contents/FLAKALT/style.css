@@ -114,21 +114,23 @@ body.nocrt #crt { display: none; }
 .scale-btn[data-scale="1"] img { width: 160px; }
 .scale-btn:not([data-scale="1"]) img { width: 48px; }
 
+/* フルスクリーンも x1/x2/x3 と同じドット絵ボタン。
+   素材は 96x16 なので、倍率ボタンと同じ 2 倍（192x32）で置く。
+   ON/OFF の差し替えは main.js（フルスクリーン中だけ ON）。 */
 .fs-btn {
-    height: 32px;
-    padding: 0 14px;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    color: var(--accent2);
-    font-family: var(--font-body);
-    font-size: 12px;
-    letter-spacing: 0.03em;
+    background: none;
+    border: none;
+    padding: 0;
+    line-height: 0;
     cursor: pointer;
 }
 
-.fs-btn:hover { background: var(--panel2); }
-.fs-btn.on { background: var(--accent); border-color: var(--accent2); color: #fff; }
+.fs-btn img {
+    image-rendering: pixelated;
+    display: block;
+    width: 192px;
+    height: 32px;
+}
 
 /* --- 説明パネル ---------------------------------------------- */
 

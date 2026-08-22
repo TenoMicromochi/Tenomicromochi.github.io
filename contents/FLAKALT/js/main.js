@@ -16,6 +16,8 @@ import { Game } from './game.js';
 import { Screens } from './screens.js';
 import { nationOf } from './guns.js';
 import { C } from './palette.js';
+import { clamp } from './camera.js';
+import { LEAD_RANGE_MIN, LEAD_RANGE_MAX } from './hud.js';
 
 const W = 640, H = 400;
 const STEP = 1 / 200;
@@ -30,7 +32,7 @@ const DEFAULT_OPTS = {
   nation: 'USA',        // 兵装セット。data/guns.json の nations の id
   mouseAim: true,       // OFF にすると砲は方向キーだけで動かす
   zoom: 2.5,            // 望遠の倍率。ズーム中にホイール / W・S で変える
-  leadRange: 2000,      // 見越し点を出す上限距離 [m]
+  leadRange: 4000,      // 見越し点を出す上限距離 [m]
   sensitivity: 0.10,
   crt: true,
   sound: true,
@@ -41,7 +43,13 @@ function loadOpts() {
   try {
     const raw = localStorage.getItem(STORE_KEY);
     if (!raw) return { ...DEFAULT_OPTS };
-    return { ...DEFAULT_OPTS, ...JSON.parse(raw) };
+    const o = { ...DEFAULT_OPTS, ...JSON.parse(raw) };
+    /* 見越し補助の既定を 2km から 4km に上げた。保存済みの設定がそのまま
+       2km だと、自分で選んだのか昔の既定なのか区別がつかない。
+       ちょうど旧既定のままなら未設定と見なして新しい既定へ移す。 */
+    if (o.leadRange === 2000) o.leadRange = DEFAULT_OPTS.leadRange;
+    o.leadRange = clamp(o.leadRange, LEAD_RANGE_MIN, LEAD_RANGE_MAX);
+    return o;
   } catch (e) {
     return { ...DEFAULT_OPTS };
   }
@@ -134,6 +142,29 @@ class App {
     return !!(document.fullscreenElement || document.webkitFullscreenElement);
   }
 
+  /* 隠しコマンドの切り替え。どちらも押すたびに ON/OFF が入れ替わる。 */
+  toggleCheat(name) {
+    const g = this.game;
+    if (name === 'invincible') {
+      g.godMode = !g.godMode;
+      g.pushLog(g.godMode ? '*** INVINCIBLE MODE ***' : '*** INVINCIBLE MODE OFF ***',
+        g.godMode ? C.LMAGENTA : C.DGRAY);
+    } else if (name === 'triggerHappy') {
+      g.triggerHappy = !g.triggerHappy;
+      g.applyCheats();
+      g.pushLog(g.triggerHappy ? '*** TRIGGER HAPPY MODE ***' : '*** TRIGGER HAPPY MODE OFF ***',
+        g.triggerHappy ? C.LMAGENTA : C.DGRAY);
+    } else {
+      return;
+    }
+    // 上がり調子で ON、下がり調子で OFF
+    const on = name === 'invincible' ? g.godMode : g.triggerHappy;
+    const notes = on ? [523, 784, 1046] : [1046, 784, 523];
+    this.sfx.beep(notes[0], 0.07);
+    setTimeout(() => this.sfx.beep(notes[1], 0.07), 80);
+    setTimeout(() => this.sfx.beep(notes[2], 0.16), 160);
+  }
+
   toggleFullscreen() {
     if (this.isFullscreen()) {
       const exit = document.exitFullscreen || document.webkitExitFullscreen;
@@ -153,10 +184,19 @@ class App {
     if (this.fsBtn) {
       this.fsBtn.addEventListener('click', () => this.toggleFullscreen());
     }
+    /* ボタンの絵は x1/x2/x3 と同じ差し替え方式。フルスクリーン中は ON。
+       ただし #stage だけを全画面にしているので、ボタン自体は
+       フルスクリーン中は画面に出ない（下のコメント参照）。
+       Esc で戻ったときに OFF へ戻すために、ここで面倒を見ておく。 */
     const onChange = () => {
       const active = this.isFullscreen();
       if (this.fsBtn) {
-        this.fsBtn.textContent = active ? 'EXIT FULLSCREEN' : 'FULLSCREEN';
+        const img = this.fsBtn.querySelector('img');
+        if (img) {
+          const src = '/images/buttons/button_' + img.dataset.asset +
+            (active ? '_ON' : '_OFF') + '.png';
+          if (img.getAttribute('src') !== src) img.setAttribute('src', src);
+        }
         this.fsBtn.classList.toggle('on', active);
       }
       this.fit();
@@ -221,6 +261,10 @@ class App {
       saveOpts(this.opts);
     }
     if (this.input.pressed('KeyF')) this.toggleFullscreen();
+
+    // 隠しコマンド。モードを問わず受け付ける
+    const cheat = this.input.takeCheat();
+    if (cheat) this.toggleCheat(cheat);
 
     switch (this.mode) {
       case 'BOOT': this.doBoot(dt); break;

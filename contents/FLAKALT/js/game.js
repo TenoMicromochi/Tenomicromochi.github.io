@@ -39,6 +39,58 @@ export const ZOOM_STEP = 0.5;
 /* FREE RANGE で空に浮かべておく的の数。ウェーブ 10 相当。 */
 export const FREE_RANGE_TARGETS = 10;
 
+/* ---- 梯団（エシェロン） --------------------------------------
+   予算で買った編成を一度に全部ぶつけず、6 機ずつの塊に分けて順に送る。
+
+   以前は 1 ウェーブ 10 機を撒くだけだったので、全機が半径 600〜1300m の
+   旋回に溜まって同時に殴りかかってきた。しかも 10 機で頭打ちなので、
+   WAVE 40 では予算 2123 のうち 423 しか使えず、余りが丸ごと捨てられていた。
+   増えていたのは機数ではなく HP・速度・蛇行の倍率だけで、同じ編成が
+   硬くなるだけの伸び方をしていた。
+
+   梯団にすると、余った予算が「次の波」として形になる。同時に空にいる数は
+   増えないので手は足りるまま、ウェーブだけが重くなる。 */
+export const ECHELON_SIZE = 6;    // 1 梯団の機数
+export const MAX_ECHELONS = 4;    // 1 ウェーブの梯団数の上限
+const ECHELON_HOLD = 2;           // 前梯団がここまで減ったら次を出す
+const ECHELON_TIMEOUT = 45;       // 減らなくてもこれだけ経ったら出す
+const ECHELON_RESUPPLY = 0.30;    // 梯団の切れ目で戻る予備弾の割合
+
+/* ---- ウェーブの性格 ------------------------------------------
+   5 ウェーブごとに特殊編成を挟む。3 種を固定の順で回すので、
+   「次は遊撃だ」と身構えられる。ランダムだと備えようがない。
+
+   lanes  … 進入方位の本数。0 は「機数ぶん全部ばらばら」
+   jitter … レーンからの振れ幅（度）
+   tight  … 編隊を詰めるか
+   mult   … 予算の倍率 */
+const WAVE_KINDS = {
+  NORMAL: { lanes: [2, 3], jitter: 12, tight: false, mult: 1, label: null },
+  MASSED: {
+    lanes: [1, 2], jitter: 3, tight: true, mult: 1,
+    label: 'MASSED FORMATION -- THEY COME AS ONE BLOCK',
+  },
+  COLUMN: {
+    /* 1 方位から縦に来る。砲を振らなくていいぶん楽になってしまうので、
+       予算を 1.25 倍にして「振らなくていい代わりに手が足りない」に寄せる。 */
+    lanes: [1, 1], jitter: 8, tight: false, mult: 1.25,
+    label: 'CONCENTRATED RAID -- SINGLE BEARING',
+  },
+  HARASS: {
+    lanes: [0, 0], jitter: 0, tight: false, mult: 1,
+    label: 'HARASSMENT -- SCATTERED, ALL BEARINGS',
+  },
+};
+const KIND_CYCLE = ['MASSED', 'COLUMN', 'HARASS'];
+
+/* 倍率の天井。以前は WAVE ごとに一次で足していたので、WAVE 40 で
+   蛇行が 4.62 倍（DART の進路が ±120° で振られる）になり、偏差射撃で
+   当てられる相手ではなくなっていた。速度も LANCE が 220m/s まで上がって
+   砲の初速に対して先読み量が破綻していた。
+
+   1 → 1+amp に漸近させて頭を押さえ、難易度の伸びは編成と梯団に持たせる。 */
+const ramp = (n, amp, k) => 1 + amp * (1 - Math.exp(-(n - 1) / k));
+
 export class Game {
   constructor(gunSpecs, sfx, opts) {
     this.gunSpecs = gunSpecs;
@@ -53,6 +105,14 @@ export class Game {
     this.gunPos = { x: 0, y: GUN_HEIGHT, z: 0 };
     this.mount = new Mount(gunSpecs);
     this.solution = { x: 0, y: 0, z: 0, t: 0, range: 0 };
+    /* 隠しコマンド。reset() では消さない — ここに置いてあるのはそのため。
+       一度入れたらタイトルに戻ってもう一戦しても効いたままで、解除は
+       もう一度コマンドを入れるか、ページを開き直すか。
+
+       godMode      … INVINCIBLE MODE（コナミコマンド）陣地が壊れない
+       triggerHappy … TRIGGER HAPPY MODE（ゼビウスコマンド）装填と過熱が無い */
+    this.godMode = false;
+    this.triggerHappy = false;
     this.reset();
   }
 
@@ -72,6 +132,11 @@ export class Game {
     this.solvedGun = null;
 
     this.wave = 0;
+    this.kind = 'NORMAL';
+    this.echelons = [];
+    this.echelonIdx = 0;
+    this.echelonT = 0;
+    this.waveOpts = {};
     this.score = 0;
     this.kills = 0;
     this.shots = 0;
@@ -104,6 +169,22 @@ export class Game {
       this.pushLog('BATTERY ONLINE. AWAITING CONTACT.', C.LGREEN);
     }
     if (this.leadOn) this.pushLog('LEAD AID ON -- PRESS Q TO TOGGLE', C.LMAGENTA);
+    // 砲は reset のたびに作り直されるので、隠しコマンドの状態を入れ直す
+    this.applyCheats();
+  }
+
+  /* TRIGGER HAPPY を砲へ流し込む。切り替えた瞬間に装填と過熱を解いて
+     おかないと、解除中に始まった装填が終わるまで待たされる。 */
+  applyCheats() {
+    for (const g of this.mount.guns) {
+      g.freeFire = this.triggerHappy;
+      if (this.triggerHappy) {
+        g.overheated = false;
+        g.heat = 0;
+        g.reloadT = 0;
+        g.bgReload = false;
+      }
+    }
   }
 
   pushLog(text, c = C.LGREEN) {
@@ -122,14 +203,27 @@ export class Game {
 
      重み（コスト^bias）の bias が WAVE とともに上がるので、
      予算が同じでも後半ほど「高いのを 1 機」に寄る。 */
-  waveBudget(n) { return Math.round(20 + 17 * (n - 1) + 0.9 * n * n); }
+  /* 一次に落としてある。以前の二次曲線（20+17(n-1)+0.9n²）は、梯団で
+     使い切れるようにしても WAVE 25 あたりでまた 24 機の枠を超えて、
+     余りを捨て始める。一次なら WAVE 35 前後まで機数が素直に伸びる。
+
+     傾きは 25 から 17 に下げてある。梯団で全部の予算が形になるように
+     した結果、同じ予算でも実際に飛んでくる数がはっきり増えて、
+     手が足りなくなっていたため。 */
+  waveBudget(n) { return Math.round(18 + 17 * (n - 1)); }
+
+  /* 5 ウェーブごとの特殊編成。W5 密集 → W10 集中 → W15 遊撃 → W20 密集… */
+  waveKind(n) {
+    if (n % 5 !== 0) return 'NORMAL';
+    return KIND_CYCLE[(Math.floor(n / 5) - 1) % KIND_CYCLE.length];
+  }
   /* 高空に回す割合。WAVE 5 の予算 111 に対して双発が 55 なので、
      0.42 あたりから始めないと「解禁したのに買えない」状態が続く。
      0.55 で頭打ちにしてあるのは、半分以上を上空に持っていかれると
      低空の砲が暇になるため。 */
   highShare(n) { return n < 5 ? 0 : Math.min(0.55, 0.42 + 0.02 * (n - 5)); }
 
-  buyWave(n) {
+  buyWave(n, mult = 1) {
     const bias = Math.min(1.7, 0.25 + 0.11 * (n - 1));
     const affordable = (pool, budget) =>
       pool.filter((k) => n >= TYPES[k].from && TYPES[k].cost <= budget);
@@ -141,7 +235,7 @@ export class Game {
       return pool[i];
     };
 
-    const B = this.waveBudget(n);
+    const B = Math.round(this.waveBudget(n) * mult);
     let high = Math.round(B * this.highShare(n));
     let low = B - high;
     const bought = [];
@@ -162,8 +256,10 @@ export class Game {
         bought.push(k); high -= TYPES[k].cost;
       }
     }
-    // 高空は同時に出せる数を絞る。上から一斉に来ると手がまったく足りない
-    const hcap = Math.min(4, 1 + Math.floor((n - 5) / 3));
+    /* 高空の総数。以前は「同時に出せる数」だったが、梯団に分かれた
+       いまは最終梯団にまとまって編隊を組むので、ウェーブ全体の数として
+       もう少し取れる。 */
+    const hcap = Math.min(6, 1 + Math.floor((n - 5) / 3));
     while (bought.length < hcap) {
       const pool = affordable(HIGH_TYPES, high);
       if (!pool.length) break;
@@ -173,7 +269,7 @@ export class Game {
     low += Math.max(0, high);   // 高空で余った予算は低空へ回す
 
     let lowCount = 0;
-    while (bought.length < 10) {
+    while (bought.length < ECHELON_SIZE * MAX_ECHELONS) {
       const pool = affordable(LOW_TYPES, low);
       if (!pool.length) break;
       const k = draw(pool);
@@ -186,36 +282,184 @@ export class Game {
 
   beginWave(n) {
     this.wave = n;
+    this.kind = this.waveKind(n);
+    const kd = WAVE_KINDS[this.kind];
     const d = DIFFICULTY[this.opts.difficulty] || DIFFICULTY.VETERAN;
-    const pool = this.buyWave(n);
-    const spd = d.speed * (1 + (n - 1) * 0.025);
-    const jink = d.jink * (1 + (n - 1) * 0.04);
-    const gap = 2.6 - Math.min(1.4, n * 0.12);
-    this.spawnQueue = pool.map((key, i) => {
-      const high = TYPES[key].band === 'HIGH';
-      const band = high ? HIGH_BAND : LOW_BAND;
-      return {
-        t: i * gap,
-        key,
-        bearing: Math.random() * 360,
-        // 高空機は遠くから入って真上を抜けるので、進入距離も長めに取る
-        range: high ? 3600 + Math.random() * 700 : 2300 + Math.random() * 900,
-        alt: band[0] + Math.random() * (band[1] - band[0]),
-        opts: {
-          speedScale: spd, turnScale: 1 + (n - 1) * 0.02, jinkScale: jink,
-          hpScale: d.hp * (1 + (n - 1) * 0.05), maxRuns: d.runs,
-        },
-      };
-    });
-    this.queuePrism(n, pool.length * gap);
+
+    /* 倍率は漸近。天井は HP 1.8 倍 / 速度 1.25 倍 / 蛇行 2.0 倍 / 旋回 1.3 倍。
+       ここを直線で伸ばしていたのが、後半が「同じ編成が硬くなるだけ」に
+       なっていた原因。伸びしろは梯団と編成のほうへ移してある。 */
+    this.waveOpts = {
+      speedScale: d.speed * ramp(n, 0.25, 10),
+      jinkScale: d.jink * ramp(n, 1.00, 14),
+      turnScale: ramp(n, 0.30, 12),
+      hpScale: d.hp * ramp(n, 0.80, 10),
+      maxRuns: d.runs,
+    };
+
+    const pool = this.buyWave(n, kd.mult);
+    this.echelons = this.formEchelons(pool);
+    this.echelonIdx = 0;
+    this.echelonT = 0;
+    this.spawnQueue = [];
     this.state = 'FIGHT';
     this.stateT = 0;
-    this.pushLog('WAVE ' + n + ' INBOUND -- ' + pool.length + ' CONTACTS', C.YELLOW);
+
+    this.pushLog('WAVE ' + n + ' INBOUND -- ' + pool.length + ' CONTACTS IN ' +
+      this.echelons.length + ' ECHELONS', C.YELLOW);
+    if (kd.label) this.pushLog('** ' + kd.label + ' **', C.LMAGENTA);
     const bombers = pool.filter((k) => TYPES[k].band === 'HIGH').length;
     if (bombers) {
       this.pushLog('HIGH ALTITUDE FORMATION -- ' + bombers + ' BOMBERS', C.LRED);
     }
     this.sfx.beep(700, 0.08); setTimeout(() => this.sfx.beep(950, 0.12), 110);
+
+    this.launchEchelon();
+    this.queuePrism(n, 6);
+  }
+
+  /* 買った編成を 6 機ずつの梯団に割る。
+
+     低空を先、高空を後に並べてから切るので、速い機体が先に来て鈍い
+     爆撃機が最後に来る。おまけに同機種が隣り合うので、最終梯団が
+     そのまま爆撃機の編隊になる。 */
+  formEchelons(pool) {
+    const order = pool.slice().sort((a, b) => {
+      const A = TYPES[a], B = TYPES[b];
+      if ((A.band === 'HIGH') !== (B.band === 'HIGH')) return A.band === 'HIGH' ? 1 : -1;
+      return B.speed - A.speed;   // 同じ帯なら速い順
+    });
+    const out = [];
+    for (let i = 0; i < order.length; i += ECHELON_SIZE) {
+      out.push(order.slice(i, i + ECHELON_SIZE));
+    }
+    return out.slice(0, MAX_ECHELONS);
+  }
+
+  /* 進入方位を引く。互いに 60 度以上離す。
+
+     乱数任せだと 10 度差で 2 本引いてしまい、実質 1 方向になる。
+     3 本なら円周に必ず収まるので、外れ続けたときだけ等分に逃がす。 */
+  pickLanes(count) {
+    /* 4 本以上を 60 度離して引くのは円周的に苦しいので、本数が増えたら
+       必要な間隔を緩める。遊撃（機数ぶん全部）はもともとばらばらでよい。 */
+    const need = count <= 3 ? 60 : Math.max(18, 300 / count);
+    const sep = (a, b) => {
+      const d = Math.abs(a - b) % 360;
+      return d > 180 ? 360 - d : d;
+    };
+    const lanes = [];
+    for (let guard = 0; lanes.length < count && guard < 400; guard++) {
+      const b = Math.random() * 360;
+      if (lanes.every((l) => sep(l, b) >= need)) lanes.push(b);
+    }
+    // 引き切れなかったぶんは等分に逃がす
+    const base = Math.random() * 360;
+    while (lanes.length < count) lanes.push((base + lanes.length * (360 / count)) % 360);
+    return lanes;
+  }
+
+  /* 梯団を 1 つ送り出す。 */
+  launchEchelon() {
+    const ech = this.echelons[this.echelonIdx];
+    if (!ech) return;
+    this.echelonIdx++;
+    this.echelonT = 0;
+    const kd = WAVE_KINDS[this.kind] || WAVE_KINDS.NORMAL;
+
+    /* レーンは梯団ごとに引き直す。ウェーブ中ずっと同じだと 2 梯団目から
+       ただの作業になるし、引き直せば「次はどこから来るか」をレーダーで
+       読む動機が残る。遊撃（lanes 0）だけは機数ぶん全部ばらばら。 */
+    const laneCount = kd.lanes[0] === 0
+      ? ech.length
+      : kd.lanes[0] + Math.floor(Math.random() * (kd.lanes[1] - kd.lanes[0] + 1));
+    const lanes = this.pickLanes(Math.min(laneCount, ech.length));
+
+    /* 何を隊にまとめるか。
+
+       編隊は基本的に爆撃機のもの。低空機は迎え撃つ相手なので、まとめて
+       しまうと 5 機の塊が 1 方向から来るだけになって、せっかくレーンを
+       分けた意味が消える。密集編隊ウェーブだけは低空も隊で組む — それが
+       あの回の見せ場なので。遊撃はどちらも組まない。
+
+       同機種だけで組むのは、速度の違う機種を混ぜると勝手に崩れて編隊に
+       見えないため。1 個の隊は最大 3 機（3 機編隊）にして、余ったぶんは
+       別の隊として別のレーンに立てる。 */
+    const elements = [];
+    const bucket = new Map();
+    for (const key of ech) {
+      const inFormation = this.kind !== 'HARASS' &&
+        (TYPES[key].band === 'HIGH' || kd.tight);
+      if (!inFormation) { elements.push([key]); continue; }
+      const cur = bucket.get(key);
+      if (cur && cur.length < 3) cur.push(key);
+      else { const e = [key]; bucket.set(key, e); elements.push(e); }
+    }
+
+    let laneAt = 0;
+    let delay = 0;
+    for (const members of elements) {
+      const t = TYPES[members[0]];
+      const high = t.band === 'HIGH';
+      const band = high ? HIGH_BAND : LOW_BAND;
+      const lane = lanes[laneAt++ % lanes.length];
+      // 隊の基準点。以降の僚機はここからの相対で置く
+      const bearing = lane + (Math.random() - 0.5) * 2 * kd.jitter;
+      const range = high ? 5000 + Math.random() * 700 : 4200 + Math.random() * 800;
+      const alt = band[0] + Math.random() * (band[1] - band[0]);
+      const b = bearing * Math.PI / 180;
+      // 進行方向は陣地向き。その横と後ろへずらして隊形を作る
+      const perp = { x: -Math.cos(b), z: Math.sin(b) };
+      const back = { x: Math.sin(b), z: Math.cos(b) };
+
+      members.forEach((k, i) => {
+        const rank = Math.ceil(i / 2);
+        const side = i % 2 ? 1 : -1;
+        const sp = kd.tight
+          ? { lat: 26 + Math.random() * 16, back: 30 + Math.random() * 50, alt: 12 + Math.random() * 14 }
+          : { lat: 60 + Math.random() * 80, back: 40 + Math.random() * 140, alt: 40 + Math.random() * 40 };
+        this.spawnQueue.push({
+          t: delay + i * 0.15,
+          key: k,
+          bearing, range, alt,
+          offset: i === 0 ? null : {
+            x: (perp.x * side * sp.lat + back.x * sp.back) * rank,
+            y: side * rank * sp.alt,
+            z: (perp.z * side * sp.lat + back.z * sp.back) * rank,
+          },
+          // 編隊の僚機は進入針路をばらけさせない。隊形が崩れる
+          opts: { ...this.waveOpts, headingJitter: members.length > 1 && i > 0 ? 0 : 30 },
+        });
+      });
+      delay += kd.tight ? 0.4 : 0.9;
+    }
+
+    if (this.echelonIdx > 1) {
+      /* 梯団の切れ目で予備弾を少しだけ戻す。24 機を撃ち切るには
+         ウェーブ間の満タン補給だけでは足りないが、全部返すと
+         弾を数える緊張が消える。 */
+      for (const g of this.mount.guns) {
+        g.stock = Math.min(g.reserve, g.stock + Math.round(g.reserve * ECHELON_RESUPPLY));
+      }
+      this.pushLog('ECHELON ' + this.echelonIdx + '/' + this.echelons.length +
+        ' INBOUND -- AMMO +' + Math.round(ECHELON_RESUPPLY * 100) + '%', C.YELLOW);
+      this.sfx.beep(620, 0.09);
+    }
+  }
+
+  /* ウェーブの進行。梯団を送り切って空になったら終わり。 */
+  advanceWave(dt) {
+    this.echelonT += dt;
+    // 褒賞機は数えない。放っておくと次の梯団を止めてしまう
+    const live = this.aircraft.reduce((a, ac) => a + (ac.alive && !ac.bonus ? 1 : 0), 0);
+    if (this.echelonIdx < this.echelons.length) {
+      const quiet = !this.spawnQueue.some((s) => s.key !== 'PRISM');
+      if (quiet && (live <= ECHELON_HOLD || this.echelonT > ECHELON_TIMEOUT)) {
+        this.launchEchelon();
+      }
+    } else if (!this.aircraft.length && !this.spawnQueue.length) {
+      this.endWave();
+    }
   }
 
   /* 虹色の褒賞機。数ウェーブに 1 度だけ、予算とは別枠で湧く。
@@ -248,6 +492,22 @@ export class Game {
   }
 
   queueFreeTarget(delay) {
+    /* 補充のたびに 3% で褒賞機を混ぜる。陣地の耐久が無いモードなので
+       回復は起きない（kill 側で !freeRange を見ている）が、25 秒で
+       帰ってしまう高得点の的として成立する。
+       漂う揺らぎ（passive）は掛けない — 逃げる的のままにしておく。 */
+    if (Math.random() < 0.03) {
+      this.spawnQueue.push({
+        t: delay,
+        key: 'PRISM',
+        bearing: Math.random() * 360,
+        range: 1400 + Math.random() * 900,
+        alt: 400 + Math.random() * 300,
+        opts: { speedScale: 1, jinkScale: 1 },
+      });
+      return;
+    }
+
     // ダーツが多め。たまに大きいのを混ぜて的の大きさに幅を出す
     const pool = ['DART', 'DART', 'LANCE', 'WEDGE', 'CRANE', 'CONDOR'];
     this.spawnQueue.push({
@@ -418,6 +678,7 @@ export class Game {
       if (s.t <= 0) {
         const ac = new Aircraft(s.key, s.opts);
         ac.spawnAt(s.bearing, s.range, s.alt);
+        if (s.offset) ac.displace(s.offset);
         this.aircraft.push(ac);
         this.spawnQueue.splice(i, 1);
         if (!s.quiet) {
@@ -456,7 +717,7 @@ export class Game {
     } else {
       // ウェーブの進行
       if (this.state === 'BRIEF' && this.stateT > 2.5) this.beginWave(1);
-      else if (this.state === 'FIGHT' && !this.aircraft.length && !this.spawnQueue.length) this.endWave();
+      else if (this.state === 'FIGHT') this.advanceWave(dt);
       else if (this.state === 'REARM' && this.stateT > 8) this.beginWave(this.wave + 1);
     }
 
@@ -564,12 +825,22 @@ export class Game {
         onStrike: (ac) => {
           const d = DIFFICULTY[this.opts.difficulty] || DIFFICULTY.VETERAN;
           const dmg = Math.round((ac.t.strike || 8) * d.strike);
+          /* 無敵。爆発と画面の揺れは出す — 当たったこと自体が見えないと
+             どこから殴られているのか分からなくなるので。減るのは耐久だけ止める。 */
+          if (this.godMode) {
+            this.damageFlash = 1;
+            this.sfx.explode(1.1);
+            this.fx.groundHit((Math.random() - 0.5) * 40, (Math.random() - 0.5) * 40, true);
+            this.pushLog('-- STRIKE BY ' + ac.tag + ' ABSORBED (' + dmg + '%)', C.DGRAY);
+            return;
+          }
           this.integrity = Math.max(0, this.integrity - dmg);
           this.damageFlash = 1;
           this.sfx.explode(1.1);
           this.fx.groundHit((Math.random() - 0.5) * 40, (Math.random() - 0.5) * 40, true);
           this.pushLog('!! POST HIT BY ' + ac.tag + ' -- ' + dmg + '% DAMAGE', C.LRED);
         },
+        onCrash: (ac, how) => this.crash(ac, how),
       };
     }
     return this._actx;
@@ -624,6 +895,32 @@ export class Game {
     return this._bctx;
   }
 
+  pointsFor(ac) {
+    const rangeMult = 1 + ac.slant / 1600;
+    const gunMult = this.mount.gun.score;
+    return Math.round(ac.t.score * rangeMult * gunMult * (1 + this.wave * 0.05));
+  }
+
+  /* 自壊して落ちた機体。撃墜と違って点は半分しか入らない。
+
+     満点が欲しければ落ちきる前に仕留めればいい、という択にしてある。
+     燃えた機体は放っておいても勝手に落ちるが、その間に特攻してくる
+     可能性もあるので、追い撃ちには弾を使うだけの理由がある。 */
+  crash(ac, how) {
+    if (!ac.alive) return;
+    ac.alive = false;
+    ac.crashed = true;
+    this.kills++;
+    this.fx.wreck(ac);
+    if (how === 'CRASHED') this.fx.groundHit(ac.x, ac.z, true);
+    this.sfx.explode(0.8);
+
+    const pts = Math.round(this.pointsFor(ac) * 0.5);
+    this.score += pts;
+    this.pushLog(how + ' ' + ac.tag + ' (' + ac.t.name + ')  +' + pts, C.DGRAY);
+    if (this.target === ac) this.target = null;
+  }
+
   kill(ac, b) {
     if (!ac.alive) return;
     ac.alive = false;
@@ -631,9 +928,7 @@ export class Game {
     this.fx.wreck(ac);
     this.sfx.explode(1);
 
-    const rangeMult = 1 + ac.slant / 1600;
-    const gunMult = this.mount.gun.score;
-    const pts = Math.round(ac.t.score * rangeMult * gunMult * (1 + this.wave * 0.05));
+    const pts = this.pointsFor(ac);
     this.score += pts;
     this.pushLog('SPLASH ' + ac.tag + ' (' + ac.t.name + ') ' +
       Math.round(ac.slant) + 'M  +' + pts, C.LCYAN);

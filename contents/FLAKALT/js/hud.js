@@ -19,10 +19,14 @@ export const PANEL_Y = 320;
 
 /* EASY で見越し点を出す上限距離。これより遠い目標は自分で見積もる。
    既定値であって、実際に使うのは opts.leadRange。
-   OPTIONS から 1.0〜3.0km を 0.1km 刻みで変えられる。 */
-export const LEAD_AID_RANGE = 2000;
+   OPTIONS から 1.0〜5.0km を 0.1km 刻みで変えられる。
+
+   上限を 3km から 5km へ、既定を 2km から 4km へ上げてある。進入距離を
+   5km に伸ばしたので、3km までしか出ないと「見えているのに補助が無い」
+   時間が長すぎた。 */
+export const LEAD_AID_RANGE = 4000;
 export const LEAD_RANGE_MIN = 1000;
-export const LEAD_RANGE_MAX = 3000;
+export const LEAD_RANGE_MAX = 5000;
 
 const _p = { x: 0, y: 0, z: 0 };
 const _p2 = { x: 0, y: 0, z: 0 };
@@ -507,46 +511,57 @@ function drawArmament(r, g) {
   r.text(x, 326, gun.name, C.YELLOW);
   r.text(x, 334, gun.designation, C.DGRAY);
 
+  /* TRIGGER HAPPY 中は弾数も熱も動かないので、バーを出すと壊れて見える。
+     振り切ったバーを紫で出して、数字の代わりに印を置く。 */
+  const happy = g.triggerHappy;
   r.text(x, 346, 'AMMO', C.CYAN);
-  bar(r, x + 32, 345, 92, 7, gun.magFrac,
-    gun.magFrac < 0.2 ? C.LRED : C.LGREEN);
-  r.text(x + 130, 346, pad(gun.ammo, 3), C.WHITE);
+  bar(r, x + 32, 345, 92, 7, happy ? 1 : gun.magFrac,
+    happy ? C.LMAGENTA : gun.magFrac < 0.2 ? C.LRED : C.LGREEN);
+  r.text(x + 130, 346, happy ? '###' : pad(gun.ammo, 3), happy ? C.LMAGENTA : C.WHITE);
 
   r.text(x, 356, 'HEAT', C.CYAN);
-  bar(r, x + 32, 355, 92, 7, gun.heatFrac,
-    gun.heat > 80 ? C.LRED : gun.heat > 50 ? C.YELLOW : C.GREEN);
-  r.text(x + 130, 356, pad(gun.heat, 3), gun.heat > 80 ? C.LRED : C.WHITE);
+  bar(r, x + 32, 355, 92, 7, happy ? 0 : gun.heatFrac,
+    happy ? C.LMAGENTA : gun.heat > 80 ? C.LRED : gun.heat > 50 ? C.YELLOW : C.GREEN);
+  r.text(x + 130, 356, happy ? '---' : pad(gun.heat, 3),
+    happy ? C.LMAGENTA : gun.heat > 80 ? C.LRED : C.WHITE);
 
   r.text(x, 366, 'RSV', C.CYAN);
-  r.text(x + 32, 366, pad(gun.stock, 4), C.LGRAY);
+  r.text(x + 32, 366, happy ? '####' : pad(gun.stock, 4), happy ? C.LMAGENTA : C.LGRAY);
   r.text(x + 72, 366, 'V0', C.CYAN);
   r.text(x + 92, 366, pad(gun.v0, 3) + ' M/S', C.LGRAY);
 
-  // 次弾までの待ち。発射間隔が長い砲（0.5 秒超）だけバーで見せる。
-  // いまのところ該当する砲はないが、将来もっと遅い砲を足したときのため残してある。
+  /* 次弾までの待ち。発射間隔が長い砲（0.5 秒超）だけバーで見せる。
+     88mm と 75mm が 4 秒なので、この 2 門で実際に動く。
+
+     shotT は「あと何秒待つか」。0 で撃てる。 */
   if (gun.shotInterval > 0.5) {
-    const wait = clamp(-gun.shotT / gun.shotInterval, 0, 1);
+    const wait = clamp(gun.shotT / gun.shotInterval, 0, 1);
     bar(r, x + 150, 365, 40, 7, 1 - wait, wait > 0 ? C.YELLOW : C.LGREEN);
   }
 
   let st = 'READY', sc = C.LGREEN;
-  if (gun.reloading) { st = 'RELOADING ' + fixed(gun.reloadT, 1) + 'S'; sc = C.YELLOW; }
+  if (g.triggerHappy) { st = '*** TRIGGER HAPPY ***'; sc = C.LMAGENTA; }
+  else if (gun.reloading) { st = 'RELOADING ' + fixed(gun.reloadT, 1) + 'S'; sc = C.YELLOW; }
   else if (gun.overheated) { st = '*** OVERHEAT ***'; sc = C.LRED; }
   else if (gun.ammo <= 0) { st = 'MAGAZINE EMPTY'; sc = C.LRED; }
   else if (gun.timeFuze && g.mount.fuzeTime <= 0) { st = 'FUZE UNSET - NO TARGET'; sc = C.YELLOW; }
-  else if (gun.shotInterval > 0.5 && gun.shotT < 0) { st = 'LOADING NEXT ROUND'; sc = C.CYAN; }
+  else if (gun.shotInterval > 0.5 && gun.shotT > 0) {
+    st = 'LOADING NEXT ROUND ' + fixed(gun.shotT, 1) + 'S'; sc = C.CYAN;
+  }
   else if (g.mount.firing) { st = 'FIRING'; sc = C.WHITE; }
   r.text(x, 378, st, sc);
 
-  // 兵装の選択タブ
+  /* 兵装の選択タブ。5 門になったので刻みを 47px から 39px に詰めてある。
+     47px のままだと 5 つ目が目標欄（x=204）に食い込む。
+     ラベルは最長 6 文字（'2:13.2' / '5:94MM'）＝36px なので 39px で収まる。 */
   for (let i = 0; i < g.mount.guns.length; i++) {
     const gi = g.mount.guns[i];
     const sel = i === g.mount.index;
-    const bx = x + i * 47;
+    const bx = x + i * 39;
     const cal = gi.caliber >= 20 ? Math.round(gi.caliber) + 'MM' : String(gi.caliber);
     const label = String(i + 1) + ':' + cal;
     if (sel) {
-      r.fillRect(bx - 2, 388, 44, 9, C.CYAN);
+      r.fillRect(bx - 2, 388, 38, 9, C.CYAN);
       r.text(bx, 389, label, C.BLACK);
     } else if (gi.bgReload) {
       // 裏で装填が進んでいる砲。戻ってよい頃合いが分かるように光らせる
@@ -573,7 +588,11 @@ function drawTargetPanel(r, g) {
   const closing = (ac.x * ac.vx + ac.y * ac.vy + ac.z * ac.vz) / Math.max(1, ac.slant);
 
   r.text(x + 44, 326, ac.tag + ' ' + ac.t.name, C.YELLOW);
-  r.text(x + 44, 334, ac.state, C.DGRAY);
+  /* 自壊中は状態欄を乗っ取る。「こいつはもう落ちる」が読めないと、
+     追い撃ちして満点を取るか、捨てて次に移るかの判断ができない。 */
+  if (ac.falling) r.text(x + 44, 334, 'FALLING', C.LRED);
+  else if (ac.doomed) r.text(x + 44, 334, 'BURNING', C.LRED);
+  else r.text(x + 44, 334, ac.state, C.DGRAY);
 
   const hpFrac = ac.hp / ac.hpMax;
   r.text(x, 334, 'DMG', C.CYAN);
@@ -619,7 +638,9 @@ function drawTargetPanel(r, g) {
 
 function drawRadar(r, g, t) {
   const cx = 542, cy = 361, rad = 34;
-  const scale = rad / 3000;
+  // 進入距離が 5km なので、レーダーもそこまで映す。輪は 1.65 / 3.3 / 5km
+  const RADAR_RANGE = 5000;
+  const scale = rad / RADAR_RANGE;
   r.text(448, 323, 'SECTOR', C.CYAN);
   r.circle(cx, cy, rad, C.GREEN);
   r.circle(cx, cy, Math.round(rad * 0.66), C.GREEN);
@@ -643,9 +664,19 @@ function drawRadar(r, g, t) {
 
   for (const ac of g.aircraft) {
     if (!ac.alive) continue;
-    const px = Math.round(cx + ac.x * scale);
-    const py = Math.round(cy - ac.z * scale);
-    if (Math.hypot(px - cx, py - cy) > rad) continue;
+    let px = Math.round(cx + ac.x * scale);
+    let py = Math.round(cy - ac.z * scale);
+    const d = Math.hypot(px - cx, py - cy);
+    /* 圏外の機体は消さずに縁へ寄せる。湧く位置は 5.7km まであるので、
+       映る前の数十秒をここで拾う。どの方角から何機来ているかが
+       見えないと、進入距離を伸ばした意味がなくなる。 */
+    if (d > rad) {
+      const f = rad / d;
+      px = Math.round(cx + (px - cx) * f);
+      py = Math.round(cy + (py - cy) * f);
+      r.px(px, py, C.DGRAY);
+      continue;
+    }
     const col = ac === g.target ? C.WHITE : ac.damaged ? C.LRED : C.YELLOW;
     r.px(px, py, col);
     if (ac === g.target) {
@@ -654,7 +685,7 @@ function drawRadar(r, g, t) {
     }
   }
   r.px(cx, cy, C.LCYAN);
-  r.text(cx + rad - 22, cy + rad - 6, '3KM', C.DGRAY);
+  r.text(cx + rad - 22, cy + rad - 6, '5KM', C.DGRAY);
 }
 
 function drawTopBar(r, g) {
@@ -669,9 +700,19 @@ function drawTopBar(r, g) {
   const ic = g.integrity < 34 ? C.LRED : g.integrity < 67 ? C.YELLOW : C.LGREEN;
   // 攻撃されないモードでは陣地の耐久を出しても意味がない
   if (g.freeRange) r.text(212, 1, 'POST ----', C.DGRAY);
+  // 無敵中は耐久の代わりに印を出す。数字が動かない理由が分かるように
+  else if (g.godMode) {
+    r.text(212, 1, 'POST ' + (Math.floor(g.elapsed * 2) % 2 ? '****' : '  **'), C.LMAGENTA);
+  }
   else r.text(212, 1, 'POST ' + pad(g.integrity, 3) + '%', ic);
   const acc = g.shots > 0 ? (g.hits / g.shots) * 100 : 0;
   r.text(290, 1, 'HIT ' + pad(g.hits, 4) + '/' + pad(g.shots, 5), C.LGRAY);
+  /* 梯団の進み。あと何波来るのかが読めないと、弾を使い切ってよいのか
+     残しておくべきなのかの判断ができない。 */
+  if (g.echelons && g.echelons.length > 1) {
+    r.text(374, 1, 'E' + g.echelonIdx + '/' + g.echelons.length,
+      g.echelonIdx < g.echelons.length ? C.LRED : C.DGRAY);
+  }
   r.text(400, 1, 'ACC ' + pad(acc, 2) + '%', C.LGRAY);
   r.text(464, 1, 'KILL ' + pad(g.kills, 3), C.LGREEN);
   r.text(536, 1, 'AIR ' + pad(g.aircraft.length, 2), C.LGRAY);

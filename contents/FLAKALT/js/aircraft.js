@@ -63,6 +63,43 @@ export const TYPES = {
   },
 };
 
+/* ---- 自壊（DOOMED） ----------------------------------------
+   火を噴いた機体がそのまま平然と飛び続けるのはおかしいので、HP が
+   一定を割ったら「燃えている＝もう助からない」状態に落とす。
+
+   二段構えにしてある。
+
+   BURNING … HP が毎秒 hpMax*BURN_RATE 減る。まだ飛べるし、まだ
+             攻撃してくる。DOOM_AT から FALL_AT まで 7.5 秒。
+   FALLING … HP の減少を止めて 1 に固定し、制御を失って螺旋降下。
+             以降 HP では死なない。死ぬのは地面に当たったときだけ。
+
+   HP 0 を死因にしなかったのは、それだと高空の爆撃機が空中で HP を
+   使い切ってしまうため。CONDOR は 1900m にいるので -55° で突っ込ませても
+   地面まで 20 秒以上かかり、「空中で消える」という直したかった不自然さが
+   そのまま残る。 */
+const DOOM_AT = 0.20;    // ここを割ると発火
+const FALL_AT = 0.05;    // ここで制御喪失
+const BURN_RATE = 0.02;  // hpMax に対する毎秒の減少
+const BURN_SPAN = (DOOM_AT - FALL_AT) / BURN_RATE;  // = 7.5 秒
+const FALL_LIMIT = 13;   // これだけ落ちても接地しなければ空中分解
+
+/* FALLING 中の弾道。
+
+   ここだけ updateVel() を使わない。あれは速度を毎フレーム機首方向から
+   作り直すので、ピッチを下げた瞬間に速度がそっくり真下へ付け替わって
+   しまう。「落ちている」ではなく「下方向へ飛んでいる」絵になる。
+
+   制御を失った機体は、前進の勢いを持ったまま重力で落ちる。だから速度は
+   姿勢と切り離してベクトルで持ち、姿勢のほうを軌道に遅れて追従させる。
+   機首は勝手に下がるのではなく、軌道が寝てくるから下がる。
+
+   FALL_G が実際の 9.8 より強いのは、画面のスケール（陣地の半径 1km を
+   数百 px に圧縮している）だと本物の重力ではほとんど落ちて見えないため。 */
+const FALL_G = 18;       // 落下加速度 m/s^2
+const FALL_DRAG = 0.06;  // 水平方向の減衰（毎秒）。翼が効かなくなるぶん
+const FALL_VMAX = 140;   // 終端速度 m/s
+
 /* PRISM の巡回色。EGA 16 色しかないので、明るい色を順に出して虹に見せる */
 const PRISM_COLORS = [C.LRED, C.YELLOW, C.LGREEN, C.LCYAN, C.LBLUE, C.LMAGENTA];
 
@@ -109,7 +146,9 @@ export class Aircraft {
     this.maxRuns = (this.passive || this.bonus) ? 0 : (opts.maxRuns || 3);
     this.age = 0;
     this.dropped = false;
+    this.outbound = false;   // 陣地を通り過ぎたあとか。離脱判定に使う
     this.attempts = 0;   // 陣地に届かなかった進入の回数
+    this.headingJitter = opts.headingJitter ?? 30;
     this.orbitDir = Math.random() < 0.5 ? 1 : -1;
     this.orbitR = 600 + Math.random() * 700;
     this.orbitAlt = 180 + Math.random() * 380;
@@ -127,6 +166,15 @@ export class Aircraft {
     this.jinkAmp = 26 * this.t.jink * (opts.jinkScale || 1);
     this.smokeT = 0;
     this.hitFlash = 0;
+
+    /* 自壊。褒賞機だけは対象外 — 撃ち落とせたご褒美なので、勝手に
+       落ちて回復量が半分になるのでは筋が通らない。 */
+    this.doomed = false;
+    this.falling = false;
+    this.burnLeft = 0;   // FALLING までの残り秒。特攻の可否判定に使う
+    this.fallT = 0;
+    this.suicide = false;
+    this.canDoom = !this.bonus;
 
     this.m = new Float64Array(9);
   }
@@ -150,17 +198,37 @@ export class Aircraft {
       this.lastR = this.range;
       this.state = 'OVERFLY';
     } else {
-      this.heading = wrapDeg(bearingDeg + 180 + (Math.random() - 0.5) * 30);
+      /* 進入針路のばらつき。編隊の僚機は 0 を渡して真っ直ぐ入れる —
+         ここで振ってしまうと、せっかく組んだ隊形が進入中に崩れる。 */
+      this.heading = wrapDeg(bearingDeg + 180 + (Math.random() - 0.5) * this.headingJitter);
       this.state = 'INGRESS';
     }
     this.updateVel();
     return this;
   }
 
+  /* 編隊の僚機を長機からずらす。spawnAt のあとに呼ぶ。
+
+     高空機は「湧いた位置からの距離」を投弾判定と離脱判定に使っているので、
+     位置を動かしたら基準も入れ直す。 */
+  displace(off) {
+    this.x += off.x;
+    this.y = Math.max(60, this.y + off.y);
+    this.z += off.z;
+    this.orbitAlt = this.y;
+    if (this.state === 'OVERFLY') {
+      this.cruiseAlt = this.y;
+      this.lastR = this.range;
+    }
+    return this;
+  }
+
   get range() { return Math.hypot(this.x, this.z); }
   get slant() { return Math.hypot(this.x, this.y, this.z); }
   get damaged() { return this.hp < this.hpMax * 0.5; }
-  get critical() { return this.hp < this.hpMax * 0.22; }
+  /* critical は発火閾値と同じ。見た目（赤・濃い煙）と自壊の開始を
+     ずらすと「燃えてるのに落ちない機体」がまた生まれるため。 */
+  get critical() { return this.hp < this.hpMax * DOOM_AT; }
 
   updateVel() {
     const cp = Math.cos(this.pitch * DEG);
@@ -184,8 +252,15 @@ export class Aircraft {
           this.dropped = true;
           this.pendingStrike = true;
         }
+        /* 進入距離が 5km 台になったので、離脱判定に「陣地を通り過ぎた
+           あとかどうか」を必ず見る。距離だけで切ると、湧いた瞬間に
+           R が離脱閾値を超えていて、その場で消えてしまう。 */
+        if (!this.outbound && R > this.lastR && this.age > 4) this.outbound = true;
         this.lastR = R;
-        if (R > 4200) { this.alive = false; this.escaped = true; }
+        // 燃えている機体は離脱させない。落ちるまでが見せ場なので
+        if (this.outbound && R > 4200 && !this.doomed) {
+          this.alive = false; this.escaped = true;
+        }
         return [this.runHeading, this.cruiseAlt, this.cruiseSpeed];
       }
       case 'INGRESS': {
@@ -197,7 +272,17 @@ export class Aircraft {
         const tangent = bearingToBase + 90 * this.orbitDir;
         const err = clamp((R - this.orbitR) / this.orbitR, -1, 1);
         const hdg = tangent - err * 45 * this.orbitDir;
-        if (this.stateT > 6 + Math.random() * 4 && this.runs < this.maxRuns) {
+        /* 燃えている機体は最後の一撃を狙う。maxRuns を無視して進入させるが、
+           落ちるまでに陣地へ届く見込みがあるときだけ。
+
+           固定距離で切ると機種ごとに意味が変わってしまう（DART は 97m/s、
+           CONDOR は 69m/s）ので、残り時間から逆算する。0.75 は旋回で
+           膨らむぶんの余裕。時間が経つほど条件が厳しくなるので、遅く
+           燃えた機体は自然に諦める。 */
+        if (this.canSuicide(R)) {
+          this.state = 'ATTACK'; this.stateT = 0; this.minR = R;
+          this.suicide = true;
+        } else if (this.stateT > 6 + Math.random() * 4 && this.runs < this.maxRuns) {
           this.state = 'ATTACK'; this.stateT = 0; this.minR = R;
         }
         return [hdg, this.orbitAlt, this.cruiseSpeed];
@@ -225,7 +310,10 @@ export class Aircraft {
           this.pendingStrike = true;
           this.state = this.runs >= this.maxRuns ? 'ESCAPE' : 'BREAK';
           this.stateT = 0;
-        } else if (R > this.minR * 1.6 + 250 || this.stateT > 40) {
+        } else if (!this.suicide && (R > this.minR * 1.6 + 250 || this.stateT > 40)) {
+          /* 特攻中は立て直さない。外しても FALLING に入るまで押し込む。
+             燃えている機体のほうが健全な機体より危険になるが、それが
+             「燃やしただけで放置すると刺される」という狙いどおりの形。 */
           /* 陣地に届かなかった進入。投弾はしないし、攻撃回数にも数えない
              （数えてしまうと外し続けただけで帰ってしまう）。
              代わりに試行回数を数えて、いつまでも粘らないようにする。 */
@@ -241,7 +329,7 @@ export class Aircraft {
       }
       case 'ESCAPE':
       default: {
-        if (R > 3600) { this.alive = false; this.escaped = true; }
+        if (R > 3600 && !this.doomed) { this.alive = false; this.escaped = true; }
         return [wrapDeg(bearingToBase + 180), 600, this.diveSpeed];
       }
     }
@@ -252,6 +340,18 @@ export class Aircraft {
     this.stateT += dt;
     this.age += dt;
     this.hitFlash = Math.max(0, this.hitFlash - dt * 6);
+
+    // 発火判定。一撃で FALL_AT を下回った場合はそのまま制御喪失へ落ちる
+    if (!this.doomed && this.canDoom && this.hp < this.hpMax * DOOM_AT) {
+      this.doomed = true;
+      this.burnLeft = BURN_SPAN;
+    }
+    if (this.doomed && !this.falling) {
+      this.burnLeft = Math.max(0, this.burnLeft - dt);
+      this.hp -= this.hpMax * BURN_RATE * dt;
+      if (this.hp <= this.hpMax * FALL_AT) this.startFall();
+    }
+    if (this.falling) { this.updateFall(dt, ctx); return; }
 
     // 褒賞機は寿命が来たら黙って帰る。逃したぶんは取り返せない
     if (this.bonus && this.age > this.t.lifetime && this.state !== 'ESCAPE') {
@@ -312,6 +412,79 @@ export class Aircraft {
         this.smokeT = this.critical ? 0.06 : 0.14;
         ctx.fx.smoke(this.x, this.y, this.z, this.critical);
       }
+    }
+  }
+
+  /* 燃えている低空機が、落ちるまでに陣地へ届くか。
+     的（passive）と褒賞機は攻撃行動に入らないので対象外。
+     高空の爆撃機も外す — 1900m から旋回して戻らせるのは時間的に無理だし、
+     絵としても間延びする。投弾点の手前ならそのまま OVERFLY で落とす。 */
+  canSuicide(R) {
+    if (!this.doomed || this.falling || this.passive || this.bonus) return false;
+    if (this.t.band !== 'LOW' || this.burnLeft < 0.5) return false;
+    return R < this.diveSpeed * this.burnLeft * 0.75;
+  }
+
+  /* 制御喪失。ここから HP は死因ではなくなる（1 に固定）。
+     死ぬのは接地したときか、落ちきらずに空中分解したときだけ。 */
+  startFall() {
+    this.falling = true;
+    this.hp = 1;
+    this.fallT = 0;
+    this.suicide = false;
+    this.state = 'FALLING';
+    this.stateT = 0;
+    this.spinDir = this.orbitDir;
+  }
+
+  updateFall(dt, ctx) {
+    this.fallT += dt;
+    // 崩れ具合。0 → 1 に 2.5 秒かけて移る。いきなり錐揉みにしない
+    const s = clamp(this.fallT / 2.5, 0, 1);
+
+    /* 速度。水平の勢いは残したまま、重力で下向きだけが増えていく。
+       結果として軌道が放物線を描き、そこから機首が寝ていく。 */
+    this.vy -= FALL_G * dt;
+    const k = Math.exp(-FALL_DRAG * s * dt);
+    this.vx *= k;
+    this.vz *= k;
+    let v = Math.hypot(this.vx, this.vy, this.vz);
+    if (v > FALL_VMAX) {
+      const f = FALL_VMAX / v;
+      this.vx *= f; this.vy *= f; this.vz *= f;
+      v = FALL_VMAX;
+    }
+    this.speed = v;
+
+    /* 姿勢。ピッチは軌道の傾きを追いかけるだけ。自分から下を向くことは
+       ないので「突然真下を向く」が起きない。追従に上限を付けてあるぶん
+       常に少し遅れ、機首と進行方向がずれた不安定な絵になる。 */
+    const vh = Math.hypot(this.vx, this.vz);
+    const pathPitch = Math.atan2(this.vy, Math.max(1, vh)) * RAD;
+    this.pitch += clamp(pathPitch - this.pitch, -45 * dt, 45 * dt);
+
+    // ヨーとロールは軌道と無関係に回る。これで初めて「制御を失った」に見える
+    this.heading = wrapDeg(this.heading + this.spinDir * 150 * s * dt);
+    this.roll += (this.spinDir * 78 * s - this.roll) * clamp(dt * 1.2, 0, 1);
+
+    this.x += this.vx * dt;
+    this.y += this.vy * dt;
+    this.z += this.vz * dt;
+
+    this.smokeT -= dt;
+    if (this.smokeT <= 0) {
+      this.smokeT = 0.05;
+      ctx.fx.smoke(this.x, this.y, this.z, true);
+    }
+
+    if (this.y <= 12) {
+      this.y = 12;
+      ctx.onCrash && ctx.onCrash(this, 'CRASHED');
+    } else if (this.fallT > FALL_LIMIT) {
+      /* 落ちきらない高空機はここで空中分解する。CONDOR の 20 秒落下を
+         最後まで見せられても間が持たないし、燃えた重爆が空中でバラける
+         のは絵としても正しい。 */
+      ctx.onCrash && ctx.onCrash(this, 'BROKE UP');
     }
   }
 

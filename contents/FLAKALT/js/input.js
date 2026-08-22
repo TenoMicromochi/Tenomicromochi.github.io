@@ -7,6 +7,24 @@
    ロックが外れたら自動的にポーズ扱いにする（メニューへ戻す判断は game 側）。
    ============================================================ */
 
+/* 隠しコマンド。ゲーム側の状態を見ないので、タイトルでもプレイ中でも入る。
+
+   出だしの ↑↑↓↓ が共通なので、片方だけを見ていると取り違える。
+   直近の入力を丸ごと持って、両方に突き合わせる。 */
+const CHEATS = {
+  // コナミコマンド → INVINCIBLE MODE
+  invincible: [
+    'ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown',
+    'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'KeyB', 'KeyA',
+  ],
+  // ゼビウスコマンド → TRIGGER HAPPY MODE。L R はそのまま L キーと R キー
+  triggerHappy: [
+    'ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown',
+    'KeyL', 'KeyR', 'KeyL', 'KeyR', 'KeyB', 'KeyA',
+  ],
+};
+const CHEAT_LEN = Math.max(...Object.values(CHEATS).map((s) => s.length));
+
 export class Input {
   constructor(canvas) {
     this.canvas = canvas;
@@ -19,6 +37,8 @@ export class Input {
     this.zoom = false;
     this.locked = false;
     this.clicked = false;
+    this.cheatBuf = [];     // 隠しコマンド照合用の直近入力
+    this.cheat = null;      // 成立したコマンド名。takeCheat() で 1 回だけ受け取る
 
     addEventListener('keydown', (e) => {
       if (e.repeat) { return; }
@@ -28,6 +48,7 @@ export class Input {
       }
       this.keys.add(e.code);
       this.queue.push(e.code);
+      this.trackCheat(e.code);
     });
     addEventListener('keyup', (e) => this.keys.delete(e.code));
     addEventListener('blur', () => { this.keys.clear(); this.fire = false; });
@@ -69,6 +90,31 @@ export class Input {
 
   unlock() {
     if (this.locked) document.exitPointerLock();
+  }
+
+  /* 直近 10 打を保持して丸ごと突き合わせる。
+
+     「一致した数を数えて、外れたら 0 に戻す」で書くと ↑↑↑↓↓… のように
+     先頭を余分に押した入力を取りこぼす。3 打目の ↑ で不一致になった時点で、
+     直前の 2 打が正しい出だしになっていることを見落とすため。 */
+  trackCheat(code) {
+    this.cheatBuf.push(code);
+    if (this.cheatBuf.length > CHEAT_LEN) this.cheatBuf.shift();
+    for (const [name, seq] of Object.entries(CHEATS)) {
+      if (this.cheatBuf.length < seq.length) continue;
+      const tail = this.cheatBuf.slice(this.cheatBuf.length - seq.length);
+      if (seq.every((k, i) => k === tail[i])) {
+        this.cheatBuf.length = 0;
+        this.cheat = name;
+        return;
+      }
+    }
+  }
+
+  takeCheat() {
+    const c = this.cheat;
+    this.cheat = null;
+    return c;
   }
 
   down(code) { return this.keys.has(code); }
