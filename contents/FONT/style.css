@@ -10,69 +10,386 @@
 @font-face { font-family: 'TenoGlyph 4x4'; src: url('../../fonts/TenoGlyph 4x4.ttf') format('truetype'); }
 @font-face { font-family: 'TenoGlyph Magic'; src: url('../../fonts/TenoGlyph Magic.otf') format('opentype'); }
 
+:root {
+    --fallback-stack: "Yu Gothic", "Hiragino Sans", Meiryo, system-ui, sans-serif;
+    --muted-glyph: #b9c6ce;   /* 未収録文字を「ギリギリ見える」濃さで */
+}
+
+/* ドット絵を潰さないための共通指定。
+   整数倍のサイズ計算は script.js 側で行い、ここでは補間と
+   ヒンティングによる歪みを止める。 */
+.tile.covered,
+#glyph-big,
+.strip-glyph,
+.in-ok {
+    image-rendering: pixelated;
+    -webkit-font-smoothing: none;
+    font-smooth: never;
+    text-rendering: geometricPrecision;
+    font-synthesis: none;
+}
+
+/* ============================================================
+   3カラムレイアウト
+
+   文字タイルは横16列を必ず1画面に並べたいので、
+   このページだけ共通の最大幅制限を外して画面幅いっぱいを使う。
+   ============================================================ */
+.page-content.wide { max-width: none; }
+
 .font-layout {
     display: flex;
-    gap: 20px;
+    gap: 16px;
+    align-items: flex-start;
     border: 1px solid var(--border);
     background: var(--panel);
     border-radius: var(--radius);
     padding: 16px;
-    flex-wrap: wrap;
 }
 
-.font-list-area { width: 260px; }
-.preview-area { flex: 1; min-width: 260px; }
+.col-select { width: 180px; flex: none; }
+.col-center { width: 248px; flex: none; }
+.col-chart  { flex: 1; min-width: 0; }
 
+/* 中央カラムは上から積み上がるので、途中に小数高さの行が1つでもあると
+   下のグリフ枠が小数Y座標に載ってドットが滲む。
+   このカラムに並ぶ要素は line-height を整数pxで固定する。 */
 .label {
-    font-size: 10px;
+    font-family: var(--font-heading);
+    font-size: 8px;
+    line-height: 10px;
     letter-spacing: 2px;
     color: var(--accent);
-    font-weight: bold;
     margin-bottom: 6px;
 }
+.col-center .label { margin-top: 14px; }
+.col-center .label:first-child { margin-top: 0; }
 
+/* ── 左: 書体選択 ── */
+/* 高さを UA まかせにすると小数になり、
+   モバイルで下に回り込む中央カラムのY座標がずれる */
 #font-selector {
     width: 100%;
-    height: 170px;
+    height: 148px;
     font-family: var(--font-mono);
     font-size: 12px;
+    line-height: 17px;
     border: 1px solid var(--border);
     border-radius: var(--radius);
     color: var(--text);
     background: var(--bg);
 }
 
-#download-area { margin-top: 15px; }
+.font-meta {
+    margin: 10px 0;
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    background: var(--bg);
+    padding: 6px 8px;
+    font-size: 10px;
+}
+.font-meta div { display: flex; justify-content: space-between; line-height: 1.7; }
+.font-meta .k { color: var(--sub); letter-spacing: 1px; }
+.font-meta .v { color: var(--accent2); }
 
-#download-button { width: 100%; }
+#download-button { width: 100%; line-height: 14px; }
 
-#font-preview-display {
-    width: 100%;
-    min-height: 120px;
+/* ── 中央: 大プレビュー ── */
+#glyph-stage {
+    width: 242px;
+    height: 242px;
     border: 1px solid var(--border);
     border-radius: var(--radius);
     background: var(--bg);
-    padding: 10px;
-    font-size: 24px;
-    word-break: break-all;
-    overflow-y: auto;
+    overflow: hidden;
+}
+#glyph-big {
+    display: block;
     color: var(--text);
-    font-family: 'TenoText 3x6'; /* 初期フォント */
+    white-space: pre;
+}
+#glyph-big.missing {
+    font-family: var(--fallback-stack);
+    font-size: 104px;
+    line-height: 242px;
+    width: 242px;
+    text-align: center;
+    color: var(--muted-glyph);
+}
+#glyph-big.void { display: block; height: 242px; }
+
+.glyph-code {
+    margin-top: 6px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 14px;
+    letter-spacing: 1px;
+    color: var(--sub);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    background: var(--bg);
+    padding: 4px 6px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+.glyph-code em { font-style: normal; color: var(--border); }
+.glyph-code .ok { color: var(--accent2); }
+.glyph-code .ng { color: var(--danger); font-size: 9px; letter-spacing: 0; }
+
+/* ── 中央: 書体横断ストリップ ── */
+/* 枠幅は固定にする。1fr にすると小数px幅になり、
+   中の40pxグリフ枠が小数位置に載ってドットが滲む。 */
+.font-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 56px);
+    justify-content: start;
+    gap: 4px;
+}
+.strip-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 3px 0 2px;
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    background: var(--bg);
+    cursor: pointer;
+    overflow: hidden;
+}
+.strip-item:hover { border-color: var(--accent); }
+.strip-item.current { border-color: var(--accent); background: var(--panel2); }
+.strip-item.off { opacity: 0.32; }
+.strip-glyph {
+    display: block;
+    width: 52px;
+    height: 52px;
+    color: var(--text);
+    white-space: pre;
+    overflow: hidden;
+}
+.strip-item.off .strip-glyph::after {
+    content: '';
+    display: block;
+    width: 16px;
+    height: 1px;
+    background: var(--sub);
+    margin: 26px auto 0;
+}
+.strip-label {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: var(--sub);
+    letter-spacing: 0;
+    line-height: 1;
 }
 
+/* ── 中央: 入力 ── */
 #preview-input {
     width: 100%;
-    margin-top: 20px;
-    padding: 8px;
+    padding: 6px;
     border: 1px solid var(--border);
     border-radius: var(--radius);
     font-family: var(--font-mono);
     font-size: 12px;
+    line-height: 16px;
     color: var(--text);
     background: var(--bg);
+}
+.input-preview {
+    margin-top: 6px;
+    min-height: 46px;
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    background: var(--bg);
+    padding: 6px;
+    line-height: 1.5;
+    word-break: break-all;
+    color: var(--text);
+}
+.in-ng {
+    font-family: var(--fallback-stack);
+    color: var(--danger);
+    border-bottom: 2px solid var(--danger);
+}
+
+.missing-report {
+    margin-top: 6px;
+    font-size: 10px;
+    line-height: 1.8;
+}
+.missing-report .all-ok { color: var(--success); letter-spacing: 1px; }
+.missing-report .miss-head {
+    color: var(--danger);
+    letter-spacing: 1px;
+    margin-right: 6px;
+}
+.miss-chip {
+    display: inline-block;
+    font-family: var(--fallback-stack);
+    font-size: 13px;
+    border: 1px solid var(--danger);
+    border-radius: var(--radius);
+    padding: 0 4px;
+    margin: 0 3px 3px 0;
+    color: var(--danger);
+    background: var(--bg);
+}
+
+/* ============================================================
+   右: 文字タイル / 比較
+   ============================================================ */
+.chart-head {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+#page-selector {
+    flex: 1;
+    min-width: 0;
+    padding: 5px 6px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+#page-selector:disabled { opacity: 0.4; }
+
+.mode-toggle { display: flex; flex: none; }
+.mode-toggle button {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    padding: 5px 10px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--sub);
+    cursor: pointer;
+}
+.mode-toggle button:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+.mode-toggle button:last-child { border-radius: 0 var(--radius) var(--radius) 0; border-left: none; }
+.mode-toggle button.active { background: var(--accent); color: #fff; border-color: var(--accent2); }
+
+/* ドット絵は縮小せず、狭い画面では横スクロールさせる */
+.chart-scroll {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+    padding: 6px;
+}
+
+.char-grid {
+    display: grid;
+    width: max-content;
+    gap: 0;
+}
+.char-grid:focus { outline: 1px solid var(--accent); outline-offset: 2px; }
+
+.grid-corner,
+.grid-colhead,
+.grid-rowhead {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--sub);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0;
+}
+.grid-colhead { height: 18px; }
+.grid-rowhead { width: 36px; justify-content: flex-end; padding-right: 5px; }
+
+/* 寸法は script.js が右カラムの実幅から決めて --cell-w / --cell-h に入れる */
+.tile {
+    width: var(--cell-w, 36px);
+    height: var(--cell-h, 46px);
+    overflow: hidden;
+    white-space: pre;
+    border: 1px solid transparent;
+    cursor: pointer;
+}
+.tile.covered { color: var(--text); }
+.tile.covered:hover { background: var(--panel2); }
+
+/* 未収録だが字形はある文字 = 汎用フォントで薄く */
+.tile.missing {
+    font-family: var(--fallback-stack);
+    font-size: var(--missing-size, 15px);
+    line-height: var(--cell-h, 46px);
+    text-align: center;
+    color: var(--muted-glyph);
+}
+.tile.missing:hover { color: var(--sub); background: var(--panel2); }
+
+/* 制御文字など、そもそも字形が存在しないもの */
+.tile.void { cursor: default; }
+.tile.void::after {
+    content: '';
+    display: block;
+    width: 2px;
+    height: 2px;
+    background: var(--border2);
+    margin: calc((var(--cell-h, 46px) - 2px) / 2) auto 0;
+}
+
+.tile.sel {
+    border-color: var(--danger);
+    box-shadow: inset 0 0 0 1px var(--danger);
+}
+
+.chart-status {
+    margin-top: 6px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--sub);
+    letter-spacing: 1px;
+}
+
+/* ── COMPARE ── */
+.compare-view { width: max-content; }
+.compare-table {
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: 9px;
+}
+.compare-table th,
+.compare-table td {
+    border: 1px solid var(--border2);
+    padding: 3px 4px;
+    text-align: center;
+    white-space: nowrap;
+}
+.compare-table thead th { color: var(--sub); background: var(--panel2); }
+.c-fontname {
+    text-align: left;
+    color: var(--accent2);
+    background: var(--panel);
+    cursor: pointer;
+    letter-spacing: 0;
+}
+.compare-table tbody tr.current .c-fontname { background: var(--accent); color: #fff; }
+.c-empty { background: repeating-linear-gradient(45deg, transparent 0 3px, var(--panel2) 3px 4px); }
+.c-has { color: var(--accent2); cursor: pointer; }
+.c-has:hover { outline: 2px solid var(--danger); outline-offset: -2px; }
+
+/* ============================================================
+   レスポンシブ
+   ドット絵の等倍は崩さない。畳むのはカラム構成だけ。
+   ============================================================ */
+/* 3カラムを保つと右カラムが狭くなりすぎて倍率が落ちるので、
+   このあたりから文字タイルを下段に回して幅を明け渡す */
+@media (max-width: 1140px) {
+    .font-layout { flex-wrap: wrap; }
+    .col-select { width: 180px; }
+    .col-center { width: calc(100% - 196px); }
+    .col-chart  { width: 100%; flex: none; }
 }
 
 @media (max-width: 560px) {
     .font-layout { flex-direction: column; }
-    .font-list-area { width: 100%; }
+    .col-select,
+    .col-center { width: 100%; }
 }

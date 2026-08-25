@@ -1,0 +1,74 @@
+[
+    {
+        "family": "TenoText 3x6",
+        "label": "TenoText 3x6",
+        "note": "",
+        "file": "/fonts/TenoText 3x6.ttf",
+        "emPx": 6,
+        "pixelGrid": true,
+        "download": "https://drive.google.com/file/d/1QerZ_rMFfWiN3U_g5FO63DoYzknbywKG/view?usp=drive_link"
+    },
+    {
+        "family": "TenoText 8x8",
+        "label": "TenoText 8x8",
+        "note": "Shift-JIS Kanji-Omit",
+        "file": "/fonts/TenoText 8x8.otf",
+        "emPx": 8,
+        "pixelGrid": true,
+        "download": "https://drive.google.com/file/d/1TO2TQD6ArD0f_egjggsQ7QtCT_Ar-Ejw/view?usp=drive_link"
+    },
+    {
+        "family": "TenoText 8x10",
+        "label": "TenoText 8x10",
+        "note": "",
+        "file": "/fonts/TenoText 8x10.ttf",
+        "emPx": 10,
+        "pixelGrid": true,
+        "download": "https://drive.google.com/file/d/1V5pzXQTsT-GlhXTkyZaxuvI3dSJ8iYbG/view?usp=drive_link"
+    },
+    {
+        "family": "TenoText 8x11(+Extended ASCII)",
+        "label": "TenoText 8x11",
+        "note": "+Extended ASCII",
+        "file": "/fonts/TenoText 8x11(+Extended ASCII).ttf",
+        "emPx": 11,
+        "pixelGrid": true,
+        "download": "https://drive.google.com/file/d/1G4F4z_FnSS57IZGjI8tT9SyzKhF6QAsa/view?usp=drive_link"
+    },
+    {
+        "family": "TenoText 7x13",
+        "label": "TenoText 7x13",
+        "note": "Shift-JIS Kanji-Omit",
+        "file": "/fonts/TenoText 7x13.otf",
+        "emPx": 13,
+        "pixelGrid": true,
+        "download": "https://drive.google.com/file/d/1e2r7MQY0dx0raRujRLSlEe5t56a96aXh/view?usp=drive_link"
+    },
+    {
+        "family": "TenoText 11x31",
+        "label": "TenoText 11x31",
+        "note": "",
+        "file": "/fonts/TenoText 11x31.otf",
+        "emPx": 32,
+        "pixelGrid": true,
+        "download": "https://drive.google.com/file/d/1venB4GmraXTRS9n8n2huWCjlgzTya6Ea/view?usp=drive_link"
+    },
+    {
+        "family": "TenoGlyph 4x4",
+        "label": "TenoGlyph 4x4",
+        "note": "",
+        "file": "/fonts/TenoGlyph 4x4.ttf",
+        "emPx": 4,
+        "pixelGrid": true,
+        "download": "https://drive.google.com/file/d/17GgSBsyuzpW1lCwy3xNTqT9Uz7eJrIuY/view?usp=drive_link"
+    },
+    {
+        "family": "TenoGlyph Magic",
+        "label": "TenoGlyph Magic",
+        "note": "non-grid",
+        "file": "/fonts/TenoGlyph Magic.otf",
+        "emPx": 22,
+        "pixelGrid": false,
+        "download": "https://drive.google.com/file/d/1FFgSVtty5hB7iOVTdVrrQBLCYMAK0Hkm/view?usp=drive_link"
+    }
+]

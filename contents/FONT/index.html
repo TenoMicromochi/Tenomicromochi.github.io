@@ -22,38 +22,54 @@
     <div class="tagline">original font distribution</div>
 </header>
 
-<div class="page-content">
+<div class="page-content wide">
     <h2 class="section-title">FONT DISTRIBUTION</h2>
 
     <div class="font-layout">
-        <div class="font-list-area">
+
+        <!-- ── 左: 書体選択 ── -->
+        <aside class="col-select">
             <div class="label">FONT SELECT</div>
-            <select id="font-selector" size="10">
-                <option value="TenoText 3x6" selected>TenoText 3x6</option>
-                <option value="TenoText 8x8">TenoText 8x8(Shift-JIS Kanji-Omit)</option>
-                <option value="TenoText 8x10">TenoText 8x10</option>
-                <option value="TenoText 8x11(+Extended ASCII)">TenoText 8x11</option>
-                <option value="TenoText 7x13">TenoText 7x13(Shift-JIS Kanji-Omit)</option>
-                <option value="TenoText 11x31">TenoText 11x31</option>
-                <option value="TenoGlyph 4x4">TenoGlyph 4x4</option>
-                <option value="TenoGlyph Magic">TenoGlyph Magic</option>
-            </select>
+            <select id="font-selector" size="8"></select>
+            <div id="font-meta" class="font-meta"></div>
+            <button id="download-button" class="btn">DOWNLOAD</button>
+        </aside>
 
-            <div id="download-area">
-                <button id="download-button" class="btn">DOWNLOAD</button>
+        <!-- ── 中央: グリフ拡大 / 書体横断 / 入力 ── -->
+        <section class="col-center">
+            <div class="label">GLYPH</div>
+            <div id="glyph-stage"><span id="glyph-big"></span></div>
+            <div id="glyph-code" class="glyph-code">&nbsp;</div>
+
+            <div class="label">ACROSS FONTS</div>
+            <div id="font-strip" class="font-strip"></div>
+
+            <div class="label">INPUT TEXT</div>
+            <input type="text" id="preview-input"
+                   placeholder="ここに入力した文字がプレビューされるのです">
+            <div id="input-preview" class="input-preview"></div>
+            <div id="missing-report" class="missing-report"></div>
+        </section>
+
+        <!-- ── 右: 文字タイル / 書体比較 ── -->
+        <section class="col-chart">
+            <div class="chart-head">
+                <select id="page-selector"></select>
+                <div class="mode-toggle">
+                    <button type="button" data-mode="page" class="active">PAGE</button>
+                    <button type="button" data-mode="compare">COMPARE</button>
+                </div>
             </div>
-        </div>
+            <div id="chart-scroll" class="chart-scroll">
+                <div id="char-grid" class="char-grid"></div>
+                <div id="compare-view" class="compare-view" hidden></div>
+            </div>
+            <div id="chart-status" class="chart-status"></div>
+        </section>
 
-        <div class="preview-area">
-            <div class="label">PREVIEW</div>
-            <div id="font-preview-display">The quick brown fox jumps over the lazy dog.</div>
-
-            <div class="label" style="margin-top: 20px;">INPUT TEXT</div>
-            <input type="text" id="preview-input" placeholder="ここに入力した文字が上でプレビューされるのです">
-        </div>
     </div>
 </div>
 
-<script src="script.js"></script>
+<script type="module" src="script.js"></script>
 </body>
 </html>
