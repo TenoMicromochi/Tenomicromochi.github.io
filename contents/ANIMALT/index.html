@@ -15,10 +15,11 @@
 <link rel="stylesheet" href="/main.css">
 <script src="/menu.js" defer></script>
 </head>
-<body>
+<!-- alt-app が ALT ツール共通の 100vh シェルを有効にする（/alt.css） -->
+<body class="alt-app">
 <!-- クラスを付けて選択子を絞ってある。サイト共通の上部ナビ（#sodenmir-topbar）も
      <header> 要素なので、素の header{} で書くとそちらまで巻き込む -->
-<header class="app-header">
+<header class="site-header app-header">
   <!-- Δ は TenoText 8x8 に収録されている（--font-heading で出る） -->
   <div class="logo">ANIM<em>ALT</em>-Δ</div>
   <div class="tagline">animated image to colored text art</div>
@@ -32,7 +33,7 @@
 <button class="edge-tab edge-tab-right" id="tabRight" type="button" aria-label="Toggle color and palette panel"><span id="tabRightLabel">COLOR / PALETTE</span></button>
 
 <!-- ══ LEFT PANEL ═════════════════════════════════════ -->
-<aside class="panel panel-left hidden" id="panelLeft">
+<aside class="side-panel side-panel-left hidden" id="panelLeft">
   <div class="panel-col">
 
     <div class="section">
@@ -174,7 +175,7 @@
 </aside>
 
 <!-- ══ CANVAS ═════════════════════════════════════════ -->
-<main class="canvas-area">
+<main class="work-area">
   <div class="toolbar">
     <button class="btn small" id="playBtn" disabled>▶ PLAY</button>
     <input type="range" id="frameSlider" min="0" max="0" value="0" disabled>
@@ -226,7 +227,7 @@
 </main>
 
 <!-- ══ RIGHT PANEL ════════════════════════════════════ -->
-<aside class="panel panel-right hidden" id="panelRight">
+<aside class="side-panel side-panel-right hidden" id="panelRight">
   <div class="panel-col">
 
     <div class="section">

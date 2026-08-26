@@ -1,76 +1,36 @@
 /* ============================================================
-   TEXTALT-V — CHROMALT-Q Design System Port
+   TEXTALT-V — style.css
+
+   画面の骨格（シェル・サイドバー・スライダー・セグメントボタン・
+   折り返し）は /alt.css が持っている。
+   ここに書くのは TEXTALT にしかない部品だけ：
+   トグルスイッチ、文字セット入力、AA の出力欄、PNG書き出し。
    ============================================================ */
 
 @import url('/theme.css');
+@import url('/alt.css');
 
+/* AA のプレビューと出力に使う等幅ドットフォント。
+   画面のUI文字（TenoText 8x8 / PixelMplus12）とは別物 */
 @font-face {
     font-family: 'TenoText';
     src: url('TenoText 8x11(+Extended ASCII).ttf');
 }
 
-body {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    min-height: 100vh;
-    padding: 0 0 40px 0;
-}
+/* ヘッダはスクロールしても残す */
+body.alt-app .site-header { position: sticky; top: 0; z-index: 100; }
 
-/* ---- Header（GLYPHALTと共通の見た目。テーマとの差分のみ上書き） ---- */
-.site-header {
-    background: var(--bg);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-}
-
-/* ── 設定項目のキャプション文字（INVERT/BRIGHTNESS等） ── */
-.ctrl-label, .hint, .status-bar {
-  font-family: var(--font-body);
-}
-
-/* ---- App Layout ---- */
-.app-layout {
-    display: grid;
-    grid-template-columns: 224px 224px 1fr;
-    gap: 0;
-    padding: 0;
-    max-width: 100%;
-    align-items: start;
-    min-height: calc(100vh - 45px);
-}
-.col { display: flex; flex-direction: column; }
-
-/* ---- Sidebar columns ---- */
-.col-left,
-.col-center {
-    border-right: 1px solid var(--border);
-    padding: 10px;
-    gap: 8px;
-    background: var(--panel);
-    min-height: calc(100vh - 45px);
-}
-.col-right {
-    padding: 12px;
-    gap: 8px;
-    background: var(--bg);
-}
-
-/* ---- Panel ---- */
-.panel {
+/* ---- Panel ----
+   サイドバーの中では枠を消して、見出しの下線だけで区切る */
+.sidebar .panel {
     background: transparent;
     border: none;
     border-radius: 0;
     overflow: visible;
 }
-.panel-header {
-    font-family: var(--font-heading);
-    font-size: 9px;
-    letter-spacing: 2px;
-    color: var(--accent);
-    font-weight: bold;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 3px;
+.sidebar .panel-head {
+    background: transparent;
+    padding: 0 0 3px;
     margin-bottom: 5px;
 }
 .panel-body {
@@ -81,11 +41,9 @@ body {
 }
 .preview-body {
     padding: 0;
-    background: #111;
+    background: var(--canvas-bg);
     border: 1px solid var(--border);
 }
-
-/* Divider between panels */
 .panel + .panel {
     padding-top: 8px;
     border-top: 1px solid var(--border);
@@ -93,17 +51,11 @@ body {
 }
 
 /* ---- Controls ---- */
-.control-row {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-.toggle-row {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-}
+.control-row { display: flex; flex-direction: column; gap: 2px; }
+.toggle-row { flex-direction: row; align-items: center; justify-content: space-between; }
+
 .ctrl-label {
+    font-family: var(--font-body);
     font-size: 9px;
     letter-spacing: 1px;
     color: var(--sub);
@@ -113,7 +65,6 @@ body {
     justify-content: space-between;
 }
 
-/* ---- Value Badge ---- */
 .val-badge {
     display: inline-block;
     background: var(--bg);
@@ -127,43 +78,10 @@ body {
     font-family: var(--font-mono);
 }
 
-/* ---- Slider ---- */
-.slider {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100%;
-    height: 3px;
-    background: linear-gradient(90deg, var(--accent) 50%, var(--border) 50%);
-    border-radius: 0;
-    outline: none;
-    cursor: pointer;
-    border: none;
-}
-.slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 11px;
-    height: 11px;
-    background: var(--accent);
-    border: 2px solid var(--bg);
-    border-radius: 50%;
-    cursor: pointer;
-    box-shadow: 0 0 0 1px var(--accent);
-}
-.slider::-moz-range-thumb {
-    width: 11px;
-    height: 11px;
-    background: var(--accent);
-    border: 2px solid var(--bg);
-    border-radius: 50%;
-    cursor: pointer;
-    border: none;
-}
+/* .slider は input[type=range]。見た目は alt.css が持っているので、
+   ここでは何も足さない（塗り分けの位置は main.js が直接指定する） */
 
-.hint {
-    font-size: 9px;
-    color: var(--sub);
-    letter-spacing: 1px;
-}
+.hint { font-family: var(--font-body); font-size: 9px; color: var(--sub); letter-spacing: 1px; }
 
 /* ---- Toggle Switch ---- */
 .toggle-switch { cursor: pointer; }
@@ -195,26 +113,8 @@ body {
     background: var(--bg);
 }
 
-/* ---- Select ---- */
-.select-input {
-    width: 100%;
-    background: var(--bg);
-    color: var(--text);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 3px 5px;
-    font-family: var(--font-mono);
-    font-size: 10px;
-    outline: none;
-    cursor: pointer;
-}
-.select-input:focus { border-color: var(--accent); }
-.select-input option, .select-input optgroup {
-    background: var(--bg);
-    color: var(--text);
-}
-
-/* ---- File Input ---- */
+/* ---- Select / File input ----
+   select の見た目は alt.css。ファイル入力だけここで揃える */
 .file-input {
     width: 100%;
     background: var(--bg);
@@ -238,7 +138,7 @@ body {
     border-radius: var(--radius);
 }
 
-/* ---- Buttons ---- */
+/* ---- 小さめの副ボタン（文字セットのプリセット等） ---- */
 .btn-secondary {
     background: var(--bg);
     color: var(--accent);
@@ -252,7 +152,7 @@ body {
     letter-spacing: 1px;
     transition: background 0.1s;
 }
-.btn-secondary:hover { background: #eef5f5; }
+.btn-secondary:hover { background: var(--hover); }
 .btn-secondary:active { opacity: 0.85; }
 .control-row .btn-secondary + .btn-secondary { margin-left: 4px; }
 .control-row:has(.btn-secondary) { flex-direction: row; align-items: center; }
@@ -275,14 +175,9 @@ body {
     line-height: 1.5;
 }
 .char-textarea:focus { border-color: var(--accent); }
-.char-counter {
-    font-size: 9px;
-    color: var(--sub);
-    text-align: right;
-    letter-spacing: 1px;
-}
+.char-counter { font-size: 9px; color: var(--sub); text-align: right; letter-spacing: 1px; }
 
-/* ---- Grid Control ---- */
+/* ---- Grid Control（出力サイズの 縦 x 横 指定） ---- */
 .grid-control-row {
     display: flex;
     align-items: center;
@@ -290,17 +185,8 @@ body {
     justify-content: center;
     padding: 4px 0;
 }
-.grid-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-}
-.grid-cross {
-    color: var(--sub);
-    font-size: 16px;
-    margin-bottom: 2px;
-}
+.grid-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.grid-cross { color: var(--sub); font-size: 16px; margin-bottom: 2px; }
 .number-spin {
     display: flex;
     align-items: center;
@@ -321,7 +207,7 @@ body {
     justify-content: center;
     transition: color 0.1s, background 0.1s;
 }
-.spin-btn:hover { color: var(--accent); background: #eef5f5; }
+.spin-btn:hover { color: var(--accent); background: var(--hover); }
 .spin-val {
     width: 28px;
     text-align: center;
@@ -343,6 +229,7 @@ body {
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 4px 8px;
+    font-family: var(--font-body);
     font-size: 9px;
     color: var(--sub);
     letter-spacing: 1px;
@@ -375,12 +262,12 @@ body {
 #previewCanvas {
     width: 100%;
     display: block;
-    background: #111;
+    background: var(--canvas-bg);
     image-rendering: pixelated;
 }
 
 /* ---- Output Panel ---- */
-.output-panel { height: 100%; }
+.output-panel { height: 100%; width: 100%; }
 .output-body {
     padding: 0;
     background: #f8fafb;
@@ -406,7 +293,7 @@ body {
     display: block;
 }
 
-/* ---- Output Panel Tabs ---- */
+/* 出力欄の見出し。タブを右端に寄せるためだけの行 */
 .output-panel-header {
     display: flex;
     align-items: center;
@@ -417,85 +304,32 @@ body {
     margin-bottom: 5px;
 }
 .output-title {
-    font-size: 9px;
+    font-family: var(--font-heading);
+    font-size: 8px;
     letter-spacing: 2px;
     color: var(--accent);
-    font-weight: bold;
 }
-.view-tabs {
-    display: flex;
-    gap: 0;
-}
-.view-tab {
-    background: var(--bg);
-    color: var(--sub);
-    border: 1px solid var(--border);
-    border-radius: 0;
-    padding: 3px 10px;
-    font-family: var(--font-mono);
-    font-size: 9px;
-    font-weight: bold;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: background 0.1s, color 0.1s;
-}
-.view-tab:first-child { border-radius: var(--radius) 0 0 var(--radius); }
-.view-tab:last-child  { border-radius: 0 var(--radius) var(--radius) 0; }
-.view-tab + .view-tab { border-left: none; }
-.view-tab.active {
-    background: var(--accent);
-    color: #fff;
-    border-color: var(--accent2);
-}
-.view-tab:not(.active):hover { background: #eef5f5; color: var(--accent); }
+
+/* .view-tab / .btn-scale はどちらも alt.css の .view-btn を併用している。
+   クラス名を残してあるのは JS が querySelectorAll で拾っているため */
+.view-tabs { display: flex; }
 
 .output-tab { display: none; width: 100%; }
 .output-tab.active { display: block; width: 100%; }
 
 #bitmapCanvas {
     display: block;
-    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
     image-rendering: crisp-edges;
+    image-rendering: pixelated;
     width: 100%;
     height: auto;
     background: #1a1d28;
 }
 
 /* ---- Export PNG ---- */
-.scale-btn-group {
-    display: flex;
-    gap: 4px;
-}
-.btn-scale {
-    flex: 1;
-    background: var(--bg);
-    color: var(--sub);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 5px 0;
-    font-family: var(--font-mono);
-    font-size: 10px;
-    font-weight: bold;
-    cursor: pointer;
-    letter-spacing: 1px;
-    transition: border-color 0.1s, color 0.1s, background 0.1s;
-}
-.btn-scale:hover { border-color: var(--accent); color: var(--accent); background: #eef5f5; }
-.btn-scale.active {
-    background: var(--accent);
-    border-color: var(--accent2);
-    color: #fff;
-}
-.color-picker-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.color-field {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
+.color-picker-row { display: flex; align-items: center; gap: 8px; }
+.color-field { display: flex; align-items: center; gap: 4px; }
 .color-dot {
     display: inline-block;
     width: 12px;
@@ -513,25 +347,6 @@ body {
     cursor: pointer;
     background: var(--bg);
 }
-.export-status {
-    font-size: 9px;
-    color: var(--sub);
-    min-height: 14px;
-    letter-spacing: 1px;
-}
+.export-status { font-size: 9px; color: var(--sub); min-height: 14px; letter-spacing: 1px; }
 .export-status.ok  { color: var(--accent); }
 .export-status.err { color: var(--danger); }
-
-/* ---- Responsive ---- */
-@media (max-width: 900px) {
-    .app-layout {
-        grid-template-columns: 1fr 1fr;
-    }
-    .col-right {
-        grid-column: 1 / -1;
-    }
-}
-@media (max-width: 600px) {
-    .app-layout { grid-template-columns: 1fr; }
-    .col-right { grid-column: 1; }
-}

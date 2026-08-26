@@ -16,6 +16,10 @@
     --danger:   #993333;
     --success:  #2e8b47;
     --success2: #1c5c2d;
+    /* accent に反応する要素の薄い下地。hover・選択中・OKトースト共通 */
+    --hover:     #eef5f5;
+    /* 出力キャンバスの下地。ドット絵を載せる暗色で、--text とは別物 */
+    --canvas-bg: #111111;
     --radius:   3px;
     --font-mono:    'Courier New', Courier, monospace;
     --font-heading: 'TenoText 8x8', var(--font-mono);
@@ -49,7 +53,12 @@ body {
     align-items: baseline;
     gap: 16px;
 }
-.site-header .logo { font-family: var(--font-heading); font-size: 20px; font-weight: bold; color: var(--accent); letter-spacing: 3px; }
+/* 見出しフォント（TenoText 8x8）を使う要素の約束：
+   - font-size は 8 の倍数だけ。8=等倍 / 16=2倍 / 24=3倍。
+     20px や 12px のような中途半端な値はドットが非整数倍に潰れる
+   - 元からボールド調のフォントなので font-weight は付けない
+     （付けると合成ボールドがかかって輪郭が滲む） */
+.site-header .logo { font-family: var(--font-heading); font-size: 24px; color: var(--accent); letter-spacing: 3px; }
 .site-header .logo em { color: var(--text); font-style: normal; }
 .site-header .tagline { font-family: var(--font-body); font-size: 11px; color: var(--sub); letter-spacing: 1px; }
 
@@ -69,10 +78,9 @@ body {
 }
 .panel-head {
     font-family: var(--font-heading);
-    font-size: 10px;
+    font-size: 8px;
     letter-spacing: 2px;
     color: var(--accent);
-    font-weight: bold;
     background: var(--panel2);
     border-bottom: 1px solid var(--border);
     padding: 5px 10px;
@@ -81,10 +89,9 @@ body {
 
 .section-title {
     font-family: var(--font-heading);
-    font-size: 12px;
+    font-size: 16px;
     letter-spacing: 2px;
     color: var(--accent);
-    font-weight: bold;
     border-bottom: 1px solid var(--border);
     padding-bottom: 4px;
     margin-bottom: 12px;
@@ -107,7 +114,7 @@ body {
 .btn:hover { background: var(--accent2); }
 .btn:active { opacity: 0.85; }
 .btn.secondary { background: transparent; color: var(--accent); border-color: var(--accent); }
-.btn.secondary:hover { background: #eef5f5; }
+.btn.secondary:hover { background: var(--hover); }
 
 /* ── ステータス風ラベル ── */
 .status-line {

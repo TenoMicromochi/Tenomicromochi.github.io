@@ -2,23 +2,13 @@
 
 /* ── Variables（テーマにない分だけ追加） ─────────────────────── */
 :root {
-    --accent3: #333355;
-    --muted:   #aabbcc;
+    --muted: #aabbcc;
 }
 
 body { line-height: 1.6; }
 
-/* リニューアルに伴い、このページは PixelMplus12 に統一 */
-.site-header .tagline {
-    font-family: 'PixelMplus12', var(--font-mono);
-}
-
-.site-header .logo {
-    font-family: 'TenoText 8x8', var(--font-mono);
-    font-size: 24px;
-}
-
-.site-header .logo em { color: var(--accent3); }
+/* ヘッダ（ロゴ 24px / tagline は PixelMplus12 / em は --text）と
+   .panel-head の字面は theme.css の定義そのまま。ここでは上書きしない */
 
 /* ── Page wrapper ────────────────────────────────────────────── */
 .page {
@@ -42,13 +32,6 @@ body { line-height: 1.6; }
     display: flex;
     flex-direction: column;
     gap: 16px;
-}
-
-/* ── Panel header（テーマより小さいサイズで使用） ──────────────── */
-.panel-head {
-    font-family: 'TenoText 8x8', var(--font-mono);
-    font-size: 8px;
-    font-weight: normal;
 }
 
 /* ── Icon block ──────────────────────────────────────────────── */

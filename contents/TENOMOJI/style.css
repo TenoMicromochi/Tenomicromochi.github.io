@@ -20,7 +20,7 @@ body {
 }
 
 /* ── 設定項目のキャプション文字 ── */
-.ctrl-label, .hint, .copy-status {
+.hint, .copy-status {
     font-family: var(--font-body);
 }
 
@@ -79,14 +79,13 @@ body {
     border: none;
     border-radius: 0;
 }
-.panel-header {
-    font-family: var(--font-heading);
-    font-size: 10px;
-    letter-spacing: 2px;
-    color: var(--accent);
-    font-weight: bold;
+/* 見出しの字面は theme.css の .panel-head をそのまま使う。
+   ここでは、このツールだけの都合（枠なしの見出しにして、右端に
+   文字数バッジを寄せる）だけを差分で足す */
+.panel-head {
+    background: transparent;
     border-bottom: 1px solid var(--border);
-    padding-bottom: 4px;
+    padding: 0 0 4px;
     margin-bottom: 8px;
     display: flex;
     align-items: center;

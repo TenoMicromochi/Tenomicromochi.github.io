@@ -230,8 +230,8 @@ const Controls = (() => {
     // 文字入れONのときは倍率が強制4xになるため、スケール選択自体を無効化して伝える
     $('scaleGroup').classList.toggle('disabled', withText);
     $('pngTextHint').textContent = withText
-      ? 'ON時は倍率を強制的に4×にして出力します'
-      : 'OFF時は1色1pxの横並び画像を出力します';
+      ? 'ON forces 4× scale on the exported image'
+      : 'OFF outputs a 1px-per-color strip image';
   }
 
   function bindExports() {

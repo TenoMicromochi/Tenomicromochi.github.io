@@ -42,7 +42,7 @@
     margin-bottom: 8px;
     border-bottom: 1px solid var(--border);
     font-family: var(--font-heading);
-    font-size: 11px;
+    font-size: 8px;
     letter-spacing: 2px;
     color: var(--accent);
 }
@@ -95,7 +95,7 @@
 /* ── ツールバー ── */
 .toolbar { padding: 10px 14px; margin-bottom: 16px; }
 .toolbar-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.current-category { font-family: var(--font-heading); font-size: 12px; color: var(--accent); letter-spacing: 1px; }
+.current-category { font-family: var(--font-heading); font-size: 16px; color: var(--accent); letter-spacing: 1px; }
 
 /* ── ギャラリーグリッド ──
    固定の高さの行に、画像本来の比率を保ったまま並べる。

@@ -1,76 +1,30 @@
 /* ============================================================
-   ANIMALT — style
-   PALETALT-K / CHROMALT-Q のデザインシステムをそのまま踏襲。
-   見出しは TenoText 8x8（8px グリッドなので font-size は 8 の倍数）、
-   本文は PixelMplus12。
+   ANIMALT-Δ — style.css
+
+   共通部分は /theme.css と /alt.css が持っている。
+   このツールは GLYPHALT-16 と同じ「オーバーレイ型」で、
+   左右のパネルをキャンバスの上に被せて開閉する。
+   ここに書くのは、その骨組みと ANIMALT 固有の部品だけ。
+
+   AA のグリフはツール内の fonts/tenotext_*.png から直接切り出している。
+   画面のUI文字（TenoText 8x8 / PixelMplus12）とは無関係。
    ============================================================ */
-/* フォントはサイト共通の /fonts/ を使う（ツール内に重複コピーを置かない）。
-   ここで読むのは画面の文字用で、AA のグリフとは無関係。
-   AA 側はツール内の fonts/tenotext_*.png から直接切り出している。 */
-@font-face {
-  font-family: 'TenoText 8x8';
-  src: url('/fonts/TenoText 8x8.otf') format('opentype');
-}
-@font-face {
-  font-family: 'PixelMplus12';
-  src: url('/fonts/PixelMplus12-Regular.ttf') format('truetype');
-}
 
-:root {
-  --font-heading: 'TenoText 8x8', 'Courier New', monospace;
-  --font-body:    'PixelMplus12', 'Courier New', monospace;
-  --bg:      #ffffff;
-  --panel:   #f5f8fa;
-  --border:  #99bbcc;
-  --text:    #333355;
-  --sub:     #556688;
-  --accent:  #227777;
-  --accent2: #115555;
-  --danger:  #993333;
-  --radius:  3px;
-}
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  background: var(--bg); color: var(--text);
-  font-family: var(--font-body); font-size: 12px;
-  height: 100vh; display: flex; flex-direction: column; overflow: hidden;
-}
+@import url('/theme.css');
+@import url('/alt.css');
 
 /* ── Header ──
-   サイト共通の上部ナビ（#sodenmir-topbar）も <header> なので、
-   素の header{} ではなくクラスで絞る */
-.app-header {
-  border-bottom: 2px solid var(--border); padding: 8px 20px;
-  display: flex; align-items: baseline; gap: 16px; flex-shrink: 0; flex-wrap: wrap;
-}
-.logo { font-family: var(--font-heading); font-size: 16px; color: var(--accent); letter-spacing: 3px; }
-.logo em { color: var(--text); font-style: normal; }
-.tagline { font-size: 10px; color: var(--sub); letter-spacing: 1px; }
+   .site-header の見た目に、このツールだけのパイプライン表示を足す */
+.app-header { flex-wrap: wrap; }
 .pipeline { font-size: 10px; color: var(--accent2); letter-spacing: 1px; margin-left: auto; }
 
-/* ── Edge tabs ──
-   画面の左右端に貼り付く縦タブ（GLYPHALT-16 と同じ）。
-   パネル(z-index 20)より手前に置くので、開いていても押して閉じられる。 */
-.edge-tab {
-  position: absolute; top: 0; bottom: 0; width: 26px;
-  display: flex; align-items: center; justify-content: center; padding: 0;
-  background: var(--panel); border: 1px solid var(--border);
-  color: var(--accent); font-family: var(--font-body);
-  font-size: 10px; letter-spacing: 2px; cursor: pointer; z-index: 22;
-}
-.edge-tab span { writing-mode: vertical-rl; text-orientation: mixed; white-space: nowrap; }
-.edge-tab:hover { background: var(--accent); color: #fff; }
-.edge-tab.on { background: var(--accent); color: #fff; }
-.edge-tab-left  { left: 0;  border-left: none; }
-.edge-tab-right { right: 0; border-right: none; }
-
 /* ── Layout ──
-   左右のパネルはキャンバスの上に被せ、translateX で仕舞う（GLYPHALT と同じ方式）。
+   左右のパネルはキャンバスの上に被せ、translateX で仕舞う。
    中央を押し縮めないので、パネルを開閉しても出力の見え方が動かない。 */
 .workspace { position: relative; flex: 1; min-height: 0; overflow: hidden; }
 
-.panel {
+/* theme.css の .panel（枠付きの箱）とは別物なので名前を分けてある */
+.side-panel {
   position: absolute; top: 0; bottom: 0; z-index: 20;
   width: min(480px, 100%);
   display: grid; grid-template-columns: 1fr 1fr;
@@ -79,54 +33,35 @@ body {
   transition: transform .18s ease;
 }
 /* タブ側の padding は縦タブ幅ぶん空ける。空けないと中身がタブの下に潜る */
-.panel-left  { left: 0;  padding-left: 38px;  border-right: 1px solid var(--border); box-shadow: 6px 0 20px rgba(0,0,0,.18); }
-.panel-right { right: 0; padding-right: 38px; border-left: 1px solid var(--border);  box-shadow: -6px 0 20px rgba(0,0,0,.18); }
-.panel-left.hidden  { transform: translateX(-100%); }
-.panel-right.hidden { transform: translateX(100%); }
+.side-panel-left  { left: 0;  padding-left: 38px;  border-right: 1px solid var(--border); box-shadow: 6px 0 20px rgba(0,0,0,.18); }
+.side-panel-right { right: 0; padding-right: 38px; border-left: 1px solid var(--border);  box-shadow: -6px 0 20px rgba(0,0,0,.18); }
+.side-panel-left.hidden  { transform: translateX(-100%); }
+.side-panel-right.hidden { transform: translateX(100%); }
 .panel-col { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 
-.canvas-area {
-  height: 100%; display: flex; flex-direction: column; align-items: stretch;
-  /* 左右は縦タブ(26px)より広く取る。10px のままだと、パネルを閉じているときに
-     ツールバーの端（PLAY や ZOOM）とステージの縁がタブの下に潜る */
-  padding: 10px 32px; gap: 8px; overflow: hidden; background: var(--bg); min-height: 0;
+/* 出力エリア。左右は縦タブ(28px)より広く取る。10px のままだと、パネルを
+   閉じているときにツールバーの端（PLAY や ZOOM）とステージの縁が
+   タブの下に潜る */
+.work-area {
+  height: 100%; align-items: stretch;
+  padding: 10px 32px; gap: 8px; overflow: hidden;
 }
 
-/* ── Section ── */
-.section { display: flex; flex-direction: column; gap: 5px; }
+/* ── Section ──
+   .section-title は alt.css が .sidebar 内だけを見ているので、
+   オーバーレイ型のこのツールでは自前で指定する */
 .section-title {
   font-family: var(--font-heading); font-size: 8px; letter-spacing: 2px;
   color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 4px;
 }
 .section-title.row { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
 .divider { border: none; border-top: 1px dashed var(--border); }
-.hint { font-size: 10px; color: var(--sub); line-height: 1.4; }
+.hint { font-family: var(--font-body); font-size: 10px; color: var(--sub); line-height: 1.4; }
 /* コマ数が上限で頭打ちになったときだけ、見積り行を目立たせる */
 .hint.warn { color: var(--danger); }
 
-/* ── Drop zone ── */
-.drop-zone {
-  border: 1.5px dashed var(--border); border-radius: var(--radius);
-  padding: 10px 8px; text-align: center; cursor: pointer;
-  position: relative; background: var(--bg); transition: border-color .15s, background .15s;
-}
-.drop-zone:hover, .drop-zone.drag { border-color: var(--accent); background: #eef5f5; }
-.drop-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-.drop-icon { font-size: 16px; color: var(--accent); }
-.drop-label { font-size: 10px; color: var(--sub); }
-.drop-name { font-size: 10px; color: var(--accent); margin-top: 2px; word-break: break-all; min-height: 12px; }
-
-/* ── Controls ── */
-.ctrl-row { display: flex; flex-direction: column; gap: 2px; }
-.ctrl-label {
-  font-size: 9px; letter-spacing: 1px; color: var(--sub);
-  display: flex; justify-content: space-between; align-items: center;
-}
-.ctrl-label span { color: var(--text); min-width: 32px; text-align: right; }
-.ctrl-inputs { display: flex; align-items: center; gap: 5px; }
-.ctrl-inputs input[type=range] { flex: 1; min-width: 0; }
-
-/* スライダーだけでは1刻みを合わせにくいので、必ず数値入力を隣に置く */
+/* ── Controls ──
+   スライダーだけでは1刻みを合わせにくいので、必ず数値入力を隣に置く */
 .ctrl-number {
   width: 50px; flex: none;
   background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
@@ -135,51 +70,41 @@ body {
 }
 .ctrl-number:focus { border-color: var(--accent); }
 
-/* つまみの左側だけ色を変えて、値の位置が数字を見なくても分かるようにする */
-input[type=range] {
-  -webkit-appearance: none; appearance: none; height: 3px; border-radius: 2px; outline: none;
-  background: linear-gradient(90deg, var(--accent) var(--pct, 50%), var(--border) var(--pct, 50%));
-}
-input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance: none; width: 11px; height: 11px; background: var(--accent);
-  border-radius: 50%; cursor: pointer;
-}
-input[type=range]::-moz-range-thumb { width: 11px; height: 11px; background: var(--accent); border: none; border-radius: 50%; cursor: pointer; }
-
-select, textarea {
+textarea {
   width: 100%; background: var(--bg); border: 1px solid var(--border);
   border-radius: var(--radius); padding: 3px 4px;
   font-family: var(--font-body); font-size: 10px; color: var(--text); outline: none;
+  resize: vertical; line-height: 1.3;
 }
-select:focus, textarea:focus { border-color: var(--accent); }
-textarea { resize: vertical; line-height: 1.3; }
+textarea:focus { border-color: var(--accent); }
 
-.chk { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--sub); cursor: pointer; }
+.chk { display: flex; align-items: center; gap: 5px; font-family: var(--font-body); font-size: 10px; color: var(--sub); cursor: pointer; }
 .chk input { accent-color: var(--accent); }
 /* モードの切り替えは押し間違えると待ち時間が変わるので、ふつうのチェックより目立たせる */
 .chk.strong {
   color: var(--accent2); border: 1px solid var(--border); border-radius: var(--radius);
   padding: 4px 6px; background: var(--bg); letter-spacing: 1px;
 }
-.chk.strong:has(input:checked) { border-color: var(--accent); background: #eef5f5; }
+.chk.strong:has(input:checked) { border-color: var(--accent); background: var(--hover); }
 
+/* ── ボタン ──
+   基本形は theme.css。このツールはパネルが 480px に2カラム詰めなので、
+   ラベルを見出しフォントの 8px にして小さく詰める */
 .btn {
-  background: var(--accent); color: #fff; border: none; border-radius: var(--radius);
+  border: none;
   padding: 6px 8px; font-family: var(--font-heading); font-size: 8px; letter-spacing: 2px;
-  cursor: pointer; transition: background .15s;
 }
-.btn:hover:not(:disabled) { background: var(--accent2); }
-.btn:disabled { background: #bbc; cursor: not-allowed; }
+.btn:disabled { background: #bbc; border-color: #bbc; }
 .btn.small { padding: 5px 8px; }
-.btn.tiny { padding: 2px 6px; font-size: 8px; letter-spacing: 1px; }
-.btn-row { flex-direction: row; gap: 4px; }
-.btn-row .btn { flex: 1; }
+.btn.tiny { padding: 2px 6px; letter-spacing: 1px; }
 /* 全コマ描画は自動では走らないので、押し待ちであることを見て分かるようにする */
 .btn.stale { background: var(--danger); }
 .btn.stale::after { content: ' ●'; }
 .btn.secondary { background: var(--bg); color: var(--accent); border: 1px solid var(--border); }
-.btn.secondary:hover:not(:disabled) { background: #eef5f5; color: var(--accent2); }
+.btn.secondary:hover:not(:disabled) { background: var(--hover); color: var(--accent2); }
 .btn.secondary.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn-row { display: flex; flex-direction: row; gap: 4px; }
+.btn-row .btn { flex: 1; }
 
 /* ── Swatches ── */
 .swatches { display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; }
@@ -202,7 +127,7 @@ textarea { resize: vertical; line-height: 1.3; }
   border: 1px solid var(--border); border-radius: var(--radius);
   padding: 3px; cursor: pointer; background: var(--bg); transition: border-color .15s;
 }
-.pal-entry:hover { border-color: var(--accent); background: #eef5f5; }
+.pal-entry:hover { border-color: var(--accent); background: var(--hover); }
 .pal-strip { display: flex; height: 12px; border-radius: 2px; overflow: hidden; }
 .pal-strip i { flex: 1; min-width: 0; }
 .pal-name { font-size: 9px; color: var(--sub); margin-top: 2px; letter-spacing: 1px; }
@@ -230,7 +155,7 @@ textarea { resize: vertical; line-height: 1.3; }
   display: flex; align-items: center; justify-content: center; padding: 8px;
 }
 /* ドット絵なので補間は絶対にかけない。拡大は整数倍のみ（main.js で px 指定） */
-#out { image-rendering: pixelated; image-rendering: -moz-crisp-edges; display: none; }
+#out { image-rendering: -moz-crisp-edges; image-rendering: pixelated; display: none; }
 .placeholder { color: #6b7494; font-size: 11px; letter-spacing: 1px; }
 
 /* ── Status ── */
@@ -245,14 +170,21 @@ textarea { resize: vertical; line-height: 1.3; }
 .status.err { border-color: var(--danger); color: var(--danger); }
 .info { font-size: 9px; color: var(--sub); letter-spacing: 1px; flex-shrink: 0; min-height: 12px; }
 
+/* alt.css は狭い画面で body を auto 高さに戻す（固定2カラム型を縦に積み直すため）。
+   オーバーレイ型はパネルを top:0/bottom:0 で伸ばしているので、
+   高さが auto になると潰れる。ここで 100vh に戻す */
+@media (max-width: 900px) {
+  body.alt-app { height: 100vh; overflow: hidden; }
+}
+
 @media (max-width: 720px) {
   .app-header { gap: 8px; }
   .pipeline { display: none; }
-  .panel { width: 100%; grid-template-columns: 1fr; }
+  .side-panel { width: 100%; grid-template-columns: 1fr; }
 }
 
 /* ── サイト共通シェルとの同居 ──
-   このツールだけ body が 100vh の全画面レイアウトなので、上部ナビと
+   このツールは body が 100vh の全画面レイアウトなので、上部ナビと
    どう並ぶかを明示しておく。上部ナビは flex アイテムとして高さを取り、
    残りを .workspace が埋める（マジックナンバーは要らない）。 */
 #sodenmir-topbar { flex-shrink: 0; }

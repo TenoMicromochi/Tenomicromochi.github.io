@@ -155,8 +155,6 @@ body.nocrt #crt { display: none; }
 
 .flak-keys dd { color: var(--sub); }
 
-.flak-note { font-size: 12px; color: var(--sub); }
-
 /* --- 小さい画面向けの案内 ------------------------------------ */
 /* 640px 未満に縮めて表示するとドットが非整数倍になって壊れるので、
    縮めずに「これはマウス用」と伝えるだけにしてある。 */

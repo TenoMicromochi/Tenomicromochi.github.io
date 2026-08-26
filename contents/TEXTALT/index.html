@@ -15,20 +15,21 @@
     <link rel="stylesheet" href="/main.css">
     <script src="/menu.js" defer></script>
 </head>
-<body>
+<!-- alt-app が ALT ツール共通の 100vh シェルを有効にする（/alt.css） -->
+<body class="alt-app">
 
     <header class="site-header">
         <div class="logo">TEXT<em>ALT</em>-V</div>
         <div class="tagline">Image to ASCII art converter</div>
     </header>
 
-    <div class="app-layout">
+    <div class="app-shell" style="--alt-cols: 224px 224px">
 
         <!-- LEFT COLUMN -->
-        <div class="col col-left">
+        <div class="sidebar">
 
             <div class="panel">
-                <div class="panel-header">IMAGE LOAD</div>
+                <div class="panel-head">IMAGE LOAD</div>
                 <div class="panel-body">
                     <div id="manual-font-load" class="font-error-box">
                         <span class="error-tag">FONT ERROR</span>
@@ -43,14 +44,14 @@
             </div>
 
             <div class="panel">
-                <div class="panel-header">PREVIEW</div>
+                <div class="panel-head">PREVIEW</div>
                 <div class="panel-body preview-body">
                     <canvas id="previewCanvas"></canvas>
                 </div>
             </div>
 
             <div class="panel">
-                <div class="panel-header">IMAGE ADJUST</div>
+                <div class="panel-head">IMAGE ADJUST</div>
                 <div class="panel-body">
                     <div class="control-row toggle-row">
                         <label class="ctrl-label">INVERT</label>
@@ -101,10 +102,10 @@
         </div>
 
         <!-- CENTER COLUMN -->
-        <div class="col col-center">
+        <div class="sidebar">
 
             <div class="panel">
-                <div class="panel-header">OUTPUT</div>
+                <div class="panel-head">OUTPUT</div>
                 <div class="panel-body">
                     <div class="control-row">
                         <label class="ctrl-label">WIDTH (chars) <span class="val-badge" id="val-width">80</span></label>
@@ -114,15 +115,15 @@
             </div>
 
             <div class="panel">
-                <div class="panel-header">EXPORT PNG</div>
+                <div class="panel-head">EXPORT PNG</div>
                 <div class="panel-body">
                     <div class="control-row">
                         <label class="ctrl-label">SCALE</label>
-                        <div class="scale-btn-group">
-                            <button class="btn-scale" data-scale="1">1×</button>
-                            <button class="btn-scale" data-scale="2">2×</button>
-                            <button class="btn-scale" data-scale="3">3×</button>
-                            <button class="btn-scale" data-scale="4">4×</button>
+                        <div class="scale-btn-group view-btn-group full">
+                            <button class="btn-scale view-btn" data-scale="1">1×</button>
+                            <button class="btn-scale view-btn" data-scale="2">2×</button>
+                            <button class="btn-scale view-btn" data-scale="3">3×</button>
+                            <button class="btn-scale view-btn" data-scale="4">4×</button>
                         </div>
                     </div>
                     <div class="control-row">
@@ -146,7 +147,7 @@
             </div>
 
             <div class="panel">
-                <div class="panel-header">CHAR SET</div>
+                <div class="panel-head">CHAR SET</div>
                 <div class="panel-body">
                     <div class="control-row">
                         <label class="ctrl-label">PRESET</label>
@@ -205,7 +206,7 @@
             </div>
 
             <div class="panel">
-                <div class="panel-header">FEATURE EXTRACTION</div>
+                <div class="panel-head">FEATURE EXTRACTION</div>
                 <div class="panel-body">
                     <div class="grid-control-row">
                         <div class="grid-item">
@@ -246,13 +247,13 @@
         </div>
 
         <!-- RIGHT COLUMN: ASCII Output -->
-        <div class="col col-right">
+        <div class="work-area">
             <div class="panel output-panel">
-                <div class="panel-header output-panel-header">
+                <div class="output-panel-header">
                     <span class="output-title">ASCII OUTPUT</span>
                     <div class="view-tabs">
-                        <button class="view-tab active" data-tab="text">TEXT</button>
-                        <button class="view-tab"        data-tab="preview">PREVIEW</button>
+                        <button class="view-tab view-btn active" data-tab="text">TEXT</button>
+                        <button class="view-tab view-btn"        data-tab="preview">PREVIEW</button>
                     </div>
                 </div>
                 <div class="panel-body output-body">

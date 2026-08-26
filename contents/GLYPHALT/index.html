@@ -16,9 +16,12 @@
   <link rel="stylesheet" href="/main.css">
   <script src="/menu.js" defer></script>
 </head>
-<body>
+<!-- alt-app が ALT ツール共通の 100vh シェルを有効にする（/alt.css） -->
+<body class="alt-app">
 
-<header>
+<!-- ヘッダは .site-header。素の header{} だと、サイト共通の上部ナビ
+     （#sodenmir-topbar も <header> 要素）まで巻き込む -->
+<header class="site-header">
   <div class="logo">GLYPH<em>ALT</em>-16</div>
   <div class="tagline">image to MSX-like art converter</div>
 </header>
@@ -232,9 +235,9 @@
     </div><!-- /sidebar-col right -->
   </div><!-- /sidebar -->
 
-  <div class="canvas-area">
+  <div class="work-area">
     <div class="canvas-container">
-      <div id="placeholder">
+      <div class="alt-placeholder" id="placeholder">
         <div class="placeholder-art">
 ┌───────────────────────┐
 │  GLYPHALT-16          │
@@ -265,7 +268,7 @@
 </div>
 
 <canvas id="workCanvas" style="display:none"></canvas>
-<div id="errorToast"></div>
+<div class="alt-toast error" id="errorToast"></div>
 
   <script type="module" src="src/main.js"></script>
 </body>

@@ -15,12 +15,16 @@
 <link rel="stylesheet" href="/main.css">
 <script src="/menu.js" defer></script>
 </head>
-<body>
-<header>
+<!-- alt-app が ALT ツール共通の 100vh シェルを有効にする（/alt.css） -->
+<body class="alt-app">
+<!-- ヘッダは .site-header。素の header{} だと、サイト共通の上部ナビ
+     （#sodenmir-topbar も <header> 要素）まで巻き込む -->
+<header class="site-header">
   <div class="logo">PALET<em>ALT</em>-K</div>
   <div class="tagline">image to color palette extractor</div>
 </header>
-<div class="main">
+<!-- 設定カラムは2本。3列目（成果物）は alt.css 側の 1fr -->
+<div class="app-shell" style="--alt-cols: 224px 224px">
 
 <!-- COL 1 -->
 <div class="sidebar">
@@ -47,7 +51,7 @@
       <div class="ctrl-label">ALPHA CUTOFF <span id="acV">128</span></div>
       <div class="ctrl-inputs"><input type="range" id="ac" min="0" max="255" value="128"><input type="number" id="acN" min="0" max="255" value="128"></div>
     </div>
-    <div class="level-hint">透明度がこの値未満の画素は無視します</div>
+    <div class="level-hint">Pixels below this alpha are ignored</div>
   </div>
 
   <hr class="divider">
@@ -104,7 +108,7 @@
       <div class="ctrl-label">TARGET COLORS <span id="tgV">8</span></div>
       <div class="ctrl-inputs"><input type="range" id="tg" min="2" max="64" value="8"><input type="number" id="tgN" min="2" max="64" value="8"></div>
     </div>
-    <div class="level-hint">この数が絶対の上限です。マージ閾値に上書きされません</div>
+    <div class="level-hint">Absolute upper limit. The merge threshold cannot override it</div>
   </div>
 
   <hr class="divider">
@@ -126,7 +130,7 @@
       <div class="ctrl-label">K-MEANS REFINE <span id="kmV">8</span></div>
       <div class="ctrl-inputs"><input type="range" id="km" min="0" max="30" value="8"><input type="number" id="kmN" min="0" max="30" value="8"></div>
     </div>
-    <div class="level-hint">0 = OFF。1〜数回で小面積の鮮やかな色を拾えます</div>
+    <div class="level-hint">0 = OFF. A few passes pick up small vivid areas</div>
   </div>
 
   <hr class="divider">
@@ -138,7 +142,7 @@
       <div class="ctrl-inputs"><input type="range" id="mt" min="0" max="200" value="0"><input type="number" id="mtN" min="0" max="20" step="0.1" value="0"></div>
     </div>
     <label class="check-row"><input type="checkbox" id="weighted" checked> Weight merge by area</label>
-    <div class="level-hint">0 = OFF。TARGET を下回る方向にのみ働きます（≒2で「ほぼ同じ色」）</div>
+    <div class="level-hint">0 = OFF. Only merges below TARGET (≈2 = nearly identical colors)</div>
   </div>
 
   <hr class="divider">
@@ -146,17 +150,17 @@
   <div class="section">
     <div class="section-title">REPRESENTATIVE COLOR</div>
     <select id="strategy">
-      <option value="centroid" selected>Centroid (重心 / 忠実)</option>
-      <option value="medoid">Medoid (画像に実在する色)</option>
-      <option value="median">Median (外れ値に強い)</option>
-      <option value="mode">Mode binned (フラット絵向き)</option>
-      <option value="linear">Linear-light average (濁り回避)</option>
+      <option value="centroid" selected>Centroid (mean, faithful)</option>
+      <option value="medoid">Medoid (actual pixel)</option>
+      <option value="median">Median (outlier-safe)</option>
+      <option value="mode">Mode binned (flat art)</option>
+      <option value="linear">Linear-light avg (clean)</option>
     </select>
     <div class="ctrl-row">
       <div class="ctrl-label">CHROMA BIAS <span id="cbV">0</span>%</div>
       <div class="ctrl-inputs"><input type="range" id="cb" min="0" max="100" value="0"><input type="number" id="cbN" min="0" max="100" value="0"></div>
     </div>
-    <div class="level-hint">クラスタ内で最も彩度の高い色へ寄せます</div>
+    <div class="level-hint">Pulls each color toward the most saturated one in its cluster</div>
   </div>
 
   <hr class="divider">
@@ -166,7 +170,7 @@
     <div class="ctrl-row">
       <div class="ctrl-label">SORT BY</div>
       <select id="sortBy">
-        <option value="population" selected>Population (面積順)</option>
+        <option value="population" selected>Population (by area)</option>
         <option value="lightness">Lightness</option>
         <option value="hue">Hue</option>
         <option value="chroma">Chroma</option>
@@ -200,7 +204,7 @@
       </div>
     </div>
     <label class="check-row"><input type="checkbox" id="pngText" checked> Text labels (forces 4×)</label>
-    <div class="level-hint" id="pngTextHint">OFF時は1色1pxの横並び画像を出力します</div>
+    <div class="level-hint" id="pngTextHint">OFF outputs a 1px-per-color strip image</div>
     <button class="btn secondary" id="dlPaletteBtn" disabled>DOWNLOAD PALETTE PNG</button>
     <div class="ctrl-row">
       <div class="ctrl-label">TEXT FORMAT</div>
@@ -219,14 +223,14 @@
 </div>
 
 <!-- CANVAS AREA -->
-<div class="canvas-area">
+<div class="work-area">
   <div class="view-toolbar">
     <div class="view-btn-group" id="viewGroup">
       <button class="view-btn active" data-view="quantized">QUANTIZED</button>
       <button class="view-btn" data-view="adjusted">ADJUSTED</button>
       <button class="view-btn" data-view="original">ORIGINAL</button>
     </div>
-    <div class="view-btn-group" id="zoomGroup" title="1:1 = LONG EDGE と同じ実寸 / FIT = 枠に収まる最大の整数倍">
+    <div class="view-btn-group" id="zoomGroup" title="1:1 = actual size (same as LONG EDGE) / FIT = largest integer scale that fits">
       <button class="view-btn" data-zoom="actual">1:1</button>
       <button class="view-btn active" data-zoom="fit">FIT</button>
     </div>
@@ -250,7 +254,7 @@
   </div>
 
   <div class="canvas-stack" id="canvasStack">
-    <div id="placeholder">
+    <div class="alt-placeholder" id="placeholder">
       <div class="placeholder-art">
 ┌───────────────────────┐
 │  PALETALT-K           │
@@ -270,7 +274,7 @@
       <span class="palette-count" id="paletteCount">-</span>
     </div>
     <div class="palette-strip" id="paletteStrip"></div>
-    <div class="pal-hint">スウォッチをクリックで HEX をコピー</div>
+    <div class="pal-hint">Click a swatch to copy its HEX</div>
   </div>
 
   <div class="info-bar" id="infoBar" style="display:none">
@@ -283,8 +287,8 @@
 </div>
 
 </div>
-<div id="errorToast"></div>
-<div id="okToast"></div>
+<div class="alt-toast error" id="errorToast"></div>
+<div class="alt-toast ok" id="okToast"></div>
 
 <canvas id="workCanvas" style="display:none"></canvas>
 

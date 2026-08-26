@@ -1,30 +1,25 @@
+/* ============================================================
+   GLYPHALT-16 — style.css
+
+   共通部分は /theme.css と /alt.css が持っている。
+   このツールは PALETALT のような固定2カラムではなく、
+   設定パネルをキャンバスの上にかぶせる「オーバーレイ型」。
+   その骨組み（.main / .sidebar / .catalog-panel）と、
+   パレット・グリフの選択盤だけをここに書く。
+   ============================================================ */
+
 @import url('/theme.css');
+@import url('/alt.css');
 
-body {
-  font-family: var(--font-mono);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-/* ── Header ── */
-header {
-  border-bottom: 2px solid var(--border);
-  padding: 12px 20px;
-  display: flex;
-  align-items: baseline;
-  gap: 16px;
-}
-.logo { font-family: var(--font-heading); font-size: 20px; font-weight: bold; color: var(--accent); letter-spacing: 3px; }
-.logo em { color: var(--text); font-style: normal; }
-.tagline { font-family: var(--font-body); font-size: 11px; color: var(--sub); letter-spacing: 1px; }
-
-/* ── 設定項目のキャプション文字（INVERT/BRIGHTNESS等） ── */
-.ctrl-label, .check-row, .drop-label, .size-field label,
-.pal-hint, .glyph-info, .status-line, .download-scale, .quad-toggle {
+/* 設定項目のキャプションは本文フォント。alt.css が .ctrl-label /
+   .check-row / .drop-label を面倒みるので、残りをここで揃える */
+.size-field label, .pal-hint, .glyph-info,
+.download-scale, .quad-toggle {
   font-family: var(--font-body);
 }
-/* ── Layout ── */
+
+/* ── Layout ──
+   .sidebar と .catalog-panel を絶対配置で重ねるため position: relative */
 .main {
   position: relative;
   display: flex;
@@ -33,39 +28,9 @@ header {
   overflow: hidden;
 }
 
-/* ── Edge tabs (settings on the left, palette/glyph library on the right).
-   Kept off the top header so they don't cluster with the site's own top menu.
-   Span the full height of .main as a fixed-width strip; the label rotates via
-   an inner span (rotating the whole flex box with top:50%/transform hits a
-   layout bug in some engines when combined with writing-mode). ── */
-.edge-tab {
-  position: absolute;
-  top: 0; bottom: 0;
-  width: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  color: var(--accent);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: bold;
-  letter-spacing: 2px;
-  cursor: pointer;
-  z-index: 22;
-}
-.edge-tab span {
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  white-space: nowrap;
-}
-.edge-tab:hover { background: var(--accent); color: #fff; }
-.edge-tab-left { left: 0; border-left: none; }
-.edge-tab-right { right: 0; border-right: none; }
-
-/* ── Sidebar (overlay panel, slides over the canvas) ── */
+/* ── 設定パネル（左からせり出すオーバーレイ） ──
+   alt.css の .sidebar は固定カラム前提なので、ここで上書きする。
+   左の padding は SETTINGS の縦タブのぶんを空けている */
 .sidebar {
   position: absolute;
   top: 0; left: 0; bottom: 0;
@@ -74,20 +39,16 @@ header {
   grid-template-columns: 1fr 1fr;
   align-content: start;
   gap: 14px 20px;
-  /* left padding leaves room for the SETTINGS edge-tab so its content never sits under it */
   padding: 16px 16px 16px 44px;
-  overflow-y: auto;
-  background: var(--panel);
   border-right: 1px solid var(--border);
   box-shadow: 6px 0 20px rgba(0,0,0,0.18);
   z-index: 20;
   transition: transform 0.2s ease;
 }
 .sidebar.hidden { transform: translateX(-100%); }
-
 .sidebar-col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 
-/* ── Catalog panel (reference list of every bundled palette & glyph set) ── */
+/* ── パレット・グリフの一覧（右からせり出すオーバーレイ） ── */
 .catalog-panel {
   position: absolute;
   top: 0; right: 0; bottom: 0;
@@ -95,7 +56,7 @@ header {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  /* right padding leaves room for the PALETTE & GLYPHS edge-tab so its content never sits under it */
+  /* 右の padding は PALETTE & GLYPHS の縦タブのぶん */
   padding: 16px 44px 16px 16px;
   overflow-y: auto;
   background: var(--panel);
@@ -123,95 +84,24 @@ header {
 .catalog-glyph-grid canvas {
   display: block; width: 100%; aspect-ratio: 1;
   image-rendering: pixelated;
-  background: #111;
+  background: var(--canvas-bg);
   border: 1px solid var(--border);
 }
 .catalog-more { font-size: 10px; color: var(--sub); letter-spacing: 1px; }
 
-/* ── Section ── */
-.section { display: flex; flex-direction: column; gap: 8px; }
-.section-title {
-  font-family: var(--font-heading);
-  font-size: 10px;
-  letter-spacing: 2px;
-  color: var(--accent);
-  font-weight: bold;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 4px;
-}
+.section { gap: 8px; }
 
-/* ── Drop zone ── */
-.drop-zone {
-  border: 1.5px dashed var(--border);
-  border-radius: var(--radius);
-  padding: 14px 10px;
-  text-align: center;
-  cursor: pointer;
-  position: relative;
-  background: var(--bg);
-  transition: border-color 0.15s, background 0.15s;
-}
-.drop-zone:hover, .drop-zone.drag { border-color: var(--accent); background: #eef5f5; }
-.drop-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-.drop-icon { font-size: 20px; color: var(--accent); margin-bottom: 4px; }
-.drop-label { font-size: 11px; color: var(--sub); }
-.drop-name  { font-size: 10px; color: var(--accent); margin-top: 4px; word-break: break-all; min-height: 12px; }
-
-/* ── Select ── */
-select {
-  width: 100%;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 5px 8px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--text);
-  cursor: pointer;
-  outline: none;
-}
-select:focus { border-color: var(--accent); }
-/* Noneが選択されているグリフセットの選択欄を強調表示 */
+/* None が選ばれているグリフセットの欄は、無効だと分かるよう赤くする */
 select.none-selected { border-color: var(--danger); color: var(--danger); }
 
-/* ── Sliders ── */
-.ctrl-row { display: flex; flex-direction: column; gap: 3px; }
-.ctrl-label { font-size: 10px; letter-spacing: 1px; color: var(--sub); }
-
-/* スライダー本体+数値入力(スピナー付き)の横並び行 */
+/* ── スライダー＋数値入力の横並び ──
+   alt.css の .ctrl-inputs と役割は同じだが、こちらは数値欄が広い */
 .ctrl-input-row { display: flex; align-items: center; gap: 8px; }
 .ctrl-input-row input[type=range] { flex: 1; }
 .ctrl-number { width: 56px; flex: none; }
 
-input[type=range] {
-  width: 100%; height: 3px;
-  -webkit-appearance: none; appearance: none;
-  background: linear-gradient(90deg, var(--accent) var(--pct,50%), var(--border) var(--pct,50%));
-  border-radius: 0; outline: none; cursor: pointer;
-}
-input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 12px; height: 12px;
-  background: var(--accent);
-  border: 2px solid var(--bg);
-  border-radius: 50%; cursor: pointer;
-  box-shadow: 0 0 0 1px var(--accent);
-}
-input[type=range]::-moz-range-thumb {
-  width: 12px; height: 12px;
-  background: var(--accent);
-  border: 2px solid var(--bg);
-  border-radius: 50%; cursor: pointer;
-}
-
-/* ── Checkbox ── */
-.check-row {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 11px; color: var(--sub); cursor: pointer;
-}
-.check-row input { accent-color: var(--accent); cursor: pointer; }
-
-/* ── Number inputs (共通の見た目。幅は用途ごとに上書き) ── */
+/* 単独で置く数値入力（サイズ指定など）。
+   alt.css が見ているのは .ctrl-inputs の中だけなので、ここで揃える */
 input[type=number] {
   background: var(--bg);
   border: 1px solid var(--border); border-radius: var(--radius);
@@ -220,13 +110,12 @@ input[type=number] {
 }
 input[type=number]:focus { border-color: var(--accent); }
 
-/* ── Size inputs ── */
 .size-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .size-field { display: flex; flex-direction: column; gap: 3px; }
 .size-field label { font-size: 10px; color: var(--sub); letter-spacing: 1px; }
 .size-field input[type=number] { width: 100%; }
 
-/* ── Palette grid ── */
+/* ── パレット選択盤 ── */
 .palette-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 3px; }
 .pal-swatch {
   aspect-ratio: 1;
@@ -244,7 +133,7 @@ input[type=number]:focus { border-color: var(--accent); }
 .pal-swatch.off::after { display: none; }
 .pal-hint { font-size: 10px; color: var(--sub); letter-spacing: 1px; }
 
-/* ── Glyph grid ── */
+/* ── グリフ選択盤 ── */
 .glyph-grid {
   display: grid;
   grid-template-columns: repeat(8, 1fr);
@@ -256,7 +145,7 @@ input[type=number]:focus { border-color: var(--accent); }
   border: 1px solid var(--border);
   border-radius: 1px;
   cursor: pointer;
-  background: #111;
+  background: var(--canvas-bg);
   overflow: hidden;
   position: relative;
   transition: outline 0.1s;
@@ -271,38 +160,15 @@ input[type=number]:focus { border-color: var(--accent); }
 .glyph-btn-row { display: flex; gap: 6px; }
 .glyph-info { font-size: 10px; color: var(--sub); letter-spacing: 1px; }
 
-/* ── Status line ── */
-.status-line {
-  font-size: 10px; color: var(--sub); padding: 3px 6px;
-  background: var(--bg); border: 1px solid var(--border);
-  border-radius: var(--radius); letter-spacing: 1px;
-}
+/* 字面は theme.css の .status-line。状態の色だけ足す */
 .status-line.ok  { color: var(--accent); border-color: var(--accent); }
 .status-line.err { color: var(--danger); border-color: var(--danger); }
 
-/* ── Buttons ── */
-.btn {
-  width: 100%; padding: 8px 10px;
-  background: var(--accent); color: #fff;
-  border: 1px solid var(--accent2); border-radius: var(--radius);
-  font-family: var(--font-mono); font-size: 11px; font-weight: bold;
-  letter-spacing: 2px; cursor: pointer; transition: background 0.1s;
-}
-.btn:hover { background: var(--accent2); }
-.btn:active { opacity: 0.85; }
-.btn:disabled { background: var(--border); border-color: var(--border); color: var(--sub); cursor: not-allowed; }
+/* ── ボタンの派生 ──
+   基本形は theme.css、サイドバー内での詰め方は alt.css */
 .btn.stop { background: var(--danger); border-color: #662222; }
 .btn.stop:hover { background: #772222; }
-.btn.secondary { background: transparent; color: var(--accent); border-color: var(--accent); }
-.btn.secondary:hover { background: #eef5f5; }
 .btn.sm { padding: 4px 6px; font-size: 10px; letter-spacing: 1px; }
-
-/* ── Progress ── */
-.progress-wrap { display: none; flex-direction: column; gap: 4px; }
-.progress-wrap.show { display: flex; }
-.progress-bar-outer { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
-.progress-bar-inner { height: 100%; background: var(--accent); transition: width 0.1s; width: 0%; }
-.progress-text { font-size: 10px; color: var(--sub); letter-spacing: 1px; }
 
 .download-scale { display: flex; flex-wrap: wrap; gap: 5px 8px; align-items: center; font-size: 10px; color: var(--sub); letter-spacing: 1px; }
 .download-scale > span { width: 100%; color: var(--sub); }
@@ -313,59 +179,38 @@ input[type=number]:focus { border-color: var(--accent); }
 .quad-toggle label { cursor: pointer; }
 .quad-toggle input { accent-color: var(--accent); vertical-align: middle; }
 
-/* ── Canvas area ── */
-.canvas-area {
-  flex: 1; min-height: 0; width: 100%;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: flex-start;
-  padding: 20px; gap: 12px; overflow: auto;
-  background: var(--bg);
+/* ── 出力エリア ──
+   オーバーレイ型なので、grid の子ではなく flex の子として伸ばす */
+.work-area {
+  flex: 1; width: 100%;
+  padding: 20px; gap: 12px;
 }
-.canvas-container {
-  background: #111; border: 1px solid var(--border);
-}
+.canvas-container { background: var(--canvas-bg); border: 1px solid var(--border); }
+
 /* ドット絵が滲まないよう、CSSでは縮小せずネイティブ解像度のまま描画する。
-   ビューポートより大きい場合は.canvas-areaのoverflow:autoでスクロール表示する */
+   ビューポートより大きい場合は .work-area の overflow:auto でスクロールさせる */
 #outputCanvas { display: block; image-rendering: pixelated; }
 
-#placeholder {
-  width: 520px; max-width: 100%; height: 220px;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 10px;
-}
-.placeholder-art { font-size: 13px; color: #00FF00; line-height: 1.25; white-space: pre; }
-.placeholder-msg {
-  font-size: 11px; color: #00FF00; letter-spacing: 2px;
-  animation: blink 1.2s step-end infinite;
-}
-@keyframes blink { 50% { opacity: 0; } }
+/* 待機画面は alt.css の .alt-placeholder。大きさと色だけこのツールのものに */
+#placeholder { width: 520px; height: 220px; gap: 10px; }
+.placeholder-art { font-size: 13px; color: #00ff00; line-height: 1.25; }
+.placeholder-msg { font-size: 11px; color: #00ff00; }
 
-/* ── Info bar ── */
-.info-bar { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
-.info-chip {
-  font-size: 10px; color: var(--sub); letter-spacing: 1px;
-  padding: 3px 8px; background: var(--panel);
-  border: 1px solid var(--border); border-radius: var(--radius);
-}
-.info-chip strong { color: var(--accent); }
+.info-bar { gap: 12px; justify-content: center; }
 .tweet-btn { width: min(320px, 100%); margin-top: 2px; }
 
-/* ── Error toast ── */
-#errorToast {
-  display: none; position: fixed; bottom: 16px; right: 16px;
-  background: #ffeaea; border: 1px solid var(--danger);
-  color: var(--danger); font-size: 11px; letter-spacing: 1px;
-  padding: 8px 14px; border-radius: var(--radius);
-  max-width: 300px; z-index: 100;
+/* alt.css は狭い画面で body を auto 高さに戻す（固定2カラム型を
+   縦に積み直すため）。オーバーレイ型はパネルを top:0/bottom:0 で
+   伸ばしているので、高さが auto になると潰れる。ここで 100vh に戻す */
+@media (max-width: 900px) {
+  body.alt-app { height: 100vh; overflow: hidden; }
 }
 
-hr.divider { border: none; border-top: 1px solid var(--border); }
-
+/* オーバーレイなので、狭い画面では横幅いっぱいに開く */
 @media (max-width: 680px) {
   .sidebar { width: 100%; }
   .catalog-panel { width: 100%; }
 }
-
 @media (max-width: 560px) {
   .sidebar { grid-template-columns: 1fr; }
 }

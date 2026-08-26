@@ -202,7 +202,7 @@ const Render = (() => {
    * スクロール量に依存しないよう、基準は常にコンテナ高さと画面高さの小さい方。
    */
   function fitScale(cv) {
-    const area = cv.parentElement.parentElement;   // .canvas-area
+    const area = cv.parentElement.parentElement;   // .work-area
     const maxW = Math.min(720, area.clientWidth - 24);
 
     const pal = $('paletteBlock'), info = $('infoBar');
@@ -211,7 +211,7 @@ const Render = (() => {
     const used = area.querySelector('.view-toolbar').offsetHeight
       + (palOn ? pal.offsetHeight : 0)
       + (infoOn ? info.offsetHeight : 0)
-      + 8 * (1 + palOn + infoOn)                   // .canvas-area の gap
+      + 8 * (1 + palOn + infoOn)                   // .work-area の gap
       + 24 + 2;                                    // padding と枠線
     const maxH = Math.min(area.clientHeight, window.innerHeight) - used;
 
