@@ -403,12 +403,31 @@ input[type=range]::-moz-range-thumb {
 /* 右パネルを開いたら HUD を左へ逃がす（隠れてしまうので） */
 body.right-open #hud { right: calc(var(--side-w) + 38px); }
 
+/* 画面下部の案内。ダブルクリックでフルスクリーンに入れることを伝える。
+   白の半透明で控えめに。没入モード中は他の UI と一緒に隠れる。 */
+#fshint {
+  position: fixed;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  z-index: 10;
+  margin: 0;
+  color: rgba(255, 255, 255, .7);
+  font-family: 'PixelMplus12', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  pointer-events: none;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .6);
+}
+
 /* ── 没入モード（画面ダブルクリックで切り替え、main.js） ──
-   フルスクリーン中は花火だけにする。端タブ・設定パネル・HUD に加えて、
+   フルスクリーン中は花火だけにする。端タブ・設定パネル・HUD・案内に加えて、
    サイト共通の上部ナビとモバイルメニューも隠す。 */
 body.immersive .edge-tab,
 body.immersive .side,
 body.immersive #hud,
+body.immersive #fshint,
 body.immersive #sodenmir-topbar,
 body.immersive #sodenmir-mobile-nav { display: none; }
 body.immersive #view { cursor: none; }
