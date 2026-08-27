@@ -1,0 +1,148 @@
+{
+  "_note": "レシピ。shells[] が同時発射（delay で少しずらせる）、colors[] が星ごとの色分け、colorLate が経時変化（窓は lateFrom/lateTo、その段の寿命に対する割合。既定 0.30/0.75）、split が分裂（深さ 1 まで）。\"on\": false でそのレシピを MIX/AUTO の抽選から外す（省略時 ON）。省略した項目は recipes.js の正規化が埋める。",
+
+  "recipes": [
+    {
+      "name": "PEONY",
+      "shells": [
+        { "type": "peony", "size": "large", "colors": ["gold"] }
+      ]
+    },
+    {
+      "name": "CHRYSANTH",
+      "shells": [
+        { "type": "chrysanthemum", "size": "large", "colors": ["silver"] }
+      ]
+    },
+    {
+      "name": "WILLOW",
+      "shells": [
+        { "type": "willow", "size": "large", "colors": ["gold"] }
+      ]
+    },
+    {
+      "name": "CRACKLE",
+      "shells": [
+        { "type": "crackle", "size": "large", "colors": ["gold"] }
+      ]
+    },
+    {
+      "name": "RING",
+      "shells": [
+        { "type": "ring", "size": "large", "colors": ["cyan"] }
+      ]
+    },
+
+    {
+      "_ex": "1) 大サイズ色A と 中サイズ色B の重ね",
+      "name": "CORE",
+      "shells": [
+        { "type": "peony", "size": "large", "colors": ["blue"] },
+        { "type": "peony", "size": "medium", "colors": ["gold"], "delay": 0.06 }
+      ]
+    },
+    {
+      "_ex": "1) 環の中に小さな牡丹",
+      "name": "RING+CORE",
+      "shells": [
+        { "type": "ring", "size": "large", "colors": ["cyan"] },
+        { "type": "peony", "size": "small", "colors": ["magenta"], "delay": 0.1 }
+      ]
+    },
+
+    {
+      "_ex": "2) 1 つの玉から色 A, B が出る",
+      "name": "TWO TONE",
+      "shells": [
+        { "type": "peony", "size": "large", "colors": ["gold", "red"] }
+      ]
+    },
+    {
+      "_ex": "2) 4 色",
+      "name": "QUARTET",
+      "shells": [
+        {
+          "type": "chrysanthemum", "size": "large",
+          "colors": ["cyan", "magenta", "green", "gold"]
+        }
+      ]
+    },
+
+    {
+      "_ex": "3) 色 A で出て、時間経過で色 B になる",
+      "name": "FADE",
+      "shells": [
+        { "type": "chrysanthemum", "size": "large", "colors": ["blue"], "colorLate": "gold" }
+      ]
+    },
+    {
+      "_ex": "3) 2 色で出て、両方とも銀に落ちる",
+      "name": "TO SILVER",
+      "shells": [
+        {
+          "type": "peony", "size": "large",
+          "colors": ["red", "violet"], "colorLate": "silver"
+        }
+      ]
+    },
+
+    {
+      "_ex": "4) 色 A から小サイズ色 B が出てくる（千輪）",
+      "name": "SENRIN",
+      "shells": [
+        {
+          "type": "peony", "size": "large", "colors": ["gold"],
+          "split": {
+            "at": 0.42, "type": "peony", "size": "small",
+            "colors": ["green"], "inherit": 0.25
+          }
+        }
+      ]
+    },
+    {
+      "_ex": "4) 分裂後に色が 2 つに割れ、さらに銀へ落ちる",
+      "name": "SENRIN 2C",
+      "shells": [
+        {
+          "type": "peony", "size": "large", "colors": ["magenta"],
+          "split": {
+            "at": 0.40, "type": "peony", "size": "small",
+            "colors": ["cyan", "green"], "colorLate": "silver", "inherit": 0.3
+          }
+        }
+      ]
+    },
+    {
+      "_ex": "4) 柳が途中でクラックルに変わる",
+      "name": "WILLOW POP",
+      "shells": [
+        {
+          "type": "willow", "size": "large", "colors": ["amber"],
+          "split": {
+            "at": 0.55, "type": "crackle", "size": "tiny",
+            "colors": ["silver"], "inherit": 0.75, "spread": 0.3
+          }
+        }
+      ]
+    },
+
+    {
+      "_ex": "全部入り：大環 + 中牡丹（2色→銀） + 千輪",
+      "name": "FINALE",
+      "shells": [
+        { "type": "ring", "size": "large", "colors": ["cyan"] },
+        {
+          "type": "peony", "size": "medium",
+          "colors": ["magenta", "violet"], "colorLate": "silver", "delay": 0.08
+        },
+        {
+          "type": "peony", "size": "small", "colors": ["gold"], "delay": 0.16,
+          "split": {
+            "at": 0.45, "type": "crackle", "size": "tiny",
+            "colors": ["silver"], "inherit": 0.4
+          }
+        }
+      ]
+    }
+  ]
+}

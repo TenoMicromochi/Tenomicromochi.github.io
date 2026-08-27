@@ -1,5 +1,9 @@
 const UPDATE_LOGS = [
     {
+        date: "2026/08/27",
+        text: "追加//Added: HANABI"
+    },
+    {
         date: "2026/08/21",
         text: "変更//Updated: FLAKALT (WEAPON SET: USA / JAPAN / GERMANY / BRITAIN / USSR)\n変更//Updated: FLAKALT (NEW CONTACTS: LANCE / WEDGE / CRANE / CONDOR / PRISM)"
     },

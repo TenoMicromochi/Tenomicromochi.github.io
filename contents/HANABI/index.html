@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>送電世界 - HANABI</title>
+<meta name="description" content="綺麗な花火シミュレータ">
+<meta property="og:type" content="website">
+<meta property="og:title" content="送電世界 - HANABI">
+<meta property="og:description" content="綺麗な花火シミュレータ">
+<meta property="og:image" content="https://tenomicromochi.github.io/images/OGP.png">
+<meta property="og:url" content="https://tenomicromochi.github.io/contents/HANABI/index.html">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="/main.css">
+<script src="/menu.js" defer></script>
+</head>
+<body>
+
+<canvas id="view"></canvas>
+
+<!-- 左＝世界の設定（一度決めたらあまり触らない）
+     右＝花火そのもの（常に触る）。SODENMIR の .edge-tab に合わせた作法 -->
+<button id="tabLeft" class="edge-tab edge-tab-left" aria-label="scene settings"><span>SCENE</span></button>
+<button id="tabRight" class="edge-tab edge-tab-right" aria-label="recipe editor"><span>RECIPE</span></button>
+
+<div id="leftWrap" class="side side-left">
+  <div class="side-head">
+    <h1>HANABI</h1>
+    <p class="tagline">3D shell &mdash; analytic linear drag, two stages, solved in the vertex shader</p>
+  </div>
+  <div id="leftPanel" class="side-body"></div>
+  <div class="side-foot">
+    <p class="hint">Vertical drag and the wheel change distance. There is no orbit &mdash;
+      the camera is fixed by DISTANCE and ALTITUDE alone. Space launches.</p>
+  </div>
+</div>
+
+<div id="rightWrap" class="side side-right">
+  <div class="side-head">
+    <div class="head-row">
+      <h2>RECIPE</h2>
+      <select id="recipePick" class="sel2"></select>
+    </div>
+  </div>
+  <div id="rightPanel" class="side-body"></div>
+  <div id="rightFoot" class="side-foot"></div>
+</div>
+
+<div id="hud"></div>
+<pre id="fatal"></pre>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
