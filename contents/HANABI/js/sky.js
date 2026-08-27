@@ -55,8 +55,10 @@ export const TREE_ON = 6.0 * Math.PI / 180;
 
 /* 等角図法テクスチャの置き場。ambientCG の Night Sky HDRI は CC0 だが
    .exr / .hdr はブラウザが読めないので、JPG か WebP に変換して置く。
-   手順は sky/README.md にある。無ければ HDRI モードは選べないだけ。 */
+   手順は sky/README.md にある。無ければ HDRI モードは選べないだけ。
+   先頭で見つかったものを使う。 */
 export const SKY_TEXTURE_CANDIDATES = [
+  'image/NightSkyHDRI.jpg',
   'sky/nightsky.webp',
   'sky/nightsky.jpg',
   'sky/nightsky.png',

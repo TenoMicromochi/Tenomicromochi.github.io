@@ -403,6 +403,16 @@ input[type=range]::-moz-range-thumb {
 /* 右パネルを開いたら HUD を左へ逃がす（隠れてしまうので） */
 body.right-open #hud { right: calc(var(--side-w) + 38px); }
 
+/* ── 没入モード（画面ダブルクリックで切り替え、main.js） ──
+   フルスクリーン中は花火だけにする。端タブ・設定パネル・HUD に加えて、
+   サイト共通の上部ナビとモバイルメニューも隠す。 */
+body.immersive .edge-tab,
+body.immersive .side,
+body.immersive #hud,
+body.immersive #sodenmir-topbar,
+body.immersive #sodenmir-mobile-nav { display: none; }
+body.immersive #view { cursor: none; }
+
 /* ── モバイルの MENU ドロップダウン ──
    本体が position:fixed の全画面キャンバスなので、既定の「本文を押し下げる」
    配置だとキャンバスの下に隠れる。ナビの直下に浮かせて前面に出す。 */

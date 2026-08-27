@@ -91,6 +91,31 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
+/* 画面のダブルクリックで「没入モード」を切り替える。
+   フルスクリーンに入り、端タブ・設定パネル・HUD・サイトの上部ナビを
+   すべて隠して花火だけにする。もう一度ダブルクリックで戻る。
+   Esc でフルスクリーンだけ抜けたときも没入モードを解除する。 */
+let immersive = false;
+function setImmersive(on) {
+  immersive = on;
+  document.body.classList.toggle('immersive', on);
+  if (on) {
+    // パネルが開いたままだと戻したとき中途半端に残るので閉じる
+    for (const id of ['leftWrap', 'rightWrap']) document.getElementById(id)?.classList.remove('open');
+    for (const id of ['tabLeft', 'tabRight']) document.getElementById(id)?.classList.remove('on');
+    document.body.classList.remove('left-open', 'right-open');
+    document.documentElement.requestFullscreen?.().catch(() => {});
+  } else if (document.fullscreenElement) {
+    document.exitFullscreen?.();
+  }
+  // ナビの表示が変わると高さも変わる（隠すと 0）。パネル位置の基準を取り直す
+  syncNavHeight();
+}
+canvas.addEventListener('dblclick', () => setImmersive(!immersive));
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement && immersive) setImmersive(false);
+});
+
 // 起動直後に 1 発だけ手前に上げて、画面が空のまま始まらないようにする
 launch(currentRecipe());
 
