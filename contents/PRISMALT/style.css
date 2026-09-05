@@ -1,0 +1,163 @@
+@import url('/theme.css');
+@import url('/alt.css');
+
+/* ============================================================
+   WALLPAPER EDITOR — このツールにしかない部品だけ。
+   色・ボタン・サイドバー・スライダーは theme.css / alt.css のものを使い、
+   ここでは再定義しない（Skill alt-tool-new）。直値ではなく var(--*) を使う。
+
+   なお、このツールの中央キャンバスは**ドット絵ではない**（連続階調のレイトレ）。
+   なので image-rendering: pixelated も整数倍の制約も掛けない。
+   ドット絵の不変条件が掛かるのは素材がドット絵のときだけ。
+   ============================================================ */
+
+/* ── 3カラム：左に形状・中央にレンダ・右にスペクトルと出力 ──
+   alt.css の .app-shell は「左カラム群 + 1fr」なので、右カラムぶんを足して上書きする */
+.app-shell { grid-template-columns: 268px 1fr 300px; }
+.sidebar.right { border-right: none; border-left: 1px solid var(--border); }
+
+/* 中央は canvas を目一杯使いたいので、work-area の中央寄せを解く */
+.work-area { padding: 8px; gap: 6px; justify-content: flex-start; overflow: hidden; }
+
+/* ── レンダ枠 ── */
+.render-stack {
+    position: relative;
+    flex: 1;
+    width: 100%;
+    min-height: 0;
+    border: 1px solid var(--border);
+    background: var(--canvas-bg);
+    overflow: hidden;
+}
+#gl { display: block; width: 100%; height: 100%; cursor: grab; }
+#gl.drag  { cursor: grabbing; }
+#gl.light { cursor: crosshair; }
+#gl.pan   { cursor: move; }
+
+/* 書き出し範囲の枠。外側を暗くするのに要素を4枚置かず、
+   1枚の巨大な box-shadow で塗る */
+.frame-guide {
+    position: absolute;
+    pointer-events: none;
+    border: 1px solid var(--accent);
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.55);
+}
+
+/* ── FIELDS の行 ── */
+.fld {
+    border-top: 1px dashed var(--border);
+    padding: 6px 0 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.fld-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 10px;
+    color: var(--text);
+    letter-spacing: 1px;
+}
+.fld-head em { font-style: normal; font-size: 9px; color: var(--sub); }
+.fld-axes { display: flex; flex-wrap: wrap; gap: 2px 9px; }
+.fld-axes .check-row { font-size: 9px; gap: 3px; }
+
+/* パターンの8タブ。view-btn は横一列前提なので、折り返す用に別部品にする */
+.pat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; }
+.pat-grid button {
+    padding: 2px 0;
+    font-family: var(--font-mono);
+    font-size: 8px;
+    letter-spacing: 0;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--sub);
+    cursor: pointer;
+    border-radius: var(--radius);
+}
+.pat-grid button:hover { background: var(--hover); color: var(--accent); }
+.pat-grid button.active { background: var(--accent); color: #fff; border-color: var(--accent2); }
+
+.fld-range { display: flex; gap: 6px; }
+.fld-range label {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 9px;
+    color: var(--sub);
+    letter-spacing: 1px;
+}
+.fld-range input[type=number] {
+    width: 100%;
+    min-width: 0;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2px 3px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text);
+    outline: none;
+}
+.fld-range input[type=number]:focus { border-color: var(--accent); }
+
+/* ── スペクトラムエディタ（右カラムに3枚） ── */
+.spec { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+.spec-head { display: flex; align-items: center; gap: 6px; }
+.spec-head .section-title { flex: 1; margin: 0; }
+.chip {
+    width: 12px; height: 12px; flex: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+.chipv { font-family: var(--font-mono); font-size: 8px; color: var(--sub); }
+/* 帯グラフは暗い下地のほうが分光が読みやすいので canvas-bg に載せる */
+.spec canvas {
+    display: block;
+    width: 100%;
+    height: 92px;
+    background: var(--canvas-bg);
+    border: 1px solid var(--border);
+    cursor: crosshair;
+}
+.spec-row { display: flex; flex-wrap: wrap; align-items: center; gap: 3px 6px; }
+.spec-row label {
+    display: flex; align-items: center; gap: 3px;
+    font-size: 9px; color: var(--sub); letter-spacing: 1px;
+}
+.spec-row input[type=number] {
+    width: 42px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1px 3px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text);
+    outline: none;
+}
+.spec-row input[type=range] { width: 56px; }
+.spec-row select { width: auto; flex: 1; min-width: 70px; font-size: 9px; }
+.spec-row .btn { padding: 2px 7px; font-size: 9px; width: auto; }
+
+/* 使われていない設定であることを見た目で示す（USE GRID Z のときの MAX HEIGHT など） */
+.off { opacity: 0.35; }
+
+/* ── 折り返し ──
+   alt.css は 900px で 2カラムに畳むが、こちらは3カラムなので上書きする。
+   WebGL のビューは高さが要るので、畳んでも 100vh シェルのままにする */
+@media (max-width: 1100px) {
+    .app-shell { grid-template-columns: 232px 1fr 260px; }
+}
+@media (max-width: 900px) {
+    body.alt-app { height: auto; overflow: auto; }
+    .app-shell { grid-template-columns: 1fr 1fr; overflow: visible; }
+    .sidebar, .sidebar.right { overflow: visible; }
+    .work-area { grid-column: 1 / -1; order: -1; height: 70vh; overflow: hidden; }
+}
+@media (max-width: 560px) {
+    .app-shell { grid-template-columns: 1fr; }
+    .work-area { grid-column: 1; height: 60vh; }
+}

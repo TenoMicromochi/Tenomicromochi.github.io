@@ -14,6 +14,7 @@ const SODENMIR_GROUPS = [
             { label: "TENOMOJI", dir: "/contents/TENOMOJI/", path: "/contents/TENOMOJI/index.html", icon: "/images/icons/TOOLS.png" },
             { label: "PALETALT", dir: "/contents/PALETALT/", path: "/contents/PALETALT/index.html", icon: "/images/icons/TOOLS.png" },
             { label: "ANIMALT", dir: "/contents/ANIMALT/", path: "/contents/ANIMALT/index.html", icon: "/images/icons/TOOLS.png" },
+            { label: "PRISMALT", dir: "/contents/PRISMALT/", path: "/contents/PRISMALT/index.html", icon: "/images/icons/TOOLS.png" },
         ],
     },
     {

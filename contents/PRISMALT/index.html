@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>送電世界 - PRISMALT</title>
+    <meta name="description" content="光とガラスで壁紙をつくる分光レンダラ">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="送電世界 - PRISMALT">
+    <meta property="og:description" content="光とガラスで壁紙をつくる分光レンダラ">
+    <meta property="og:image" content="https://tenomicromochi.github.io/images/OGP.png">
+    <meta property="og:url" content="https://tenomicromochi.github.io/contents/PRISMALT/index.html">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/main.css">
+    <script src="/menu.js" defer></script>
+</head>
+<!-- alt-app が ALT ツール共通の 100vh シェルを有効にする（/alt.css） -->
+<body class="alt-app">
+
+<header class="site-header">
+    <div class="logo">PRISM<em>ALT</em></div>
+    <div class="tagline">Light through glass, composed as a wallpaper</div>
+</header>
+
+<div class="app-shell">
+
+    <!-- ========================= LEFT : ガラスの形状・配置 ========================= -->
+    <div class="sidebar">
+
+        <div class="section">
+            <div class="section-title">ARRANGEMENT</div>
+            <div class="ctrl-row">
+                <div class="ctrl-label">GRID X <span id="gxV">6</span></div>
+                <div class="ctrl-inputs"><input type="range" id="gx" min="1" max="16" value="6"></div>
+            </div>
+            <div class="ctrl-row">
+                <div class="ctrl-label">GRID Y <span id="gyV">6</span></div>
+                <div class="ctrl-inputs"><input type="range" id="gy" min="1" max="16" value="6"></div>
+            </div>
+            <label class="check-row"><input type="checkbox" id="useZ"> USE GRID Z</label>
+            <div class="ctrl-row" id="gzRow">
+                <div class="ctrl-label">GRID Z <span id="gzV">8</span></div>
+                <div class="ctrl-inputs"><input type="range" id="gz" min="1" max="24" value="8"></div>
+            </div>
+            <div class="ctrl-row" id="shRow">
+                <div class="ctrl-label">MAX HEIGHT <span id="shV">2.8</span></div>
+                <div class="ctrl-inputs"><input type="range" id="sh" min="5" max="60" value="28"></div>
+            </div>
+            <div class="level-hint" id="zhint"></div>
+            <div class="ctrl-row">
+                <div class="ctrl-label">GAP X/Y <span id="gapV">0.18</span></div>
+                <div class="ctrl-inputs"><input type="range" id="gap" min="0" max="45" value="18"></div>
+            </div>
+            <div class="ctrl-row" id="gapzRow">
+                <div class="ctrl-label">GAP Z <span id="gapzV">0.00</span></div>
+                <div class="ctrl-inputs"><input type="range" id="gapz" min="0" max="45" value="0"></div>
+            </div>
+            <div class="ctrl-row">
+                <div class="ctrl-label">BEVEL <span id="bevV">0.05</span></div>
+                <div class="ctrl-inputs"><input type="range" id="bev" min="0" max="24" value="5"></div>
+            </div>
+            <div class="level-hint">
+                隙間 0 で継ぎ目なく融合する。GAP Z は USE GRID Z のときだけ効き、
+                上げると1本の柱が独立したキューブに分かれる。
+            </div>
+            <button class="btn secondary" id="refit">REFIT CAMERA</button>
+        </div>
+
+        <hr class="divider">
+
+        <div class="section">
+            <div class="section-title">FIELDS</div>
+            <div class="level-hint">
+                高さと3つのマテリアルを同じ仕組みで回す。軸を選び、複数ONなら合成のしかたを選ぶ。
+                軸ゼロ = const（lo の値）。
+            </div>
+            <div id="fields"></div>
+        </div>
+
+        <hr class="divider">
+
+        <div class="section">
+            <div class="section-title">LIGHT</div>
+            <div class="ctrl-row">
+                <div class="ctrl-label">INTENSITY <span id="lintV">1.90</span></div>
+                <div class="ctrl-inputs"><input type="range" id="lint" min="0" max="300" value="190"></div>
+            </div>
+            <div class="ctrl-row">
+                <div class="ctrl-label">AMBIENT <span id="lambV">0.16</span></div>
+                <div class="ctrl-inputs"><input type="range" id="lamb" min="0" max="80" value="16"></div>
+            </div>
+            <div class="ctrl-row">
+                <div class="ctrl-label">WHITE BAL <span id="lwbV">0.82</span></div>
+                <div class="ctrl-inputs"><input type="range" id="lwb" min="0" max="100" value="82"></div>
+            </div>
+            <div class="level-hint">光の向きはビューの右ドラッグで変える。<span id="ldir"></span></div>
+        </div>
+
+        <hr class="divider">
+
+        <div class="section">
+            <div class="section-title">BACKGROUND</div>
+            <div class="view-btn-group full" id="bgtabs">
+                <button class="view-btn" data-bg="0">OFF</button>
+                <button class="view-btn active" data-bg="1">FLOOR</button>
+                <button class="view-btn" data-bg="2">WALL</button>
+            </div>
+            <div class="view-btn-group full" id="bgtabs2">
+                <button class="view-btn" data-bg="3">FLOOR+WALL</button>
+                <button class="view-btn" data-bg="4">CYCLORAMA</button>
+            </div>
+            <div class="ctrl-row">
+                <div class="ctrl-label">VOID COLOR</div>
+                <div class="ctrl-inputs"><input type="color" id="void" value="#8b909c"></div>
+            </div>
+            <div class="ctrl-row">
+                <div class="ctrl-label">DISTANCE <span id="bgdV">0.50</span></div>
+                <div class="ctrl-inputs"><input type="range" id="bgd" min="0" max="200" value="50"></div>
+            </div>
+            <div class="ctrl-row">
+                <div class="ctrl-label">CYCLO R <span id="bgrV">1.80</span></div>
+                <div class="ctrl-inputs"><input type="range" id="bgr" min="40" max="320" value="180"></div>
+            </div>
+            <div class="level-hint">
+                バックライトは常に光の色で固定。VOID COLOR は合成用の普通の sRGB で、
+                影だけがガラスの色に染まる。
+            </div>
+        </div>
+
+        <hr class="divider">
+
+        <div class="section">
+            <div class="section-title">VIEW</div>
+            <div class="ctrl-row">
+                <div class="ctrl-label">QUALITY <span id="ssV">1.15</span></div>
+                <div class="ctrl-inputs"><input type="range" id="ss" min="50" max="220" value="115"></div>
+            </div>
+            <div class="ctrl-row">
+                <div class="ctrl-label">SEGMENTS <span id="segV">4</span></div>
+                <div class="ctrl-inputs"><input type="range" id="seg" min="1" max="8" value="4"></div>
+            </div>
+            <div class="level-hint">
+                LEFT DRAG : orbit<br>
+                MIDDLE DRAG : pan<br>
+                WHEEL : dolly<br>
+                RIGHT DRAG : light direction<br>
+                DOUBLE CLICK : reset view
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ========================= CENTER : レンダ ========================= -->
+    <div class="work-area">
+        <div class="render-stack" id="renderStack">
+            <canvas id="gl"></canvas>
+            <!-- 書き出し範囲の枠。外側は box-shadow で暗くする -->
+            <div class="frame-guide" id="frameGuide"></div>
+        </div>
+        <div class="info-bar">
+            <span class="info-chip" id="chipCam"></span>
+            <span class="info-chip" id="chipGrid"></span>
+            <span class="info-chip" id="chipMs"></span>
+        </div>
+    </div>
+
+    <!-- ================= RIGHT : スペクトル・出力 ================= -->
+    <div class="sidebar right">
+
+        <div id="spectra"></div>
+
+        <hr class="divider">
+
+        <div class="section">
+            <div class="section-title">EXPORT STILL</div>
+            <div class="level-hint">
+                常に中央の正方形を 4096x4096 で書き出す。設定なし。縦長で使いたいときは
+                書き出したあとに切り抜く。枠を 1:1 にすると書き出し範囲のプレビューになる。
+            </div>
+            <button class="btn" id="pngGo">DOWNLOAD PNG 4096</button>
+        </div>
+
+        <hr class="divider">
+
+        <div class="section">
+            <div class="section-title">EXPORT VIDEO</div>
+            <div class="ctrl-label">FRAME</div>
+            <div class="view-btn-group full" id="aspects">
+                <button class="view-btn active" data-a="1:1">1:1</button>
+                <button class="view-btn" data-a="3:4">3:4</button>
+                <button class="view-btn" data-a="9:16">9:16</button>
+                <button class="view-btn" data-a="16:9">16:9</button>
+            </div>
+            <div class="ctrl-row">
+                <div class="ctrl-label">SEC / TURN <span id="turnV">8</span></div>
+                <div class="ctrl-inputs"><input type="range" id="turn" min="2" max="30" step="1" value="8"></div>
+            </div>
+            <div class="level-hint" id="vidInfo"></div>
+            <div class="progress-wrap" id="prog">
+                <div class="progress-bar-outer"><div class="progress-bar-inner" id="progBar"></div></div>
+                <div class="progress-text" id="progText"></div>
+            </div>
+            <div class="btn-row">
+                <button class="btn" id="vidGo">RECORD WEBM</button>
+                <button class="btn secondary" id="vidStop" disabled>CANCEL</button>
+            </div>
+            <div class="level-hint">
+                ガラスだけが1回転する（カメラ・背景・光は固定）。1回転がそのまま
+                継ぎ目のないループになる。30fps 固定・短辺 720。
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<div class="alt-toast" id="toast"></div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
