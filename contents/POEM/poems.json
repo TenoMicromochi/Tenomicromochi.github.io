@@ -1,0 +1,179 @@
+{
+  "_note": "POEM 一覧のマスターデータ。追加するときは data/ に .txt を置いて poems[] に1行足すだけでよい。color は #RGB の3桁（各16階調）でテーマカラーを指定する。",
+  "categories": [
+    {
+      "key": "auto1",
+      "ja": "自動筆記Ⅰ",
+      "en": "AUTOMATIC I"
+    },
+    {
+      "key": "auto2",
+      "ja": "自動筆記Ⅱ",
+      "en": "AUTOMATIC II"
+    },
+    {
+      "key": "auto3",
+      "ja": "自動筆記Ⅲ",
+      "en": "AUTOMATIC III"
+    },
+    {
+      "key": "verse",
+      "ja": "俳句・短歌・自由律",
+      "en": "SHORT VERSE"
+    }
+  ],
+  "poems": [
+    {
+      "id": "two_propellers",
+      "category": "auto1",
+      "color": "#334",
+      "titleJa": "2つのプロペラ、3つの皿、5泊の連続に。",
+      "titleEn": "Two Propellers, Three Plates, Five Nights in a Row.",
+      "file": "data/two_propellers.txt"
+    },
+    {
+      "id": "bakushi_log",
+      "category": "auto1",
+      "color": "#c33",
+      "titleJa": "爆死未遂ログ！",
+      "titleEn": "Attempted Detonation Log!",
+      "file": "data/bakushi_log.txt"
+    },
+    {
+      "id": "douki",
+      "category": "auto1",
+      "color": "#fb4",
+      "titleJa": "止まらない動悸！(混乱！)",
+      "titleEn": "Palpitations That Won't Stop! (Confusion!)",
+      "file": "data/douki.txt"
+    },
+    {
+      "id": "rule_72",
+      "category": "auto1",
+      "color": "#96c",
+      "titleJa": "簡単に言えば72回目くらいのルール",
+      "titleEn": "Put Simply, Roughly the 72nd Rule",
+      "file": "data/rule_72.txt"
+    },
+    {
+      "id": "asphalt_day",
+      "category": "auto1",
+      "color": "#889",
+      "titleJa": "アスファルト・デイ",
+      "titleEn": "Asphalt Day",
+      "file": "data/asphalt_day.txt"
+    },
+    {
+      "id": "anti_allergy",
+      "category": "auto2",
+      "color": "#3ac",
+      "titleJa": "抗アレルギー薬と人類愛と頭痛と風邪と体が熱くて眠いから",
+      "titleEn": "Antihistamines, Love for Humanity, a Headache, a Cold, and a Body Too Hot to Stay Awake",
+      "file": "data/anti_allergy.txt"
+    },
+    {
+      "id": "loft_bed",
+      "category": "auto2",
+      "color": "#cb4",
+      "titleJa": "ロフトベッドのビニール祝福",
+      "titleEn": "Vinyl Benediction of the Loft Bed",
+      "file": "data/loft_bed.txt"
+    },
+    {
+      "id": "chocolate_suicide",
+      "category": "auto2",
+      "color": "#753",
+      "titleJa": "チョコレート自殺",
+      "titleEn": "Chocolate-Flavored Exit",
+      "file": "data/chocolate_suicide.txt"
+    },
+    {
+      "id": "transparent",
+      "category": "auto2",
+      "color": "#9cd",
+      "titleJa": "透明",
+      "titleEn": "Transparent",
+      "file": "data/transparent.txt"
+    },
+    {
+      "id": "human_dream",
+      "category": "auto2",
+      "color": "#dc7",
+      "titleJa": "人間の夢",
+      "titleEn": "A Human's Dream",
+      "file": "data/human_dream.txt"
+    },
+    {
+      "id": "kotatsu_mikan",
+      "category": "auto2",
+      "color": "#f92",
+      "titleJa": "こたつ・みかん",
+      "titleEn": "Kotatsu, Mandarin",
+      "file": "data/kotatsu_mikan.txt"
+    },
+    {
+      "id": "nap_white",
+      "category": "auto2",
+      "color": "#ccd",
+      "titleJa": "お昼寝前：白",
+      "titleEn": "Before the Nap: White",
+      "file": "data/nap_white.txt"
+    },
+    {
+      "id": "nap_green",
+      "category": "auto2",
+      "color": "#6a5",
+      "titleJa": "お昼寝前：緑",
+      "titleEn": "Before the Nap: Green",
+      "file": "data/nap_green.txt"
+    },
+    {
+      "id": "nap_brown",
+      "category": "auto2",
+      "color": "#864",
+      "titleJa": "お昼寝前：茶",
+      "titleEn": "Before the Nap: Brown",
+      "file": "data/nap_brown.txt"
+    },
+    {
+      "id": "nap_red",
+      "category": "auto2",
+      "color": "#c44",
+      "titleJa": "お昼寝前：赤",
+      "titleEn": "Before the Nap: Red",
+      "file": "data/nap_red.txt"
+    },
+    {
+      "id": "peaceful_nap",
+      "category": "auto3",
+      "color": "#8ad",
+      "titleJa": "もし、平和の仮眠が正確なら。",
+      "titleEn": "If the Peaceful Nap Were Accurate.",
+      "file": "data/peaceful_nap.txt"
+    },
+    {
+      "id": "melting_walk",
+      "category": "auto3",
+      "color": "#7a9",
+      "titleJa": "溶け落ちる散歩",
+      "titleEn": "A Walk That Melts Away",
+      "file": "data/melting_walk.txt"
+    },
+    {
+      "id": "after_death",
+      "category": "auto3",
+      "color": "#569",
+      "titleJa": "しんだあと",
+      "titleEn": "After You Die",
+      "file": "data/after_death.txt"
+    },
+    {
+      "id": "tanka_haiku",
+      "category": "verse",
+      "color": "#9b8",
+      "titleJa": "俳句・短歌・自由律",
+      "titleEn": "Haiku, Tanka, Free Verse",
+      "file": "data/tanka_haiku.txt"
+    }
+  ]
+}

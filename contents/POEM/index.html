@@ -11,11 +11,18 @@
     <meta property="og:image" content="https://tenomicromochi.github.io/images/OGP.png">
     <meta property="og:url" content="https://tenomicromochi.github.io/contents/POEM/index.html">
     <meta name="twitter:card" content="summary_large_image">
+
+    <!-- 本文用の日本語ゴシック。UI（ヘッダ・サイドバー・ボタン）は
+         これまで通り TenoText 8x8 / PixelMplus12 のままにしてある。 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+2:wght@400;500;700&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="/main.css">
     <script src="/menu.js" defer></script>
 </head>
-<body>
+<body class="poem-app">
 
 <header class="site-header">
     <div class="logo">PO<em>EM</em></div>
@@ -24,16 +31,34 @@
 
 <div class="page-content wide">
     <div id="poem-container">
-        <div id="poem-list-side">
-            <ul id="poem-titles">
-                </ul>
-        </div>
 
-        <div id="poem-content-side">
-            <div id="poem-display">
-                <p class="placeholder">タイトルを選択してください...</p>
+        <aside id="poem-list-side">
+            <div class="side-head">INDEX</div>
+            <nav id="poem-index"><!-- poems.json から生成 --></nav>
+        </aside>
+
+        <section id="poem-content-side">
+            <div id="poem-toolbar">
+                <div id="poem-heading">
+                    <span class="swatch swatch-lg" hidden></span>
+                    <div class="heading-text">
+                        <div class="t-ja">SELECT A TITLE</div>
+                        <div class="t-en">from the index on the left</div>
+                    </div>
+                </div>
+                <div class="size-ctrl">
+                    <span class="size-label">TEXT</span>
+                    <button type="button" class="size-btn" data-size="s">S</button>
+                    <button type="button" class="size-btn" data-size="m">M</button>
+                    <button type="button" class="size-btn" data-size="l">L</button>
+                </div>
             </div>
-        </div>
+
+            <div id="poem-scroll">
+                <article id="poem-display"><p class="placeholder">Select a title from the index.</p></article>
+            </div>
+        </section>
+
     </div>
 </div>
 
