@@ -1,7 +1,23 @@
 const UPDATE_LOGS = [
     {
+        date: "2026/09/08",
+        text: "追加//Added: POLICY"
+    },
+    {
+        date: "2026/09/07",
+        text: "変更//Updated: POEM"
+    },
+    {
+        date: "2026/09/05",
+        text: "追加//Added: PRISMALT"
+    },
+    {
         date: "2026/08/27",
         text: "追加//Added: HANABI"
+    },
+    {
+        date: "2026/08/25",
+        text: "変更//Updated: FONT"
     },
     {
         date: "2026/08/21",
@@ -10,6 +26,10 @@ const UPDATE_LOGS = [
     {
         date: "2026/08/17",
         text: "追加//Added: FLAKALT"
+    },
+    {
+        date: "2026/08/11",
+        text: "追加//Added: GALLERY"
     },
     {
         date: "2026/08/08",
