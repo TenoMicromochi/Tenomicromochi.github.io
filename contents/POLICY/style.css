@@ -1,0 +1,254 @@
+@import url('/theme.css');
+
+/* ============================================================
+   POLICY
+
+   このページの設計は3つの判断の上に乗っている。
+
+   1. 一文を折り返させない
+      「いいよ」「やめてね」を一息で読ませたいので、段組みや
+      狭い読み幅より 1行の長さを優先する。幅・文字サイズは
+      すべて、最長の一文（DON'T の3つめの note、116字）が
+      1行に収まる値から逆算してある。
+
+   2. 段落の形を3パネルで完全に揃える
+      パネルごとに違うのは「色」だけ。形は .item ひとつ。
+
+   3. 判定はドット絵のアイコンで示す
+      ⚠ = まず読む / ✅ = 許可 / ❌ = 禁止。
+      アイコンから下に伸びる縦ラインが、英文・和文・補足を
+      「ひとつの項目」として束ねる役をしている。
+
+   本文は POEM と同じ M PLUS 2（Google Fonts）。ビットマップ
+   フォントではないので font-size は自由に取れる。ページ見出しと
+   パネル名は TenoText 8x8 のまま（8の倍数を守ること）。
+   ============================================================ */
+:root {
+    --muted: #aabbcc;
+
+    /* 本文専用の日本語ゴシック。POEM の --font-poem と同じ構成。
+       UI側の --font-body（PixelMplus12）とは別枠にしてある。 */
+    --font-read: 'M PLUS 2', 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
+    --read-fs: 15px;
+    /* 補足行だけ1段落とす。ここを 15px に上げると最長の note が折り返す */
+    --read-fs-note: 14px;
+
+    --read-main: #22223c;   /* 本文。theme の --text(#333355) より濃い */
+    --read-sub:  #3f4a68;   /* 質問・補足行。--sub(#556688) より濃い */
+    --read-line: #b9cbd6;   /* 補足行の細い縦罫。--border2 より少し強い */
+
+    /* ── 判定色 ────────────────────────────────────────────
+       button_*.png の実際のドットから拾った主色。線とアイコンの
+       色がずれると「別の部品」に見えてしまうので、目分量ではなく
+       PNG のパレットの最頻色をそのまま置いている。
+       アイコンを描き替えたときはここも拾い直すこと。        */
+    --mark-note: #dd9955;   /* button_exclamation.png */
+    --mark-yes:  #66aa55;   /* button_check.png       */
+    --mark-no:   #bb4444;   /* button_close.png       */
+}
+
+body { line-height: 1.6; }
+
+/* ── Page wrapper ────────────────────────────────────────────
+   theme.css の .page-content は 960px だが、それだと長い一文が
+   折り返すのでこのページだけ広く取る。.page-content.wide の
+   1100px は超えない範囲に収めてある。                          */
+.page {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.panel-body { padding: 16px 18px; }
+
+/* ── 本文の共通字面 ──────────────────────────────────────────
+   ここで指定した要素が「本文」。英日とも M PLUS 2 に揃える。
+   .panel-head は対象外（TenoText 8x8 のまま）。              */
+.item-q,
+.item-body,
+.legend-text,
+.bio-en,
+.bio-ja {
+    font-family: var(--font-read);
+    font-size: var(--read-fs);
+    line-height: 1.95;
+    letter-spacing: 0.02em;
+    color: var(--read-main);
+}
+
+/* 入れ子の日本語ブロックはサイズ・色を親から継承させる */
+.item-q .ja,
+.item-body .ja,
+.legend-text .ja {
+    font-family: var(--font-read);
+    font-size: var(--read-fs);
+    line-height: 1.95;
+    letter-spacing: 0.02em;
+    color: inherit;
+}
+
+/* 折り返しが避けられない幅になったとき、
+   末尾に1語だけ落ちる不格好な折り方を避ける */
+.item-q,
+.item-body,
+.legend-text,
+.bio-en, .bio-ja { text-wrap: pretty; }
+
+/* ── ドット絵の共通ルール ────────────────────────────────────
+   16x16 のドット絵なので、表示は 16px か 32px の整数倍だけ。
+   width/height を属性でも書いてあるのは、読み込み前に枠が
+   ずれて本文が飛ぶのを防ぐため。                              */
+.item-mark img,
+.legend-icon {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    display: block;
+    flex-shrink: 0;
+}
+.item-mark img { width: 16px; height: 16px; }   /* 等倍 */
+.legend-icon   { width: 32px; height: 32px; }   /* x2   */
+
+/* ── 凡例 ────────────────────────────────────────────────────
+   3つのアイコンの意味をここで渡しておく。以降のパネルを
+   「読まずに色で拾える」状態にするための前置き。            */
+.legend {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    column-gap: 16px;
+    row-gap: 14px;
+    align-items: center;
+}
+
+/* ── 段落の共通部品（3パネル共通） ───────────────────────────
+   TL;DR / SHORT ANSWERS / SERIOUSLY, DON'T は言っている内容が
+   違うだけで、段落としては同じ形をしている。
+
+     .item       … 段落ひとつ。区切りは下罫のみ（hr は使わない）
+     .item-mark  … 左のガター。アイコンと、そこから下に伸びる縦ライン
+     .item-text  … 右の本文カラム。中身が何行でもグリッドは常に1行
+     .item-q     … 前置き（質問）。引いた色。SHORT ANSWERS だけ
+     .item-body  … 言いたいこと
+     .note       … 補足の一言。細い縦罫でもう一段下げる
+
+   パネルごとの違いは --mark（アイコンの色）だけで示す。
+   形はいじらないこと（統一感がこの一点に乗っている）。      */
+.item {
+    display: grid;
+    grid-template-columns: 16px 1fr;
+    column-gap: 14px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border2);
+}
+.item:first-child { padding-top: 0; }
+.item:last-child  { padding-bottom: 0; border-bottom: none; }
+
+/* ガターは項目の全高にまたがる。アイコンの下に伸びる 1px の線が
+   英文・和文・補足を「ひとつの項目」として束ねている。
+   flex の伸びる余白として線を置いているので、項目が何行でも追随する。
+
+   本文を .item-text で1つに包んでグリッドを常に「1行2列」に保つのが
+   要点。質問と答えを別々のグリッドアイテムにすると暗黙の行が増え、
+   grid-row: 1 / -1 が明示グリッドの終端（＝1行目の終わり）しか
+   指さないので、線が質問の途中で切れる。                        */
+.item-mark {
+    grid-column: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+/* 1行目（line-height 1.95 → 約29px）の天地中央にアイコンを合わせる */
+.item-mark img { margin-top: 6px; }
+.item-mark::after {
+    content: '';
+    flex: 1 1 auto;
+    width: 1px;
+    margin-top: 6px;
+    background: var(--mark);
+}
+
+.item-text { grid-column: 2; min-width: 0; }
+
+/* 前置き（質問）は引いた色にして、.item-body を先に拾えるようにする */
+.item-q { color: var(--read-sub); }
+.item-q .ja { margin-top: 2px; }
+.item-q + .item-body { margin-top: 8px; }
+
+.item-body .ja { margin-top: 2px; }
+/* <em> は原文の強調をそのまま持ってきたもの。色は付けない。
+   判定色は左のガターだけの役割で、本文の途中に赤や緑が混ざると
+   「そこだけ別の意味がある」ように読めてしまう。斜体だけ殺す。 */
+.item-body em {
+    font-style: normal;
+    color: inherit;
+}
+
+/* ── 補足の一言（.item-body の中の二段目） ──────────────────── */
+.note {
+    font-family: var(--font-read);
+    font-size: var(--read-fs-note);
+    color: var(--read-sub);
+    line-height: 1.95;
+    letter-spacing: 0.02em;
+    margin-top: 4px;
+    padding-left: 12px;
+    border-left: 1px solid var(--read-line);
+}
+
+/* ── パネルごとの判定色 ───────────────────────────────────────
+   本文の文字色は3パネルとも同じ。差は左のガターの色だけに
+   持たせている。文字まで色を変えると、パネルごとに読み味が
+   変わってしまい、揃えた意味がなくなる。                    */
+.panel--note  { --mark: var(--mark-note); }
+.panel--yes   { --mark: var(--mark-yes); }
+.panel--stop  { --mark: var(--mark-no); }
+
+/* ── Bio text（PROFILE と同じ組み方、色だけ濃くしてある） ────── */
+.bio-ja { margin-top: 10px; }
+
+/* ── Footer ──────────────────────────────────────────────────── */
+footer {
+    border-top: 1px solid var(--border);
+    padding: 8px 20px;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* ── Tablet ──────────────────────────────────────────────────
+   1040px を割ると本文幅が最長行を下回りはじめる。ここで
+   文字を1段落として、折り返しが始まる幅をもう少し粘らせる。 */
+@media (max-width: 1080px) {
+    :root {
+        --read-fs: 14px;
+        --read-fs-note: 13px;
+    }
+    .page { padding: 20px 16px; }
+}
+
+/* ── Mobile ──────────────────────────────────────────────────
+   この幅では折り返しは避けられないので、目標を
+   「一文を1行に」から「行頭が揃って読み進められる」に切り替える。
+   アイコンは 16px の等倍のまま。ここを縮めるとドットが潰れる。 */
+@media (max-width: 560px) {
+    .page { padding: 16px 12px; }
+    .panel-body { padding: 12px; }
+
+    .item {
+        column-gap: 10px;
+        padding: 14px 0;
+    }
+    .item-q + .item-body { margin-top: 6px; }
+    .note { padding-left: 10px; }
+
+    .legend {
+        column-gap: 12px;
+        row-gap: 12px;
+    }
+
+    footer { flex-direction: column; gap: 2px; }
+}

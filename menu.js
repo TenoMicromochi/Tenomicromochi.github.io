@@ -36,6 +36,7 @@ const SODENMIR_GROUPS = [
         label: "OTHER", icon: "/images/icons/FOLDER.png",
         items: [
             { label: "LINK", dir: "/contents/LINKS/", path: "/contents/LINKS/index.html", icon: "/images/icons/LINK.png" },
+            { label: "POLICY", dir: "/contents/POLICY/", path: "/contents/POLICY/index.html", icon: "/images/icons/POLICY.png" },
             { label: "UPDATE", dir: "/contents/UPDATE/", path: "/contents/UPDATE/index.html", icon: "/images/icons/UPDATE.png" },
         ],
     },
