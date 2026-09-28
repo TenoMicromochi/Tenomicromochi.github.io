@@ -26,7 +26,7 @@ Sandbox 配下で普通にサーバーを立てると `/theme.css` がこのフ�
 ```
 sample/
 ├── index.html      画面（ALT系の左右タブ型）
-├── style.css       @import 2行 + このツール固有の部品だけ
+├── style.css       このツール固有の部品だけ（theme.css / alt.css は index.html で link）
 └── js/
     ├── cmf.js          CIE 1931 CMF（転換前からの純粋コピー）
     ├── colorspace.js   XYZ→sRGB / OKLab ガモットマップ（純粋コピー）
@@ -54,7 +54,7 @@ TEXTALT / GLYPHALT / ANIMALT / PALETALT と同じ骨格。`body.alt-app` + `.sit
 | 成果物エリア | レンダ + 書き出し範囲の枠 + info-chip |
 | 右パネル（タブ `SPECTRUM / EXPORT`。初期は閉） | EMISSION / ABSORB A / ABSORB B のスペクトル、EXPORT STILL、EXPORT VIDEO |
 
-パネルはレンダの上に被せて開閉する（`js/panels.js`。1100px 未満では片方を開くともう片方が閉じる）。
+パネルはレンダの上に被せて開閉する（共通の `/alt-panels.js`。1100px 未満では片方を開くともう片方が閉じる）。
 レンダの大きさはパネルの開閉で変わらないが、開いている間は枠の端がパネルに隠れる。
 画面の説明文は英語に統一してある。
 
