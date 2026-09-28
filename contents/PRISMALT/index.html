@@ -25,10 +25,16 @@
     <div class="tagline">Light through glass, composed as a wallpaper</div>
 </header>
 
-<div class="app-shell">
+<!-- 左右タブ型（ての標準ツールUI）。パネルは成果物の上に被せて開閉する -->
+<div class="workspace">
 
-    <!-- ========================= LEFT : ガラスの形状・配置 ========================= -->
-    <div class="sidebar">
+<button class="edge-tab edge-tab-left" id="tabLeft" type="button" aria-label="Toggle scene panel"><span id="tabLeftLabel">SCENE</span></button>
+<button class="edge-tab edge-tab-right" id="tabRight" type="button" aria-label="Toggle spectrum and export panel"><span id="tabRightLabel">SPECTRUM / EXPORT</span></button>
+
+    <!-- ========================= LEFT : glass shape, light, background, view ========================= -->
+    <aside class="side-panel side-panel-left" id="panelLeft">
+    <div class="panel-col">
+
 
         <div class="section">
             <div class="section-title">ARRANGEMENT</div>
@@ -63,8 +69,8 @@
                 <div class="ctrl-inputs"><input type="range" id="bev" min="0" max="24" value="5"></div>
             </div>
             <div class="level-hint">
-                隙間 0 で継ぎ目なく融合する。GAP Z は USE GRID Z のときだけ効き、
-                上げると1本の柱が独立したキューブに分かれる。
+                Gap 0 fuses neighbors seamlessly. GAP Z only applies with USE GRID Z;
+                raising it splits a column into separate cubes.
             </div>
             <button class="btn secondary" id="refit">REFIT CAMERA</button>
         </div>
@@ -74,8 +80,8 @@
         <div class="section">
             <div class="section-title">FIELDS</div>
             <div class="level-hint">
-                高さと3つのマテリアルを同じ仕組みで回す。軸を選び、複数ONなら合成のしかたを選ぶ。
-                軸ゼロ = const（lo の値）。
+                Height and the three materials run on the same mechanism. Pick axes; with several on,
+                pick how they combine. No axis = const (the lo value).
             </div>
             <div id="fields"></div>
         </div>
@@ -96,7 +102,7 @@
                 <div class="ctrl-label">WHITE BAL <span id="lwbV">0.82</span></div>
                 <div class="ctrl-inputs"><input type="range" id="lwb" min="0" max="100" value="82"></div>
             </div>
-            <div class="level-hint">光の向きはビューの右ドラッグで変える。<span id="ldir"></span></div>
+            <div class="level-hint">Change the light direction with a right-drag in the view.<span id="ldir"></span></div>
         </div>
 
         <hr class="divider">
@@ -125,8 +131,8 @@
                 <div class="ctrl-inputs"><input type="range" id="bgr" min="40" max="320" value="180"></div>
             </div>
             <div class="level-hint">
-                バックライトは常に光の色で固定。VOID COLOR は合成用の普通の sRGB で、
-                影だけがガラスの色に染まる。
+                The backlight is always fixed to the light's color. VOID COLOR is a plain sRGB for
+                compositing; only the shadows are tinted by the glass.
             </div>
         </div>
 
@@ -151,24 +157,14 @@
             </div>
         </div>
 
+    
     </div>
+    </aside>
 
-    <!-- ========================= CENTER : レンダ ========================= -->
-    <div class="work-area">
-        <div class="render-stack" id="renderStack">
-            <canvas id="gl"></canvas>
-            <!-- 書き出し範囲の枠。外側は box-shadow で暗くする -->
-            <div class="frame-guide" id="frameGuide"></div>
-        </div>
-        <div class="info-bar">
-            <span class="info-chip" id="chipCam"></span>
-            <span class="info-chip" id="chipGrid"></span>
-            <span class="info-chip" id="chipMs"></span>
-        </div>
-    </div>
+    <!-- ================= RIGHT : spectra, export ================= -->
+    <aside class="side-panel side-panel-right hidden" id="panelRight">
+    <div class="panel-col">
 
-    <!-- ================= RIGHT : スペクトル・出力 ================= -->
-    <div class="sidebar right">
 
         <div id="spectra"></div>
 
@@ -177,8 +173,8 @@
         <div class="section">
             <div class="section-title">EXPORT STILL</div>
             <div class="level-hint">
-                常に中央の正方形を 4096x4096 で書き出す。設定なし。縦長で使いたいときは
-                書き出したあとに切り抜く。枠を 1:1 にすると書き出し範囲のプレビューになる。
+                Always exports the central square at 4096x4096, no settings. Crop it afterward
+                for a portrait shape. Set the frame to 1:1 to preview the export area.
             </div>
             <button class="btn" id="pngGo">DOWNLOAD PNG 4096</button>
         </div>
@@ -208,17 +204,33 @@
                 <button class="btn secondary" id="vidStop" disabled>CANCEL</button>
             </div>
             <div class="level-hint">
-                ガラスだけが1回転する（カメラ・背景・光は固定）。1回転がそのまま
-                継ぎ目のないループになる。30fps 固定・短辺 720。
+                Only the glass makes one full turn (camera, background and light stay fixed), so one
+                turn is a seamless loop. Fixed at 30fps, short side 720.
             </div>
         </div>
 
+    
     </div>
+    </aside>
 
+    <!-- ========================= CENTER : render ========================= -->
+    <div class="work-area">
+        <div class="render-stack" id="renderStack">
+            <canvas id="gl"></canvas>
+            <!-- 書き出し範囲の枠。外側は box-shadow で暗くする -->
+            <div class="frame-guide" id="frameGuide"></div>
+        </div>
+        <div class="info-bar">
+            <span class="info-chip" id="chipCam"></span>
+            <span class="info-chip" id="chipGrid"></span>
+            <span class="info-chip" id="chipMs"></span>
+        </div>
+    </div>
 </div>
 
 <div class="alt-toast" id="toast"></div>
 
+<script src="js/panels.js"></script>
 <script type="module" src="js/main.js"></script>
 </body>
 </html>

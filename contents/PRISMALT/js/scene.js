@@ -21,14 +21,14 @@
 // 中央基準は「中心が高い山」で出る。invert でそのまま窪みになり、
 // dome + invert が転換前の radial（中心が低いお椀）と一致する。
 export const PATTERNS = [
-  { id: 0, key: 'diagonal', hint: '端から / mean — 対角の坂' },
-  { id: 1, key: 'ridge',    hint: '端から / max — L字の尾根' },
-  { id: 2, key: 'valley',   hint: '端から / min — L字の谷' },
-  { id: 3, key: 'corner',   hint: '端から / dist — 角からの1/4円' },
-  { id: 4, key: 'diamond',  hint: '中央から / mean — 斜め45度の四角錐' },
-  { id: 5, key: 'pyramid',  hint: '中央から / max — 四角錐（invert で四角い窪み）' },
-  { id: 6, key: 'cross',    hint: '中央から / min — 十字の尾根' },
-  { id: 7, key: 'dome',     hint: '中央から / dist — ドーム（invert で転換前の radial）' },
+  { id: 0, key: 'diagonal', hint: 'from edge / mean — diagonal slope' },
+  { id: 1, key: 'ridge',    hint: 'from edge / max — L-shaped ridge' },
+  { id: 2, key: 'valley',   hint: 'from edge / min — L-shaped valley' },
+  { id: 3, key: 'corner',   hint: 'from edge / dist — quarter circle from the corner' },
+  { id: 4, key: 'diamond',  hint: 'from center / mean — 45-degree pyramid' },
+  { id: 5, key: 'pyramid',  hint: 'from center / max — square pyramid (invert: square dent)' },
+  { id: 6, key: 'cross',    hint: 'from center / min — cross-shaped ridge' },
+  { id: 7, key: 'dome',     hint: 'from center / dist — dome (invert: round bowl)' },
 ];
 
 export const scene = {

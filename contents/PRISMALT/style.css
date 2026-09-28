@@ -1,7 +1,7 @@
 
 /* ============================================================
    WALLPAPER EDITOR — このツールにしかない部品だけ。
-   色・ボタン・サイドバー・スライダーは theme.css / alt.css のものを使い、
+   色・ボタン・左右タブのパネル・スライダーは theme.css / alt.css のものを使い、
    ここでは再定義しない（Skill alt-tool-new）。直値ではなく var(--*) を使う。
 
    なお、このツールの中央キャンバスは**ドット絵ではない**（連続階調のレイトレ）。
@@ -9,13 +9,8 @@
    ドット絵の不変条件が掛かるのは素材がドット絵のときだけ。
    ============================================================ */
 
-/* ── 3カラム：左に形状・中央にレンダ・右にスペクトルと出力 ──
-   alt.css の .app-shell は「左カラム群 + 1fr」なので、右カラムぶんを足して上書きする */
-.app-shell { grid-template-columns: 268px 1fr 300px; }
-.sidebar.right { border-right: none; border-left: 1px solid var(--border); }
-
-/* 中央は canvas を目一杯使いたいので、work-area の中央寄せを解く */
-.work-area { padding: 8px; gap: 6px; justify-content: flex-start; overflow: hidden; }
+/* 中央は canvas を目一杯使いたいので、成果物エリアの余白は縦タブぶん（左右 40px）だけにする */
+.workspace > .work-area { padding: 8px 40px; gap: 6px; justify-content: flex-start; overflow: hidden; }
 
 /* ── レンダ枠 ── */
 .render-stack {
@@ -147,20 +142,3 @@
 
 /* 使われていない設定であることを見た目で示す（USE GRID Z のときの MAX HEIGHT など） */
 .off { opacity: 0.35; }
-
-/* ── 折り返し ──
-   alt.css は 900px で 2カラムに畳むが、こちらは3カラムなので上書きする。
-   WebGL のビューは高さが要るので、畳んでも 100vh シェルのままにする */
-@media (max-width: 1100px) {
-    .app-shell { grid-template-columns: 232px 1fr 260px; }
-}
-@media (max-width: 900px) {
-    body.alt-app { height: auto; overflow: auto; }
-    .app-shell { grid-template-columns: 1fr 1fr; overflow: visible; }
-    .sidebar, .sidebar.right { overflow: visible; }
-    .work-area { grid-column: 1 / -1; order: -1; height: 70vh; overflow: hidden; }
-}
-@media (max-width: 560px) {
-    .app-shell { grid-template-columns: 1fr; }
-    .work-area { grid-column: 1; height: 60vh; }
-}

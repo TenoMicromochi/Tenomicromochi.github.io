@@ -25,7 +25,7 @@ Sandbox 配下で普通にサーバーを立てると `/theme.css` がこのフ�
 
 ```
 sample/
-├── index.html      画面（ALT系の3カラム）
+├── index.html      画面（ALT系の左右タブ型）
 ├── style.css       @import 2行 + このツール固有の部品だけ
 └── js/
     ├── cmf.js          CIE 1931 CMF（転換前からの純粋コピー）
@@ -45,17 +45,18 @@ sample/
 ## 画面（ALT系の共通フォーマット）
 
 TEXTALT / GLYPHALT / ANIMALT / PALETALT と同じ骨格。`body.alt-app` + `.site-header` +
-`.app-shell`、`index.html` が `/theme.css` と `/alt.css` を `<link>` で読み、
-色・ボタン・サイドバー・スライダーはツール内で再定義していない。
+`.workspace`（左右タブ型）、`index.html` が `/theme.css` と `/alt.css` を `<link>` で読み、
+色・ボタン・左右のパネル・スライダーはツール内で再定義していない。
 
-| カラム | 中身 |
+| 場所 | 中身 |
 |---|---|
-| 左 | ARRANGEMENT / FIELDS / LIGHT / BACKGROUND / VIEW（操作ヒットもここ） |
-| 中央 | レンダ + 書き出し範囲の枠 + info-chip |
-| 右 | EMISSION / ABSORB A / ABSORB B のスペクトル、EXPORT STILL、EXPORT VIDEO |
+| 左パネル（タブ `SCENE`。初期は開） | ARRANGEMENT / FIELDS / LIGHT / BACKGROUND / VIEW（操作ヒットもここ） |
+| 成果物エリア | レンダ + 書き出し範囲の枠 + info-chip |
+| 右パネル（タブ `SPECTRUM / EXPORT`。初期は閉） | EMISSION / ABSORB A / ABSORB B のスペクトル、EXPORT STILL、EXPORT VIDEO |
 
-`.app-shell` は alt.css だと「左カラム群 + 1fr」なので、右カラムぶんだけ
-`grid-template-columns` を上書きしている。
+パネルはレンダの上に被せて開閉する（`js/panels.js`。1100px 未満では片方を開くともう片方が閉じる）。
+レンダの大きさはパネルの開閉で変わらないが、開いている間は枠の端がパネルに隠れる。
+画面の説明文は英語に統一してある。
 
 **中央のキャンバスはドット絵ではない**（連続階調のレイトレ）ので、
 `image-rendering: pixelated` も整数倍の制約も掛けていない。
