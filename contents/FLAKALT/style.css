@@ -135,7 +135,7 @@ body.nocrt #crt { display: none; }
 /* --- 説明パネル ---------------------------------------------- */
 
 .flak-about { max-width: 720px; margin: 0 auto; }
-.flak-about .panel-body p { margin-bottom: 10px; line-height: 1.7; }
+.flak-about .panel-body p { margin-bottom: 10px; line-height: 20px; }
 .flak-about .panel-body p:last-child { margin-bottom: 0; }
 
 .flak-keys {
@@ -143,12 +143,14 @@ body.nocrt #crt { display: none; }
     grid-template-columns: 150px 1fr;
     gap: 4px 12px;
     margin: 14px 0;
-    line-height: 1.6;
+    line-height: 20px;
 }
 
 .flak-keys dt {
     font-family: var(--font-heading);
     font-size: 8px;
+    line-height: 8px;
+    padding-top: 6px;   /* 20px の行の中で 8px の字を縦中央に置く */
     color: var(--accent);
     letter-spacing: 1px;
 }
@@ -167,7 +169,8 @@ body.nocrt #crt { display: none; }
     background: #0000aa;
     color: #ffff55;
     font-size: 12px;
-    letter-spacing: 0.06em;
+    line-height: 16px;
+    letter-spacing: 1px;
     text-align: center;
 }
 
@@ -186,6 +189,6 @@ body.nocrt #crt { display: none; }
     color: #ffffff;
     font-family: var(--font-mono);
     font-size: 12px;
-    line-height: 1.6;
+    line-height: 16px;
     white-space: pre-wrap;
 }

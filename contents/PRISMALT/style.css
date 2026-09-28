@@ -55,20 +55,22 @@
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    font-size: 10px;
+    font-size: 12px;
+    line-height: 16px;
     color: var(--text);
     letter-spacing: 1px;
 }
-.fld-head em { font-style: normal; font-size: 9px; color: var(--sub); }
+.fld-head em { font-style: normal; font-size: 12px; color: var(--sub); }
 .fld-axes { display: flex; flex-wrap: wrap; gap: 2px 9px; }
-.fld-axes .check-row { font-size: 9px; gap: 3px; }
+.fld-axes .check-row { gap: 3px; }
 
 /* パターンの8タブ。view-btn は横一列前提なので、折り返す用に別部品にする */
 .pat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; }
 .pat-grid button {
     padding: 2px 0;
     font-family: var(--font-mono);
-    font-size: 8px;
+    font-size: 12px;
+    line-height: 16px;
     letter-spacing: 0;
     border: 1px solid var(--border);
     background: var(--bg);
@@ -85,7 +87,8 @@
     display: flex;
     align-items: center;
     gap: 3px;
-    font-size: 9px;
+    font-size: 12px;
+    line-height: 16px;
     color: var(--sub);
     letter-spacing: 1px;
 }
@@ -97,7 +100,8 @@
     border-radius: var(--radius);
     padding: 2px 3px;
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: 12px;
+    line-height: 16px;
     color: var(--text);
     outline: none;
 }
@@ -112,7 +116,7 @@
     border: 1px solid var(--border);
     border-radius: var(--radius);
 }
-.chipv { font-family: var(--font-mono); font-size: 8px; color: var(--sub); }
+.chipv { font-family: var(--font-mono); font-size: 12px; line-height: 16px; color: var(--sub); }
 /* 帯グラフは暗い下地のほうが分光が読みやすいので canvas-bg に載せる */
 .spec canvas {
     display: block;
@@ -125,7 +129,7 @@
 .spec-row { display: flex; flex-wrap: wrap; align-items: center; gap: 3px 6px; }
 .spec-row label {
     display: flex; align-items: center; gap: 3px;
-    font-size: 9px; color: var(--sub); letter-spacing: 1px;
+    font-size: 12px; line-height: 16px; color: var(--sub); letter-spacing: 1px;
 }
 .spec-row input[type=number] {
     width: 42px;
@@ -134,13 +138,14 @@
     border-radius: var(--radius);
     padding: 1px 3px;
     font-family: var(--font-mono);
-    font-size: 9px;
+    font-size: 12px;
+    line-height: 16px;
     color: var(--text);
     outline: none;
 }
 .spec-row input[type=range] { width: 56px; }
-.spec-row select { width: auto; flex: 1; min-width: 70px; font-size: 9px; }
-.spec-row .btn { padding: 2px 7px; font-size: 9px; width: auto; }
+.spec-row select { width: auto; flex: 1; min-width: 70px; font-size: 12px; line-height: 16px; }
+.spec-row .btn { padding: 2px 7px; width: auto; }
 
 /* 使われていない設定であることを見た目で示す（USE GRID Z のときの MAX HEIGHT など） */
 .off { opacity: 0.35; }

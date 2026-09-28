@@ -46,7 +46,8 @@ body {
     border-radius: var(--radius);
     padding: 16px 10px;
     font-family: var(--font-mono);
-    font-size: 15px;
+    font-size: 24px;
+    line-height: 32px;
     font-weight: bold;
     letter-spacing: 3px;
     cursor: pointer;
@@ -66,10 +67,11 @@ body {
 .btn-copy:hover { background: var(--success2); }
 
 .copy-status {
-    font-size: 11px;
+    font-size: 12px;
+    line-height: 16px;
     letter-spacing: 1px;
     color: var(--success);
-    min-height: 14px;
+    min-height: 16px;
     text-align: center;
     font-weight: bold;
 }
@@ -101,7 +103,8 @@ body {
     background: var(--bg);
     border: none;
     color: var(--text);
-    font-size: 10px;
+    font-size: 12px;
+    line-height: 16px;
     font-weight: bold;
     min-width: 24px;
     text-align: right;
@@ -118,8 +121,8 @@ body {
     border-radius: var(--radius);
     padding: 10px;
     font-family: var(--font-mono);
-    font-size: 15px;
-    line-height: 1.7;
+    font-size: 12px;
+    line-height: 20px;
     resize: vertical;
     outline: none;
 }
@@ -133,5 +136,5 @@ body {
 /* ---- Responsive ---- */
 @media (max-width: 520px) {
     .app-layout { max-width: 100%; padding: 16px 12px 0; }
-    .btn-action { font-size: 13px; padding: 14px 8px; letter-spacing: 2px; }
+    .btn-action { padding: 12px 8px; }
 }
