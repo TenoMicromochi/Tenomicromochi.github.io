@@ -259,8 +259,8 @@
     background-color: #1a1d28;
     color: #c8cfe8;
     white-space: pre;
-    font-size: 8px;
-    line-height: 1;
+    font-size: 11px;   /* TenoText 8x11 の等倍 */
+    line-height: 11px;
     padding: 8px;
     margin: 0;
     border: none;
