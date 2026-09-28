@@ -60,8 +60,9 @@ body {
     border-bottom: 2px solid var(--border);
     padding: 12px 20px;
     display: flex;
+    flex-wrap: wrap;   /* 狭い画面でロゴとタグラインを段に分ける（長いロゴは <wbr> で折れる） */
     align-items: baseline;
-    gap: 16px;
+    gap: 4px 16px;
 }
 /* 見出しフォント（TenoText 8x8）を使う要素の約束：
    - font-size は 8 の倍数だけ。8=等倍 / 16=2倍 / 24=3倍。
@@ -102,6 +103,7 @@ body {
     font-family: var(--font-heading);
     font-size: 16px;
     line-height: 16px;
+    font-weight: normal;   /* h2 で使っても太字にしない（TenoText は元から太い） */
     letter-spacing: 2px;
     color: var(--accent);
     border-bottom: 1px solid var(--border);
