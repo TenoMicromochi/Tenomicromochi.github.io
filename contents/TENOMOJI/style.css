@@ -2,7 +2,6 @@
    TENOMOJI — TEXTALT-V / GLYPHALT-16 Design System Port
    ============================================================ */
 
-@import url('/theme.css');
 
 body {
     font-family: var(--font-mono);

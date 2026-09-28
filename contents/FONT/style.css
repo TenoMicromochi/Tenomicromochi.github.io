@@ -1,4 +1,3 @@
-@import url('/theme.css');
 
 /* フォント配布ページ固有のフォント定義（プレビュー/配布対象） */
 @font-face { font-family: 'TenoText 3x6'; src: url('../../fonts/TenoText 3x6.ttf') format('truetype'); }

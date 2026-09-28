@@ -10,7 +10,7 @@
 → `http://localhost:<port>/sample/`
 
 **専用の開発サーバー `.claude/dev_server.py` を使う（素の http.server では動かない）。**
-ALT 系の規約でこのツールの `style.css` は `@import url('/theme.css')` から始まるが、
+ALT 系の規約でこのツールの `index.html` は `/theme.css` `/alt.css` を `<link>` で読むが、
 Sandbox 配下で普通にサーバーを立てると `/theme.css` がこのフォルダを指して 404 になる。
 かといって theme.css / alt.css をコピーすると本家と必ずドリフトする（Skill `alt-tool-new`
 に、PALETALT と ANIMALT が実際にそれで token をずらした話がある）。
@@ -45,8 +45,8 @@ sample/
 ## 画面（ALT系の共通フォーマット）
 
 TEXTALT / GLYPHALT / ANIMALT / PALETALT と同じ骨格。`body.alt-app` + `.site-header` +
-`.app-shell`、`style.css` は `@import url('/theme.css')` と `@import url('/alt.css')` で
-始まり、色・ボタン・サイドバー・スライダーはツール内で再定義していない。
+`.app-shell`、`index.html` が `/theme.css` と `/alt.css` を `<link>` で読み、
+色・ボタン・サイドバー・スライダーはツール内で再定義していない。
 
 | カラム | 中身 |
 |---|---|

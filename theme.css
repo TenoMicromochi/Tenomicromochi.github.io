@@ -1,7 +1,8 @@
 /* ============================================================
    送電世界 共通デザインシステム（GLYPHALT / CHROMALT-Q 基準）
-   contents/配下の各ページの style.css 先頭で
-   @import url('/theme.css'); して使う。
+   各ページの index.html で、theme.css → alt.css（ALT ツールだけ）→
+   style.css → main.css の順に <link> で並べて読む。
+   @import は使わない（style.css を読み終わるまで theme.css が始まらず、直列になる）。
 
    ビットマップフォントは等倍の整数倍だけ、line-height / letter-spacing は
    整数 px（詳細と見本は _standard/pixel-style/）。

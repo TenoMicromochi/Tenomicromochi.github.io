@@ -441,7 +441,7 @@ USA の兵装セットで測ったもので、他国の砲も口径が近けれ�
 ```
 contents/FLAKALT/
 ├── index.html             サイト共通の外枠（site-header / page-content / footer）
-├── style.css              @import '/theme.css' + 画面と倍率ボタン
+├── style.css              画面と倍率ボタン（theme.css は index.html で link）
 ├── data/guns.json         5 カ国 x 4 門の諸元（ここをいじると弾道が変わる）
 └── js/
     ├── main.js            起動・スケーリング・モード遷移・メインループ

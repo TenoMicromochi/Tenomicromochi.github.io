@@ -2,10 +2,12 @@
    送電世界 — ALT ツール共通シェル
    （GLYPHALT / TEXTALT / PALETALT / ANIMALT / PRISMALT 系）
 
-   使い方：ツールの style.css の先頭で、theme.css の直後に読む。
+   使い方：ツールの index.html で、theme.css の直後に <link> で読む。
 
-       @import url('/theme.css');
-       @import url('/alt.css');
+       <link rel="stylesheet" href="/theme.css">
+       <link rel="stylesheet" href="/alt.css">
+       <link rel="stylesheet" href="style.css">
+       <link rel="stylesheet" href="/main.css">
 
    theme.css = サイト全ページ共通の原色・フォント・.panel・.btn
    alt.css   = ALT ツールの筐体。2種類ある

@@ -11,8 +11,6 @@
    画面のUI文字（TenoText 8x8 / PixelMplus12）とは無関係。
    ============================================================ */
 
-@import url('/theme.css');
-@import url('/alt.css');
 
 /* ── Header ──
    .site-header の見た目に、このツールだけのパイプライン表示を足す */
