@@ -26,11 +26,11 @@
   <div class="tagline">image to MSX-like art converter</div>
 </header>
 
-<div class="main">
-  <button class="edge-tab edge-tab-left" id="menuToggle" type="button" aria-label="Toggle settings panel"><span id="menuToggleLabel">SETTINGS</span></button>
+<div class="workspace">
+  <button class="edge-tab edge-tab-left" id="tabLeft" type="button" aria-label="Toggle settings panel"><span id="tabLeftLabel">SETTINGS</span></button>
 
-  <div class="sidebar" id="sidebar">
-    <div class="sidebar-col">
+  <aside class="side-panel side-panel-left" id="panelLeft">
+    <div class="panel-col">
 
       <!-- INPUT IMAGE -->
       <div class="section">
@@ -93,9 +93,9 @@
         </div>
       </div>
 
-    </div><!-- /sidebar-col left -->
+    </div><!-- /panel-col left -->
 
-    <div class="sidebar-col">
+    <div class="panel-col">
 
       <!-- OUTPUT SIZE -->
       <div class="section">
@@ -232,8 +232,8 @@
         </div>
       </div>
 
-    </div><!-- /sidebar-col right -->
-  </div><!-- /sidebar -->
+    </div><!-- /panel-col right -->
+  </aside><!-- /panelLeft -->
 
   <div class="work-area">
     <div class="canvas-container">
@@ -258,13 +258,13 @@
     <button class="btn tweet-btn" id="tweetBtn" disabled>POST TO X</button>
   </div>
 
-  <button class="edge-tab edge-tab-right" id="catalogToggle" type="button" aria-label="Toggle palette and glyph library"><span id="catalogToggleLabel">PALETTE &amp; GLYPHS</span></button>
+  <button class="edge-tab edge-tab-right" id="tabRight" type="button" aria-label="Toggle palette and glyph library"><span id="tabRightLabel">PALETTE &amp; GLYPHS</span></button>
 
-  <div class="catalog-panel hidden" id="catalogPanel">
+  <aside class="side-panel side-panel-right hidden" id="panelRight">
     <div class="section-title">PALETTE &amp; GLYPH LIBRARY</div>
     <div class="pal-hint">All bundled palettes &amp; glyph sets,<br>for reference</div>
     <div class="catalog-body" id="catalogBody"></div>
-  </div>
+  </aside><!-- /panelRight -->
 </div>
 
 <canvas id="workCanvas" style="display:none"></canvas>

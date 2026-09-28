@@ -42,31 +42,31 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('glyphAllOnB').addEventListener('click', () => glyphSlots.B.setAllEnabled(true));
   document.getElementById('glyphAllOffB').addEventListener('click', () => glyphSlots.B.setAllEnabled(false));
 
-  // メニュー(サイドバー)の表示/非表示トグル。画像を等倍で見たい時に隠せるように
-  const sidebar = document.getElementById('sidebar');
-  const menuToggle = document.getElementById('menuToggle');
-  const menuToggleLabel = document.getElementById('menuToggleLabel');
-  function syncMenuToggleLabel() {
-    menuToggleLabel.textContent = sidebar.classList.contains('hidden') ? 'SETTINGS' : '✕ CLOSE';
+  // 左右パネルの開閉(_standard/tool-ui/main.js と同じ振る舞い)。
+  // 左右どちらも独立に開閉できる。両方開くと中央が潰れる幅では、開いたほうを残して反対側を閉じる
+  const PANELS = {
+    left:  { panel: document.getElementById('panelLeft'),  tab: document.getElementById('tabLeft'),  label: document.getElementById('tabLeftLabel'),  name: 'SETTINGS' },
+    right: { panel: document.getElementById('panelRight'), tab: document.getElementById('tabRight'), label: document.getElementById('tabRightLabel'), name: 'PALETTE & GLYPHS' },
+  };
+  function togglePanel(side) {
+    const me = PANELS[side], other = PANELS[side === 'left' ? 'right' : 'left'];
+    const opening = me.panel.classList.contains('hidden');
+    me.panel.classList.toggle('hidden', !opening);
+    // 幅が取れない(非表示タブ等で 0)ときは閉じない。0 を「狭い」と読むと常に片方が消える
+    const w = document.documentElement.clientWidth || 0;
+    if (opening && w > 0 && w < 1100) other.panel.classList.add('hidden');
+    syncTabs();
   }
-  menuToggle.addEventListener('click', () => {
-    sidebar.classList.toggle('hidden');
-    syncMenuToggleLabel();
-  });
-  syncMenuToggleLabel();
-
-  // パレット&グリフ一覧パネルの表示/非表示トグル
-  const catalogPanel = document.getElementById('catalogPanel');
-  const catalogToggle = document.getElementById('catalogToggle');
-  const catalogToggleLabel = document.getElementById('catalogToggleLabel');
-  function syncCatalogToggleLabel() {
-    catalogToggleLabel.textContent = catalogPanel.classList.contains('hidden') ? 'PALETTE & GLYPHS' : '✕ CLOSE';
+  function syncTabs() {
+    for (const p of Object.values(PANELS)) {
+      const open = !p.panel.classList.contains('hidden');
+      p.tab.classList.toggle('on', open);
+      p.label.textContent = open ? '✕ CLOSE' : p.name;
+    }
   }
-  catalogToggle.addEventListener('click', () => {
-    catalogPanel.classList.toggle('hidden');
-    syncCatalogToggleLabel();
-  });
-  syncCatalogToggleLabel();
+  PANELS.left.tab.addEventListener('click', () => togglePanel('left'));
+  PANELS.right.tab.addEventListener('click', () => togglePanel('right'));
+  syncTabs();
 
   // 選択された画像ファイルを読み込み、最大1024px以内にリサイズして入力データとして保持する
   function loadImage(file) {

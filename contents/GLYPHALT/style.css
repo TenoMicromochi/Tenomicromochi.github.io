@@ -2,10 +2,10 @@
    GLYPHALT-16 — style.css
 
    共通部分は /theme.css と /alt.css が持っている。
-   このツールは PALETALT のような固定2カラムではなく、
-   設定パネルをキャンバスの上にかぶせる「オーバーレイ型」。
-   その骨組み（.main / .sidebar / .catalog-panel）と、
-   パレット・グリフの選択盤だけをここに書く。
+   このツールは左右タブ型：左に設定パネル、右にパレット・グリフの一覧を
+   キャンバスの上に被せて開閉する。
+   骨組み（.workspace / .side-panel / 縦タブ / 900px 以下の扱い）は alt.css。
+   ここに書くのは、パネルの幅と2列化、パレット・グリフの選択盤だけ。
    ============================================================ */
 
 @import url('/theme.css');
@@ -18,58 +18,29 @@
   font-family: var(--font-body);
 }
 
-/* ── Layout ──
-   .sidebar と .catalog-panel を絶対配置で重ねるため position: relative */
-.main {
-  position: relative;
-  display: flex;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-}
-
-/* ── 設定パネル（左からせり出すオーバーレイ） ──
-   alt.css の .sidebar は固定カラム前提なので、ここで上書きする。
-   左の padding は SETTINGS の縦タブのぶんを空けている */
-.sidebar {
-  position: absolute;
-  top: 0; left: 0; bottom: 0;
+/* ── パネル ──
+   左は設定。2列に並べる */
+.side-panel-left {
   width: min(640px, 100%);
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-content: start;
   gap: 14px 20px;
-  padding: 16px 16px 16px 44px;
-  border-right: 1px solid var(--border);
-  box-shadow: 6px 0 20px rgba(0,0,0,0.18);
-  z-index: 20;
-  transition: transform 0.2s ease;
 }
-.sidebar.hidden { transform: translateX(-100%); }
-.sidebar-col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.panel-col { gap: 14px; }
 
-/* ── パレット・グリフの一覧（右からせり出すオーバーレイ） ── */
-.catalog-panel {
-  position: absolute;
-  top: 0; right: 0; bottom: 0;
+/* 右はパレット・グリフの一覧 */
+.side-panel-right {
   width: min(360px, 100%);
   display: flex;
   flex-direction: column;
   gap: 10px;
-  /* 右の padding は PALETTE & GLYPHS の縦タブのぶん */
-  padding: 16px 44px 16px 16px;
-  overflow-y: auto;
-  background: var(--panel);
-  border-left: 1px solid var(--border);
-  box-shadow: -6px 0 20px rgba(0,0,0,0.18);
-  z-index: 20;
-  transition: transform 0.2s ease;
 }
-.catalog-panel.hidden { transform: translateX(100%); }
+.side-panel-right .section-title { margin-bottom: 0; }
 
 .catalog-body { display: flex; flex-direction: column; gap: 14px; }
 .catalog-card { display: flex; flex-direction: column; gap: 5px; }
-.catalog-card-label { font-size: 10px; color: var(--sub); letter-spacing: 1px; }
+.catalog-card-label { font-size: 12px; line-height: 16px; color: var(--sub); letter-spacing: 1px; }
 
 .catalog-swatch-strip { display: flex; gap: 3px; }
 .catalog-swatch {
@@ -87,12 +58,9 @@
   background: var(--canvas-bg);
   border: 1px solid var(--border);
 }
-.catalog-more { font-size: 10px; color: var(--sub); letter-spacing: 1px; }
+.catalog-more { font-size: 12px; line-height: 16px; color: var(--sub); letter-spacing: 1px; }
 
 .section { gap: 8px; }
-
-/* None が選ばれているグリフセットの欄は、無効だと分かるよう赤くする */
-select.none-selected { border-color: var(--danger); color: var(--danger); }
 
 /* ── スライダー＋数値入力の横並び ──
    alt.css の .ctrl-inputs と役割は同じだが、こちらは数値欄が広い */
@@ -106,13 +74,13 @@ input[type=number] {
   background: var(--bg);
   border: 1px solid var(--border); border-radius: var(--radius);
   padding: 4px 6px;
-  font-family: var(--font-mono); font-size: 12px; color: var(--text); outline: none;
+  font-family: var(--font-body); font-size: 12px; line-height: 16px; color: var(--text); outline: none;
 }
 input[type=number]:focus { border-color: var(--accent); }
 
 .size-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .size-field { display: flex; flex-direction: column; gap: 3px; }
-.size-field label { font-size: 10px; color: var(--sub); letter-spacing: 1px; }
+.size-field label { font-size: 12px; line-height: 16px; color: var(--sub); letter-spacing: 1px; }
 .size-field input[type=number] { width: 100%; }
 
 /* ── パレット選択盤 ── */
@@ -128,10 +96,10 @@ input[type=number]:focus { border-color: var(--accent); }
 .pal-swatch::after {
   content: '✓'; position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
-  font-size: 7px; color: white; text-shadow: 0 0 2px black;
+  font-size: 12px; line-height: 16px; color: white; text-shadow: 0 0 2px black;
 }
 .pal-swatch.off::after { display: none; }
-.pal-hint { font-size: 10px; color: var(--sub); letter-spacing: 1px; }
+.pal-hint { font-size: 12px; line-height: 16px; color: var(--sub); letter-spacing: 1px; }
 
 /* ── グリフ選択盤 ── */
 .glyph-grid {
@@ -158,7 +126,7 @@ input[type=number]:focus { border-color: var(--accent); }
   background: rgba(180,0,0,0.35);
 }
 .glyph-btn-row { display: flex; gap: 6px; }
-.glyph-info { font-size: 10px; color: var(--sub); letter-spacing: 1px; }
+.glyph-info { font-size: 12px; line-height: 16px; color: var(--sub); letter-spacing: 1px; }
 
 /* 字面は theme.css の .status-line。状態の色だけ足す */
 .status-line.ok  { color: var(--accent); border-color: var(--accent); }
@@ -168,23 +136,19 @@ input[type=number]:focus { border-color: var(--accent); }
    基本形は theme.css、サイドバー内での詰め方は alt.css */
 .btn.stop { background: var(--danger); border-color: #662222; }
 .btn.stop:hover { background: #772222; }
-.btn.sm { padding: 4px 6px; font-size: 10px; letter-spacing: 1px; }
+.btn.sm { padding: 4px 6px; font-size: 12px; line-height: 16px; letter-spacing: 1px; }
 
-.download-scale { display: flex; flex-wrap: wrap; gap: 5px 8px; align-items: center; font-size: 10px; color: var(--sub); letter-spacing: 1px; }
+.download-scale { display: flex; flex-wrap: wrap; gap: 5px 8px; align-items: center; font-size: 12px; line-height: 16px; color: var(--sub); letter-spacing: 1px; }
 .download-scale > span { width: 100%; color: var(--sub); }
 .download-scale label { cursor: pointer; }
 .download-scale input { accent-color: var(--accent); vertical-align: middle; }
 
-.quad-toggle { display: flex; flex-wrap: wrap; gap: 5px 10px; align-items: center; font-size: 10px; color: var(--sub); letter-spacing: 1px; }
+.quad-toggle { display: flex; flex-wrap: wrap; gap: 5px 10px; align-items: center; font-size: 12px; line-height: 16px; color: var(--sub); letter-spacing: 1px; }
 .quad-toggle label { cursor: pointer; }
 .quad-toggle input { accent-color: var(--accent); vertical-align: middle; }
 
-/* ── 出力エリア ──
-   オーバーレイ型なので、grid の子ではなく flex の子として伸ばす */
-.work-area {
-  flex: 1; width: 100%;
-  padding: 20px; gap: 12px;
-}
+/* ── 出力エリア ── 余白と伸び方は alt.css の .workspace > .work-area */
+.work-area { gap: 12px; }
 .canvas-container { background: var(--canvas-bg); border: 1px solid var(--border); }
 
 /* ドット絵が滲まないよう、CSSでは縮小せずネイティブ解像度のまま描画する。
@@ -193,24 +157,13 @@ input[type=number]:focus { border-color: var(--accent); }
 
 /* 待機画面は alt.css の .alt-placeholder。大きさと色だけこのツールのものに */
 #placeholder { width: 520px; height: 220px; gap: 10px; }
-.placeholder-art { font-size: 13px; color: #00ff00; line-height: 1.25; }
-.placeholder-msg { font-size: 11px; color: #00ff00; }
+.placeholder-art { color: #00ff00; }
+.placeholder-msg { color: #00ff00; }
 
 .info-bar { gap: 12px; justify-content: center; }
 .tweet-btn { width: min(320px, 100%); margin-top: 2px; }
 
-/* alt.css は狭い画面で body を auto 高さに戻す（固定2カラム型を
-   縦に積み直すため）。オーバーレイ型はパネルを top:0/bottom:0 で
-   伸ばしているので、高さが auto になると潰れる。ここで 100vh に戻す */
-@media (max-width: 900px) {
-  body.alt-app { height: 100vh; overflow: hidden; }
-}
-
-/* オーバーレイなので、狭い画面では横幅いっぱいに開く */
-@media (max-width: 680px) {
-  .sidebar { width: 100%; }
-  .catalog-panel { width: 100%; }
-}
+/* 狭い画面では設定パネルを1列にする（全幅化は alt.css の 560px 以下） */
 @media (max-width: 560px) {
-  .sidebar { grid-template-columns: 1fr; }
+  .side-panel-left { grid-template-columns: 1fr; }
 }
