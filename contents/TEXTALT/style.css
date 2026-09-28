@@ -256,8 +256,8 @@
 
 #output {
     font-family: 'TenoText', monospace;
-    background-color: #1a1d28;
-    color: #c8cfe8;
+    background-color: var(--output-bg);
+    color: var(--output-fg);
     white-space: pre;
     font-size: 11px;   /* TenoText 8x11 の等倍 */
     line-height: 11px;
@@ -301,7 +301,7 @@
     image-rendering: pixelated;
     width: 100%;
     height: auto;
-    background: #1a1d28;
+    background: var(--output-bg);
 }
 
 /* ---- Export PNG ---- */

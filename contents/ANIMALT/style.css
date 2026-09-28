@@ -107,7 +107,7 @@ textarea:focus { border-color: var(--accent); }
 
 /* ── Glyph preview ── */
 .glyph-preview {
-  border: 1px solid var(--border); border-radius: var(--radius); background: #1a1d28;
+  border: 1px solid var(--border); border-radius: var(--radius); background: var(--output-bg);
   padding: 4px; overflow: auto; max-height: 96px;
 }
 .glyph-preview canvas { image-rendering: pixelated; display: block; }
@@ -123,7 +123,7 @@ textarea:focus { border-color: var(--accent); }
 
 .stage {
   flex: 1; min-height: 0; overflow: auto; border: 1px solid var(--border);
-  border-radius: var(--radius); background: #1a1d28;
+  border-radius: var(--radius); background: var(--output-bg);
   display: flex; align-items: center; justify-content: center; padding: 8px;
 }
 /* ドット絵なので補間は絶対にかけない。拡大は整数倍のみ（main.js で px 指定） */

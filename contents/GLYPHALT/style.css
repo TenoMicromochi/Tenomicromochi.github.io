@@ -132,8 +132,8 @@ input[type=number]:focus { border-color: var(--accent); }
 
 /* ── ボタンの派生 ──
    基本形は theme.css、サイドバー内での詰め方は alt.css */
-.btn.stop { background: var(--danger); border-color: #662222; }
-.btn.stop:hover { background: #772222; }
+.btn.stop { background: var(--danger); border-color: var(--danger2); }
+.btn.stop:hover { background: var(--danger2); }
 .btn.sm { padding: 4px 6px; font-size: 12px; line-height: 16px; letter-spacing: 1px; }
 
 .download-scale { display: flex; flex-wrap: wrap; gap: 5px 8px; align-items: center; font-size: 12px; line-height: 16px; color: var(--sub); letter-spacing: 1px; }

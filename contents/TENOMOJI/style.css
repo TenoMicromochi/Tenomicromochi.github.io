@@ -53,9 +53,9 @@ body {
 .btn-action:active { transform: translateY(1px); }
 .btn-clear {
     background: var(--danger);
-    border: 1px solid #662222;
+    border: 1px solid var(--danger2);
 }
-.btn-clear:hover { background: #772222; }
+.btn-clear:hover { background: var(--danger2); }
 .btn-copy {
     background: var(--success);
     border: 1px solid var(--success2);
@@ -124,8 +124,8 @@ body {
 }
 .moji-textarea:focus { border-color: var(--accent); }
 .moji-textarea[readonly] {
-    background: #1a1d28;
-    color: #c8cfe8;
+    background: var(--output-bg);
+    color: var(--output-fg);
     border-color: var(--accent2);
 }
 

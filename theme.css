@@ -24,6 +24,11 @@
     --hover:     #eef5f5;
     /* 出力キャンバスの下地。ドット絵を載せる暗色で、--text とは別物 */
     --canvas-bg: #111111;
+    /* 暗い出力欄（ASCII アートやテキストの成果物）。--canvas-bg より青みのある別物 */
+    --output-bg: #1a1d28;
+    --output-fg: #c8cfe8;
+    /* --danger の濃い側。枠線とホバーに使う（--accent と --accent2 の関係と同じ） */
+    --danger2:   #662222;
     --radius:   3px;
     /* Courier New はビットマップではないので、等幅枠も PixelMplus12 にする */
     --font-mono:    'PixelMplus12', 'Courier New', monospace;

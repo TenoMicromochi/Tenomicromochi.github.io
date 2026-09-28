@@ -94,12 +94,12 @@ function processImage() {
 
     if (needsInvert) {
         ui.output.style.backgroundColor = '#e8edf8';
-        ui.output.style.color = '#1a1d28';
+        ui.output.style.color = 'var(--output-bg)';
         if (ui.bgColorPicker.value === '#1a1d28') ui.bgColorPicker.value = '#e8edf8';
         if (ui.fgColorPicker.value === '#c8cfe8') ui.fgColorPicker.value = '#1a1d28';
     } else {
-        ui.output.style.backgroundColor = '#1a1d28';
-        ui.output.style.color = '#c8cfe8';
+        ui.output.style.backgroundColor = 'var(--output-bg)';
+        ui.output.style.color = 'var(--output-fg)';
         if (ui.bgColorPicker.value === '#e8edf8') ui.bgColorPicker.value = '#1a1d28';
         if (ui.fgColorPicker.value === '#1a1d28') ui.fgColorPicker.value = '#c8cfe8';
     }
