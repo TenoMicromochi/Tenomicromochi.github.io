@@ -102,8 +102,8 @@ body.poem-app .page-content.wide {
 /* font-weight は付けない。PixelMplus12 はビットマップ調なので
    中間ウェイトを指定すると合成ボールドがかかって輪郭が滲む */
 .cat-ja  { font-family: var(--font-ui-jp); font-size: 12px; color: var(--text); }
-.cat-en  { font-family: var(--font-mono); font-size: 9px; letter-spacing: 1px; color: var(--sub); }
-.cat-count { font-family: var(--font-mono); font-size: 9px; color: var(--sub); margin-left: auto; }
+.cat-en  { font-family: var(--font-mono); font-size: 12px; line-height: 16px; letter-spacing: 1px; color: var(--sub); }
+.cat-count { font-family: var(--font-mono); font-size: 12px; line-height: 16px; color: var(--sub); margin-left: auto; }
 
 /* 開閉の目印。FOLDER.png は 32x32（16x16 の2倍）なので、ちょうど 1/2 の
    16px で出す。回転させるとドットが崩れるので、閉じている側を薄くして示す。 */
@@ -132,7 +132,7 @@ body.poem-app .page-content.wide {
     border-left: 2px solid transparent;
     font-family: var(--font-ui-jp);
     font-size: 12px;
-    line-height: 1.55;
+    line-height: 20px;
     color: var(--sub);
     text-decoration: none;
     cursor: pointer;
@@ -230,7 +230,7 @@ body.poem-app .page-content.wide {
 }
 /* 見出し側も同じボックス。実寸のちょうど2倍にして 1px バンドを 2px で出す
    （16px のような半端な倍率だとバンドが小数pxになって滲む）。
-   margin-top は 24px/1.35 の行ボックスの中でボックスを1行目の中心に置く分。 */
+   margin-top は 24px/32px の行ボックスの中でボックスを1行目の中心に置く分。 */
 .swatch-lg { --size: 24px; margin-top: 4px; }
 .heading-text { min-width: 0; }
 .t-ja {
@@ -238,12 +238,13 @@ body.poem-app .page-content.wide {
     /* PixelMplus12 は 12px 設計。16px だと 1.33 倍になってドットが潰れるので、
        ちょうど2倍の 24px にする。24px の .swatch-lg とも高さが揃う。 */
     font-size: 24px;
-    line-height: 1.35;
+    line-height: 32px;
     color: var(--text);
 }
 .t-en {
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: 12px;
+    line-height: 16px;
     letter-spacing: 1px;
     color: var(--sub);
     margin-top: 3px;
@@ -271,7 +272,8 @@ body.poem-app .page-content.wide {
     border: 1px solid var(--border);
     border-radius: var(--radius);
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 12px;
+    line-height: 16px;
     font-weight: bold;
     cursor: pointer;
     transition: background 0.1s;
@@ -310,6 +312,7 @@ body.poem-app .page-content.wide {
 .placeholder {
     font-family: var(--font-mono);
     font-size: 12px;
+    line-height: 24px;
     letter-spacing: 1px;
     color: var(--sub);
 }
