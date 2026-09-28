@@ -47,7 +47,7 @@
     --mark-no:   #bb4444;   /* button_close.png       */
 }
 
-body { line-height: 1.6; }
+body { line-height: 20px; }
 
 /* ── Page wrapper ────────────────────────────────────────────
    theme.css の .page-content は 960px だが、それだと長い一文が
@@ -212,7 +212,8 @@ body { line-height: 1.6; }
 footer {
     border-top: 1px solid var(--border);
     padding: 8px 20px;
-    font-size: 10px;
+    font-size: 12px;
+    line-height: 16px;
     color: var(--muted);
     letter-spacing: 1px;
     display: flex;
