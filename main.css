@@ -2,23 +2,14 @@
 
 /* =========================================
    送電世界 共通シェル（上部ナビ）
-   全ページ共通で読み込む。各コンテンツページ独自の
+   全ページ共通で読み込む（index.html で theme.css の後）。色と
+   フォントは theme.css の変数を使う。各コンテンツページ独自の
    スタイルとぶつからないよう、body/*等の汎用セレクタは
    極力使わずクラス/ID限定で書くこと。
    ========================================= */
 @font-face {
     font-family: 'TenoText 7x13';
     src: url('/fonts/TenoText 7x13.otf') format('opentype');
-}
-
-@font-face {
-    font-family: 'PixelMplus12';
-    src: url('/fonts/PixelMplus12-Regular.ttf') format('truetype');
-}
-@font-face {
-    font-family: 'PixelMplus12';
-    src: url('/fonts/PixelMplus12-Bold.ttf') format('truetype');
-    font-weight: bold;
 }
 
 #sodenmir-topbar {
@@ -37,7 +28,7 @@
     background-position: left bottom;
     image-rendering: pixelated;
     border-bottom: 2px solid #A9D9D0;
-    font-family: 'PixelMplus12', monospace;
+    font-family: var(--font-body);
     line-height: 16px;   /* body の倍率指定（PROFILE / POLICY）を受け継がない */
 }
 
@@ -84,25 +75,25 @@
     gap: 6px;
     padding: 5px 8px;
     text-decoration: none;
-    border: 1px dotted #99BBCC;
+    border: 1px dotted var(--border);
     background-color: rgba(255, 255, 255, 0.75);
     cursor: pointer;
     list-style: none;
-    font-family: 'PixelMplus12', monospace;
+    font-family: var(--font-body);
     font-size: 12px;
-    color: #556688;
+    color: var(--sub);
 }
 .sodenmir-group-summary::-webkit-details-marker { display: none; }
 
 .sodenmir-top-item:hover,
 .sodenmir-group-summary:hover {
-    background-color: #99BBCC;
+    background-color: var(--border);
     border-style: solid;
 }
 
 .sodenmir-top-item.active {
-    background-color: #333355;
-    border: 1px solid #99BBCC;
+    background-color: var(--text);
+    border: 1px solid var(--border);
 }
 .sodenmir-top-item.active .sodenmir-top-text {
     color: #FFFFFF;
@@ -113,15 +104,15 @@
     width: 16px;
     height: 16px;
     object-fit: contain;
-    background-color: #FFFFFF;
-    border: 1px solid #99BBCC;
+    background-color: var(--bg);
+    border: 1px solid var(--border);
     image-rendering: pixelated;
     flex-shrink: 0;
 }
 
 .sodenmir-caret {
     font-size: 12px;
-    color: #556688;
+    color: var(--sub);
 }
 .sodenmir-group[open] > .sodenmir-group-summary .sodenmir-caret {
     transform: rotate(180deg);
@@ -135,8 +126,8 @@
     top: 110%;
     right: 0;
     min-width: 170px;
-    background: #ffffff;
-    border: 1px solid #99BBCC;
+    background: var(--bg);
+    border: 1px solid var(--border);
     box-shadow: 0 4px 10px rgba(51, 51, 85, 0.2);
     z-index: 60;
     display: flex;
@@ -149,15 +140,15 @@
     gap: 8px;
     padding: 6px 10px;
     text-decoration: none;
-    border-bottom: 1px dotted #ccdde6;
-    font-family: 'PixelMplus12', monospace;
+    border-bottom: 1px dotted var(--border2);
+    font-family: var(--font-body);
     font-size: 12px;
-    color: #556688;
+    color: var(--sub);
 }
 .sodenmir-row-item:last-child { border-bottom: none; }
-.sodenmir-row-item:hover { background-color: #eaf0f4; }
+.sodenmir-row-item:hover { background-color: var(--panel2); }
 .sodenmir-row-item.active {
-    background-color: #333355;
+    background-color: var(--text);
     color: #ffffff;
 }
 .sodenmir-row-item.active .sodenmir-row-text { color: #ffffff; font-weight: bold; }
@@ -166,8 +157,8 @@
     width: 16px;
     height: 16px;
     object-fit: contain;
-    background-color: #FFFFFF;
-    border: 1px solid #99BBCC;
+    background-color: var(--bg);
+    border: 1px solid var(--border);
     image-rendering: pixelated;
     flex-shrink: 0;
 }
@@ -176,36 +167,36 @@
     display: none;
     align-items: center;
     padding: 6px 12px;
-    border: 1px solid #99BBCC;
+    border: 1px solid var(--border);
     background: rgba(255, 255, 255, 0.85);
-    font-family: 'PixelMplus12', monospace;
+    font-family: var(--font-body);
     font-size: 12px;
     line-height: 16px;
-    color: #556688;
+    color: var(--sub);
     cursor: pointer;
 }
 #sodenmir-mobile-toggle.open {
-    background: #333355;
+    background: var(--text);
     color: #ffffff;
 }
 
 #sodenmir-mobile-nav {
     display: none;
     flex-direction: column;
-    background: #ffffff;
+    background: var(--bg);
     border-bottom: 2px solid #A9D9D0;
     line-height: 16px;
 }
 #sodenmir-mobile-nav.open { display: flex; }
 #sodenmir-mobile-nav .sodenmir-row-item,
 #sodenmir-mobile-nav .sodenmir-group-summary {
-    border-bottom: 1px dotted #ccdde6;
+    border-bottom: 1px dotted var(--border2);
 }
 #sodenmir-mobile-nav .sodenmir-group-panel {
     position: static;
     box-shadow: none;
     border: none;
-    border-top: 1px dotted #ccdde6;
+    border-top: 1px dotted var(--border2);
 }
 #sodenmir-mobile-nav .sodenmir-group-summary {
     background: transparent;
