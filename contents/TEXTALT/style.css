@@ -1,7 +1,7 @@
 /* ============================================================
    TEXTALT-V — style.css
 
-   画面の骨格（シェル・サイドバー・スライダー・セグメントボタン・
+   画面の骨格（シェル・左右タブのパネル・スライダー・セグメントボタン・
    折り返し）は /alt.css が持っている。
    ここに書くのは TEXTALT にしかない部品だけ：
    トグルスイッチ、文字セット入力、AA の出力欄、PNG書き出し。
@@ -20,57 +20,27 @@
 /* ヘッダはスクロールしても残す */
 body.alt-app .site-header { position: sticky; top: 0; z-index: 100; }
 
-/* ---- Panel ----
-   サイドバーの中では枠を消して、見出しの下線だけで区切る */
-.sidebar .panel {
-    background: transparent;
-    border: none;
-    border-radius: 0;
-    overflow: visible;
-}
-.sidebar .panel-head {
-    background: transparent;
-    padding: 0 0 3px;
-    margin-bottom: 5px;
-}
-.panel-body {
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
+/* ---- Preview ---- */
 .preview-body {
     padding: 0;
     background: var(--canvas-bg);
     border: 1px solid var(--border);
-}
-.panel + .panel {
-    padding-top: 8px;
-    border-top: 1px solid var(--border);
-    margin-top: 0;
 }
 
 /* ---- Controls ---- */
 .control-row { display: flex; flex-direction: column; gap: 2px; }
 .toggle-row { flex-direction: row; align-items: center; justify-content: space-between; }
 
-.ctrl-label {
-    font-family: var(--font-body);
-    font-size: 9px;
-    letter-spacing: 1px;
-    color: var(--sub);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    justify-content: space-between;
-}
+/* ラベルの字面は alt.css の .ctrl-label。右端に値を出すぶんの間隔だけ足す */
+.ctrl-label { gap: 6px; }
 
 .val-badge {
     display: inline-block;
     background: var(--bg);
     border: none;
     color: var(--text);
-    font-size: 9px;
+    font-size: 12px;
+    line-height: 16px;
     font-weight: bold;
     min-width: 32px;
     text-align: right;
@@ -81,7 +51,7 @@ body.alt-app .site-header { position: sticky; top: 0; z-index: 100; }
 /* .slider は input[type=range]。見た目は alt.css が持っているので、
    ここでは何も足さない（塗り分けの位置は main.js が直接指定する） */
 
-.hint { font-family: var(--font-body); font-size: 9px; color: var(--sub); letter-spacing: 1px; }
+.hint { font-family: var(--font-body); font-size: 12px; line-height: 16px; color: var(--sub); letter-spacing: 1px; }
 
 /* ---- Toggle Switch ---- */
 .toggle-switch { cursor: pointer; }
@@ -123,7 +93,8 @@ body.alt-app .site-header { position: sticky; top: 0; z-index: 100; }
     border-radius: var(--radius);
     padding: 3px;
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: 12px;
+    line-height: 16px;
     cursor: pointer;
 }
 .file-input::-webkit-file-upload-button {
@@ -132,7 +103,8 @@ body.alt-app .site-header { position: sticky; top: 0; z-index: 100; }
     border: 1px solid var(--border);
     padding: 2px 8px;
     font-family: var(--font-mono);
-    font-size: 9px;
+    font-size: 12px;
+    line-height: 16px;
     cursor: pointer;
     letter-spacing: 1px;
     border-radius: var(--radius);
@@ -146,7 +118,8 @@ body.alt-app .site-header { position: sticky; top: 0; z-index: 100; }
     border-radius: var(--radius);
     padding: 4px 10px;
     font-family: var(--font-mono);
-    font-size: 9px;
+    font-size: 12px;
+    line-height: 16px;
     font-weight: bold;
     cursor: pointer;
     letter-spacing: 1px;
@@ -160,7 +133,7 @@ body.alt-app .site-header { position: sticky; top: 0; z-index: 100; }
 /* ---- Char Textarea ---- */
 .char-textarea {
     width: 100%;
-    min-height: 60px;
+    min-height: 64px;
     background: var(--bg);
     color: var(--text);
     border: 1px solid var(--border);
@@ -172,10 +145,10 @@ body.alt-app .site-header { position: sticky; top: 0; z-index: 100; }
     outline: none;
     word-break: break-all;
     white-space: pre-wrap;
-    line-height: 1.5;
+    line-height: 16px;
 }
 .char-textarea:focus { border-color: var(--accent); }
-.char-counter { font-size: 9px; color: var(--sub); text-align: right; letter-spacing: 1px; }
+.char-counter { font-size: 12px; line-height: 16px; color: var(--sub); text-align: right; letter-spacing: 1px; }
 
 /* ---- Grid Control（出力サイズの 縦 x 横 指定） ---- */
 .grid-control-row {
@@ -186,7 +159,7 @@ body.alt-app .site-header { position: sticky; top: 0; z-index: 100; }
     padding: 4px 0;
 }
 .grid-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.grid-cross { color: var(--sub); font-size: 16px; margin-bottom: 2px; }
+.grid-cross { color: var(--sub); font-size: 12px; line-height: 16px; margin-bottom: 2px; }
 .number-spin {
     display: flex;
     align-items: center;
@@ -200,7 +173,9 @@ body.alt-app .site-header { position: sticky; top: 0; z-index: 100; }
     border: none;
     width: 24px;
     height: 24px;
-    font-size: 14px;
+    font-family: var(--font-body);
+    font-size: 12px;
+    line-height: 16px;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -211,7 +186,8 @@ body.alt-app .site-header { position: sticky; top: 0; z-index: 100; }
 .spin-val {
     width: 28px;
     text-align: center;
-    font-size: 13px;
+    font-size: 12px;
+    line-height: 16px;
     font-weight: bold;
     color: var(--text);
     background: var(--bg);
@@ -230,7 +206,8 @@ body.alt-app .site-header { position: sticky; top: 0; z-index: 100; }
     border-radius: var(--radius);
     padding: 4px 8px;
     font-family: var(--font-body);
-    font-size: 9px;
+    font-size: 12px;
+    line-height: 16px;
     color: var(--sub);
     letter-spacing: 1px;
 }
@@ -249,14 +226,15 @@ body.alt-app .site-header { position: sticky; top: 0; z-index: 100; }
 }
 .font-error-box.visible { display: flex; }
 .error-tag {
-    font-size: 9px;
+    font-size: 12px;
+    line-height: 16px;
     letter-spacing: 2px;
     color: var(--danger);
     border: 1px solid var(--danger);
     padding: 1px 6px;
     display: inline-block;
 }
-.font-error-box p { font-size: 10px; color: var(--sub); }
+.font-error-box p { font-size: 12px; line-height: 16px; color: var(--sub); }
 
 /* ---- Preview Canvas ---- */
 #previewCanvas {
@@ -306,6 +284,7 @@ body.alt-app .site-header { position: sticky; top: 0; z-index: 100; }
 .output-title {
     font-family: var(--font-heading);
     font-size: 8px;
+    line-height: 8px;
     letter-spacing: 2px;
     color: var(--accent);
 }
@@ -347,6 +326,6 @@ body.alt-app .site-header { position: sticky; top: 0; z-index: 100; }
     cursor: pointer;
     background: var(--bg);
 }
-.export-status { font-size: 9px; color: var(--sub); min-height: 14px; letter-spacing: 1px; }
+.export-status { font-size: 12px; line-height: 16px; color: var(--sub); min-height: 16px; letter-spacing: 1px; }
 .export-status.ok  { color: var(--accent); }
 .export-status.err { color: var(--danger); }
