@@ -1,6 +1,6 @@
 /* ============================================================
    送電世界 — ALT ツール共通シェル
-   （GLYPHALT / TEXTALT / PALETALT / ANIMALT / FLAKALT 系）
+   （GLYPHALT / TEXTALT / PALETALT / ANIMALT / PRISMALT 系）
 
    使い方：ツールの style.css の先頭で、theme.css の直後に読む。
 
@@ -8,14 +8,18 @@
        @import url('/alt.css');
 
    theme.css = サイト全ページ共通の原色・フォント・.panel・.btn
-   alt.css   = ALT ツールの筐体（100vh シェル / サイドバー /
-               設定行 / セグメントボタン / キャンバス枠 / トースト）
+   alt.css   = ALT ツールの筐体。2種類ある
+                 左右タブ型  .workspace  … 標準。左右のパネルを成果物の上に被せて開閉する
+                 固定カラム型 .app-shell … 設定カラムを横に並べる（PRISMALT が残っている）
+               と、その両方で使う設定行・セグメントボタン・キャンバス枠・トースト
 
    ここは「どのツールでも同じであるべき部分」だけを置く。
    ツール固有の部品（PALETALT のスウォッチ、ANIMALT のディザ棒など）は
    各ツールの style.css に書く。ここには入れない。
 
-   TenoText 8x8 は 8px グリッドなので font-size は 8 の倍数のみ。
+   ビットマップフォントは等倍の整数倍だけ。line-height / letter-spacing は整数 px。
+     TenoText 8x8 : 8 / 16 / 24     PixelMplus12 : 12 / 24
+   詳細と見本は _standard/pixel-style/。
    ドット絵は補間禁止・整数倍のみ（CLAUDE.md の不変条件）。
    ============================================================ */
 
@@ -28,19 +32,23 @@ body.alt-app {
     overflow: hidden;
     font-family: var(--font-body);
     font-size: 12px;
+    line-height: 16px;
 }
 
 /* ヘッダは theme.css の .site-header をそのまま使い、
-   ALT ツール用に詰めた寸法だけ差分で上書きする。 */
+   ALT ツール用に詰めた寸法だけ差分で上書きする。
+   狭い画面では折り返す。1行のまま画面幅を超えると、スマホのブラウザが
+   ページ全体を縮小表示してドット絵の等倍が崩れる */
 body.alt-app .site-header {
     padding: 8px 20px;
     flex-shrink: 0;
     background: var(--bg);
+    flex-wrap: wrap;
+    row-gap: 4px;
 }
-body.alt-app .site-header .logo { font-size: 16px; }
-body.alt-app .site-header .tagline { font-size: 10px; }
+body.alt-app .site-header .logo { font-size: 16px; line-height: 24px; }
 
-/* ── 作業領域：左に設定カラム、右に成果物 ──
+/* ── 作業領域（固定カラム型）：左に設定カラム、右に成果物 ──
    カラム数は各ツールが --alt-cols で決める（既定は1本）。 */
 .app-shell {
     display: grid;
@@ -74,24 +82,55 @@ body.alt-app .site-header .tagline { font-size: 10px; }
     min-height: 0;
 }
 
+/* ── 左右タブの骨組み（標準） ──
+   パネルはキャンバスの上に被せ、translateX で仕舞う。
+   中央を押し縮めないので、開閉しても成果物の見え方が動かない。
+   開閉の JS は _standard/tool-ui/main.js の togglePanel / syncTabs。 */
+.workspace { position: relative; flex: 1; min-height: 0; overflow: hidden; }
+
+.side-panel {
+    position: absolute; top: 0; bottom: 0; z-index: 20;
+    width: min(296px, 100%);
+    padding: 12px;
+    overflow-y: auto;
+    background: var(--panel);
+    transition: transform .18s ease;
+}
+/* 縦タブ（28px）ぶん内側を空ける。空けないと中身がタブの下に潜る */
+.side-panel-left  { left: 0;  padding-left: 40px;  border-right: 1px solid var(--border); box-shadow: 6px 0 20px rgba(0,0,0,.18); }
+.side-panel-right { right: 0; padding-right: 40px; border-left: 1px solid var(--border);  box-shadow: -6px 0 20px rgba(0,0,0,.18); }
+.side-panel-left.hidden  { transform: translateX(-100%); }
+.side-panel-right.hidden { transform: translateX(100%); }
+
+/* 設定が多いツールはパネル内を2列にする：
+   .side-panel { width: min(560px, 100%); display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; align-content: start; } */
+.panel-col { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.side-panel hr.divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+.side-panel .btn { width: 100%; }
+
+/* 成果物エリア。左右の余白は縦タブより広く取る（端がタブの下に潜らないように） */
+.workspace > .work-area {
+    height: 100%;
+    padding: 12px 40px;
+    overflow: auto;
+}
+
 /* ── 設定セクション ── */
 .section { display: flex; flex-direction: column; gap: 5px; }
 
-.sidebar .section-title {
-    font-family: var(--font-heading);
+.alt-app .section-title {
     font-size: 8px;
-    letter-spacing: 2px;
-    color: var(--accent);
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 3px;
-    margin-bottom: 0;
+    line-height: 8px;
+    padding-bottom: 4px;
 }
+/* 固定カラム型は見出しの下に余白を足さない */
+.sidebar .section-title { margin-bottom: 0; }
 
 .level-hint {
-    font-size: 9px;
+    font-size: 12px;
     color: var(--sub);
     letter-spacing: 1px;
-    line-height: 1.35;
+    line-height: 16px;
 }
 
 /* ── 設定行：ラベル＋スライダー＋数値入力 ──
@@ -100,7 +139,8 @@ body.alt-app .site-header .tagline { font-size: 10px; }
 
 .ctrl-label {
     font-family: var(--font-body);
-    font-size: 9px;
+    font-size: 12px;
+    line-height: 16px;
     letter-spacing: 1px;
     color: var(--sub);
     display: flex;
@@ -117,14 +157,16 @@ body.alt-app .site-header .tagline { font-size: 10px; }
 .ctrl-inputs { display: flex; align-items: center; gap: 4px; }
 .ctrl-inputs input[type=range] { flex: 1; min-width: 0; }
 .ctrl-inputs input[type=number] {
-    width: 46px;
+    width: 52px;
     flex: none;
     background: var(--bg);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 2px 3px;
-    font-family: var(--font-mono);
-    font-size: 10px;
+    font-family: var(--font-body);
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: 1px;
     color: var(--text);
     outline: none;
 }
@@ -164,20 +206,25 @@ body.alt-app .site-header .tagline { font-size: 10px; }
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 3px 5px;
-    font-family: var(--font-mono);
-    font-size: 10px;
+    font-family: var(--font-body);
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: 1px;
     color: var(--text);
     cursor: pointer;
     outline: none;
 }
 .alt-app select:focus { border-color: var(--accent); }
+/* None を選んでいる間は赤くして「この機能は切ってある」と見せる */
+select.none-selected { border-color: var(--danger); color: var(--danger); }
 
 .check-row {
     display: flex;
     align-items: center;
     gap: 6px;
     font-family: var(--font-body);
-    font-size: 10px;
+    font-size: 12px;
+    line-height: 16px;
     color: var(--sub);
     cursor: pointer;
     letter-spacing: 1px;
@@ -189,7 +236,9 @@ body.alt-app .site-header .tagline { font-size: 10px; }
 .sidebar .btn {
     width: 100%;
     padding: 7px 10px;
-    font-size: 10px;
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: 1px;
 }
 .btn:disabled {
     background: var(--border);
@@ -202,6 +251,11 @@ body.alt-app .site-header .tagline { font-size: 10px; }
     color: var(--border);
     border-color: var(--border);
 }
+/* 破壊的な操作は赤、コピー系は緑 */
+.btn.danger  { background: var(--danger);  border-color: var(--danger); }
+.btn.danger:hover  { filter: brightness(.85); }
+.btn.success { background: var(--success); border-color: var(--success2); }
+.btn.success:hover { background: var(--success2); }
 .btn-row { display: flex; gap: 5px; }
 .btn-row .btn { flex: 1; }
 
@@ -220,9 +274,9 @@ body.alt-app .site-header .tagline { font-size: 10px; }
 }
 .drop-zone:hover, .drop-zone.drag { border-color: var(--accent); background: var(--hover); }
 .drop-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-.drop-icon { font-size: 16px; color: var(--accent); margin-bottom: 2px; }
-.drop-label { font-family: var(--font-body); font-size: 10px; color: var(--sub); }
-.drop-name { font-size: 10px; color: var(--accent); margin-top: 2px; word-break: break-all; min-height: 12px; }
+.drop-icon { font-size: 24px; line-height: 24px; color: var(--accent); margin-bottom: 2px; }
+.drop-label { font-family: var(--font-body); font-size: 12px; line-height: 16px; letter-spacing: 1px; color: var(--sub); }
+.drop-name { font-family: var(--font-body); font-size: 12px; line-height: 16px; letter-spacing: 1px; color: var(--accent); margin-top: 2px; word-break: break-all; min-height: 16px; }
 
 /* ── ビューツールバーとセグメントボタン ── */
 .view-toolbar {
@@ -244,8 +298,9 @@ body.alt-app .site-header .tagline { font-size: 10px; }
 
 .view-btn {
     padding: 4px 10px;
-    font-family: var(--font-mono);
-    font-size: 9px;
+    font-family: var(--font-body);
+    font-size: 12px;
+    line-height: 16px;
     font-weight: bold;
     letter-spacing: 1px;
     cursor: pointer;
@@ -265,7 +320,8 @@ body.alt-app .site-header .tagline { font-size: 10px; }
     align-items: center;
     gap: 5px;
     font-family: var(--font-body);
-    font-size: 9px;
+    font-size: 12px;
+    line-height: 16px;
     color: var(--sub);
     letter-spacing: 1px;
     padding: 4px 8px;
@@ -314,8 +370,8 @@ body.alt-app .site-header .tagline { font-size: 10px; }
     gap: 8px;
     color: #335555;
 }
-.placeholder-art { font-family: var(--font-mono); font-size: 12px; color: #00ffff; line-height: 1.3; white-space: pre; }
-.placeholder-msg { font-size: 10px; color: #00ffff; letter-spacing: 2px; animation: alt-blink 1.2s step-end infinite; }
+.placeholder-art { font-family: var(--font-mono); font-size: 12px; color: #00ffff; line-height: 12px; white-space: pre; }
+.placeholder-msg { font-family: var(--font-body); font-size: 12px; line-height: 16px; color: #00ffff; letter-spacing: 2px; animation: alt-blink 1.2s step-end infinite; }
 @keyframes alt-blink { 50% { opacity: 0; } }
 
 /* ── サムネイル列（ORIGINAL / ADJUSTED / RESULT の比較） ── */
@@ -329,12 +385,14 @@ body.alt-app .site-header .tagline { font-size: 10px; }
     background: var(--canvas-bg);
     aspect-ratio: 1;
 }
-.thumb-box span { font-size: 8px; color: var(--sub); letter-spacing: 1px; text-align: center; }
+.thumb-box span { font-family: var(--font-body); font-size: 12px; line-height: 16px; color: var(--sub); letter-spacing: 1px; text-align: center; }
 
 /* ── 情報バー ── */
 .info-bar { display: flex; gap: 6px; flex-wrap: wrap; }
 .info-chip {
-    font-size: 9px;
+    font-family: var(--font-body);
+    font-size: 12px;
+    line-height: 16px;
     color: var(--sub);
     letter-spacing: 1px;
     padding: 2px 7px;
@@ -349,7 +407,7 @@ body.alt-app .site-header .tagline { font-size: 10px; }
 .progress-wrap.show { display: flex; }
 .progress-bar-outer { height: 3px; background: var(--border); overflow: hidden; }
 .progress-bar-inner { height: 100%; background: var(--accent); transition: width 0.1s; width: 0%; }
-.progress-text { font-size: 9px; color: var(--sub); letter-spacing: 1px; }
+.progress-text { font-family: var(--font-body); font-size: 12px; line-height: 16px; color: var(--sub); letter-spacing: 1px; }
 
 /* ── トースト（右下に出る短い通知） ── */
 .alt-toast {
@@ -357,7 +415,9 @@ body.alt-app .site-header .tagline { font-size: 10px; }
     position: fixed;
     bottom: 16px;
     right: 16px;
-    font-size: 10px;
+    font-family: var(--font-body);
+    font-size: 12px;
+    line-height: 16px;
     letter-spacing: 1px;
     padding: 7px 12px;
     border-radius: var(--radius);
@@ -368,7 +428,7 @@ body.alt-app .site-header .tagline { font-size: 10px; }
 .alt-toast.ok    { background: var(--hover); border: 1px solid var(--accent); color: var(--accent); }
 
 /* ── 画面端の縦タブ ──
-   設定パネルをキャンバスの上にかぶせて出す方式（GLYPHALT / ANIMALT）。
+   設定パネルをキャンバスの上にかぶせて出す方式（左右タブ型）。
    サイト共通の上部ナビと固まらないよう、ヘッダから離して画面端に置く。
    ラベルの回転は内側の span で行う（flex ボックスごと writing-mode で
    回すと一部エンジンでレイアウトが崩れる）。 */
@@ -383,10 +443,11 @@ body.alt-app .site-header .tagline { font-size: 10px; }
     background: var(--panel);
     border: 1px solid var(--border);
     color: var(--accent);
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: bold;
-    letter-spacing: 2px;
+    font-family: var(--font-body);
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: normal;
+    letter-spacing: 1px;
     cursor: pointer;
     z-index: 22;
 }
@@ -395,16 +456,37 @@ body.alt-app .site-header .tagline { font-size: 10px; }
 .edge-tab-left  { left: 0;  border-left: none; }
 .edge-tab-right { right: 0; border-right: none; }
 
+/* ── サイト共通の上部ナビと同居させる ──
+   上部ナビは flex アイテムとして高さを取り、残りを .workspace / .app-shell が埋める。
+   モバイルナビは通常フローのままだと、開いた瞬間に作業領域を押し潰す
+   （body が overflow:hidden なので、押し出された分は見ることもできない）。
+   ここだけ被せる形にして、作業領域の高さを変えない。
+   body が flex コンテナなので、絶対配置の静的位置はコンテナの先頭に潰れる。
+   top を実測値で明示する。変数は各ツールの main.js 末尾が流し込む。
+   既定値の 56px は main.css の min-height と同じで、
+   スクリプトが動かなくても大きくは外れない。 */
+#sodenmir-topbar { flex-shrink: 0; }
+#sodenmir-mobile-nav {
+    position: absolute; left: 0; right: 0; z-index: 9998;
+    top: var(--sodenmir-topbar-h, 56px);
+    max-height: calc(100vh - var(--sodenmir-topbar-h, 56px));
+    overflow-y: auto;
+}
+
 /* ── 折り返し ──
-   900px でサイドバーを本文の上に落とし、560px で1カラムにする。
+   固定カラム型：900px でサイドバーを本文の上に落とし、560px で1カラムにする。
+   左右タブ型は 100vh のまま（パネルを top:0 / bottom:0 で伸ばしているので、
+   高さが auto になると潰れる）。
    ドット絵は縮小せずスクロールさせる（等倍を維持するため）。 */
 @media (max-width: 900px) {
-    body.alt-app { height: auto; overflow: auto; }
+    body.alt-app:has(.app-shell) { height: auto; overflow: auto; }
     .app-shell { grid-template-columns: 1fr 1fr; overflow: visible; }
     .sidebar { overflow: visible; }
-    .work-area { grid-column: 1 / -1; }
+    .app-shell > .work-area { grid-column: 1 / -1; }
 }
 @media (max-width: 560px) {
     .app-shell { grid-template-columns: 1fr; }
-    .work-area { grid-column: 1; }
+    .app-shell > .work-area { grid-column: 1; }
+    /* 全幅になると反対側の縦タブにも重なるので、両側を空ける */
+    .side-panel { width: 100%; padding-left: 40px; padding-right: 40px; }
 }

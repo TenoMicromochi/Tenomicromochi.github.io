@@ -2,6 +2,9 @@
    送電世界 共通デザインシステム（GLYPHALT / CHROMALT-Q 基準）
    contents/配下の各ページの style.css 先頭で
    @import url('/theme.css'); して使う。
+
+   ビットマップフォントは等倍の整数倍だけ、line-height / letter-spacing は
+   整数 px（詳細と見本は _standard/pixel-style/）。
    ============================================================ */
 :root {
     --bg:       #ffffff;
@@ -21,7 +24,8 @@
     /* 出力キャンバスの下地。ドット絵を載せる暗色で、--text とは別物 */
     --canvas-bg: #111111;
     --radius:   3px;
-    --font-mono:    'Courier New', Courier, monospace;
+    /* Courier New はビットマップではないので、等幅枠も PixelMplus12 にする */
+    --font-mono:    'PixelMplus12', 'Courier New', monospace;
     --font-heading: 'TenoText 8x8', var(--font-mono);
     --font-body:    'PixelMplus12', var(--font-mono);
 }
@@ -34,6 +38,11 @@
     font-family: 'PixelMplus12';
     src: url('/fonts/PixelMplus12-Regular.ttf') format('truetype');
 }
+@font-face {
+    font-family: 'PixelMplus12';
+    src: url('/fonts/PixelMplus12-Bold.ttf') format('truetype');
+    font-weight: bold;
+}
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -41,7 +50,8 @@ body {
     background: var(--bg);
     color: var(--text);
     font-family: var(--font-body);
-    font-size: 13px;
+    font-size: 12px;
+    line-height: 16px;
     margin: 0;
 }
 
@@ -58,9 +68,9 @@ body {
      20px や 12px のような中途半端な値はドットが非整数倍に潰れる
    - 元からボールド調のフォントなので font-weight は付けない
      （付けると合成ボールドがかかって輪郭が滲む） */
-.site-header .logo { font-family: var(--font-heading); font-size: 24px; color: var(--accent); letter-spacing: 3px; }
+.site-header .logo { font-family: var(--font-heading); font-size: 24px; line-height: 24px; color: var(--accent); letter-spacing: 3px; }
 .site-header .logo em { color: var(--text); font-style: normal; }
-.site-header .tagline { font-family: var(--font-body); font-size: 11px; color: var(--sub); letter-spacing: 1px; }
+.site-header .tagline { font-family: var(--font-body); font-size: 12px; line-height: 16px; color: var(--sub); letter-spacing: 1px; }
 
 /* ── ページ本文の共通余白 ── */
 .page-content {
@@ -79,6 +89,7 @@ body {
 .panel-head {
     font-family: var(--font-heading);
     font-size: 8px;
+    line-height: 8px;
     letter-spacing: 2px;
     color: var(--accent);
     background: var(--panel2);
@@ -90,6 +101,7 @@ body {
 .section-title {
     font-family: var(--font-heading);
     font-size: 16px;
+    line-height: 16px;
     letter-spacing: 2px;
     color: var(--accent);
     border-bottom: 1px solid var(--border);
@@ -104,8 +116,9 @@ body {
     color: #fff;
     border: 1px solid var(--accent2);
     border-radius: var(--radius);
-    font-family: var(--font-mono);
-    font-size: 11px;
+    font-family: var(--font-body);
+    font-size: 12px;
+    line-height: 16px;
     font-weight: bold;
     letter-spacing: 2px;
     cursor: pointer;
@@ -118,7 +131,8 @@ body {
 
 /* ── ステータス風ラベル ── */
 .status-line {
-    font-size: 10px; color: var(--sub); padding: 3px 6px;
+    font-family: var(--font-body); font-size: 12px; line-height: 16px;
+    color: var(--sub); padding: 3px 6px;
     background: var(--bg); border: 1px solid var(--border);
     border-radius: var(--radius); letter-spacing: 1px;
     display: inline-block;
@@ -126,12 +140,14 @@ body {
 
 /* ── タグ / チップ ── */
 .tag {
-    font-size: 10px;
+    font-family: var(--font-body);
+    font-size: 12px;
+    line-height: 16px;
     color: var(--accent2);
     background: var(--bg);
     border: 1px solid var(--border);
     padding: 2px 6px;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
     border-radius: var(--radius);
     display: inline-block;
 }
