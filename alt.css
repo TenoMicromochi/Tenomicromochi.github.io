@@ -10,10 +10,9 @@
        <link rel="stylesheet" href="/main.css">
 
    theme.css = サイト全ページ共通の原色・フォント・.panel・.btn
-   alt.css   = ALT ツールの筐体。2種類ある
-                 左右タブ型  .workspace  … 標準。左右のパネルを成果物の上に被せて開閉する
-                 固定カラム型 .app-shell … 設定カラムを横に並べる（PRISMALT が残っている）
-               と、その両方で使う設定行・セグメントボタン・キャンバス枠・トースト
+   alt.css   = ALT ツールの筐体。左右タブ型（.workspace）1 種類だけ。
+               左右のパネルを成果物の上に被せて開閉する。
+               と、その中で使う設定行・セグメントボタン・キャンバス枠・トースト
 
    ここは「どのツールでも同じであるべき部分」だけを置く。
    ツール固有の部品（PALETALT のスウォッチ、ANIMALT のディザ棒など）は
@@ -51,27 +50,7 @@ body.alt-app .site-header {
 }
 body.alt-app .site-header .logo { font-size: 16px; line-height: 24px; }
 
-/* ── 作業領域（固定カラム型）：左に設定カラム、右に成果物 ──
-   カラム数は各ツールが --alt-cols で決める（既定は1本）。 */
-.app-shell {
-    display: grid;
-    grid-template-columns: var(--alt-cols, 224px) 1fr;
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
-}
-
-.sidebar {
-    border-right: 1px solid var(--border);
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    overflow-y: auto;
-    background: var(--panel);
-}
-
-/* min-height:0 がないと grid 行が中身に押し広げられ、
+/* 成果物エリア。min-height:0 がないと中身に押し広げられ、
    overflow:auto が効かず縦長の成果物の下端に届かなくなる */
 .work-area {
     display: flex;
@@ -88,7 +67,7 @@ body.alt-app .site-header .logo { font-size: 16px; line-height: 24px; }
 /* ── 左右タブの骨組み（標準） ──
    パネルはキャンバスの上に被せ、translateX で仕舞う。
    中央を押し縮めないので、開閉しても成果物の見え方が動かない。
-   開閉の JS は _standard/tool-ui/main.js の togglePanel / syncTabs。 */
+   開閉の JS は /alt-panels.js（全ツール共通。index.html で読む）。 */
 .workspace { position: relative; flex: 1; min-height: 0; overflow: hidden; }
 
 .side-panel {
@@ -126,8 +105,6 @@ body.alt-app .site-header .logo { font-size: 16px; line-height: 24px; }
     line-height: 8px;
     padding-bottom: 4px;
 }
-/* 固定カラム型は見出しの下に余白を足さない */
-.sidebar .section-title { margin-bottom: 0; }
 
 .level-hint {
     font-size: 12px;
@@ -235,12 +212,7 @@ select.none-selected { border-color: var(--danger); color: var(--danger); }
 .check-row input { accent-color: var(--accent); cursor: pointer; }
 
 /* ── ボタン ──
-   .btn の基本形は theme.css。サイドバー内では横幅いっぱいに詰める。 */
-.sidebar .btn {
-    width: 100%;
-    padding: 7px 10px;
-    letter-spacing: 1px;   /* .btn の既定は 2px。サイドバー内だけ詰める */
-}
+   .btn の基本形は theme.css。パネル内では横幅いっぱい（.side-panel .btn）。 */
 .btn:disabled {
     background: var(--border);
     border-color: var(--border);
@@ -259,8 +231,6 @@ select.none-selected { border-color: var(--danger); color: var(--danger); }
 .btn.success:hover { background: var(--success2); }
 .btn-row { display: flex; gap: 5px; }
 .btn-row .btn { flex: 1; }
-
-.sidebar hr.divider { border-top: 1px solid var(--border); flex-shrink: 0; margin: 0; }
 
 /* ── ドロップゾーン（画像を受け取るツール） ── */
 .drop-zone {
@@ -458,7 +428,7 @@ select.none-selected { border-color: var(--danger); color: var(--danger); }
 .edge-tab-right { right: 0; border-right: none; }
 
 /* ── サイト共通の上部ナビと同居させる ──
-   上部ナビは flex アイテムとして高さを取り、残りを .workspace / .app-shell が埋める。
+   上部ナビは flex アイテムとして高さを取り、残りを .workspace が埋める。
    モバイルナビは通常フローのままだと、開いた瞬間に作業領域を押し潰す
    （body が overflow:hidden なので、押し出された分は見ることもできない）。
    ここだけ被せる形にして、作業領域の高さを変えない。
@@ -476,19 +446,10 @@ select.none-selected { border-color: var(--danger); color: var(--danger); }
 }
 
 /* ── 折り返し ──
-   固定カラム型：900px でサイドバーを本文の上に落とし、560px で1カラムにする。
-   左右タブ型は 100vh のまま（パネルを top:0 / bottom:0 で伸ばしているので、
+   狭い画面でも 100vh のまま（パネルを top:0 / bottom:0 で伸ばしているので、
    高さが auto になると潰れる）。
    ドット絵は縮小せずスクロールさせる（等倍を維持するため）。 */
-@media (max-width: 900px) {
-    body.alt-app:has(.app-shell) { height: auto; overflow: auto; }
-    .app-shell { grid-template-columns: 1fr 1fr; overflow: visible; }
-    .sidebar { overflow: visible; }
-    .app-shell > .work-area { grid-column: 1 / -1; }
-}
 @media (max-width: 560px) {
-    .app-shell { grid-template-columns: 1fr; }
-    .app-shell > .work-area { grid-column: 1; }
     /* 全幅になると反対側の縦タブにも重なるので、両側を空ける */
     .side-panel { width: 100%; padding-left: 40px; padding-right: 40px; }
 }
