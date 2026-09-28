@@ -23,11 +23,7 @@
    パネル名は TenoText 8x8 のまま（8の倍数を守ること）。
    ============================================================ */
 :root {
-    --muted: #aabbcc;
-
-    /* 本文専用の日本語ゴシック。POEM の --font-poem と同じ構成。
-       UI側の --font-body（PixelMplus12）とは別枠にしてある。 */
-    --font-read: 'M PLUS 2', 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
+    /* 本文の書体は theme.css の --font-read（POEM と共通） */
     --read-fs: 15px;
     /* 補足行だけ1段落とす。ここを 15px に上げると最長の note が折り返す */
     --read-fs-note: 14px;

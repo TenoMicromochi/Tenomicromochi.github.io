@@ -1,13 +1,13 @@
 
 /* フォント配布ページ固有のフォント定義（プレビュー/配布対象） */
-@font-face { font-family: 'TenoText 3x6'; src: url('../../fonts/TenoText 3x6.ttf') format('truetype'); }
-@font-face { font-family: 'TenoText 8x8'; src: url('../../fonts/TenoText 8x8.otf') format('opentype'); }
-@font-face { font-family: 'TenoText 8x10'; src: url('../../fonts/TenoText 8x10.ttf') format('truetype'); }
-@font-face { font-family: 'TenoText 8x11(+Extended ASCII)'; src: url('../../fonts/TenoText 8x11(+Extended ASCII).ttf') format('truetype'); }
-@font-face { font-family: 'TenoText 7x13'; src: url('../../fonts/TenoText 7x13.otf') format('opentype'); }
-@font-face { font-family: 'TenoText 11x31'; src: url('../../fonts/TenoText 11x31.otf') format('opentype'); }
-@font-face { font-family: 'TenoGlyph 4x4'; src: url('../../fonts/TenoGlyph 4x4.ttf') format('truetype'); }
-@font-face { font-family: 'TenoGlyph Magic'; src: url('../../fonts/TenoGlyph Magic.otf') format('opentype'); }
+@font-face { font-family: 'TenoText 3x6'; src: url('/fonts/TenoText 3x6.ttf') format('truetype'); }
+@font-face { font-family: 'TenoText 8x8'; src: url('/fonts/TenoText 8x8.otf') format('opentype'); }
+@font-face { font-family: 'TenoText 8x10'; src: url('/fonts/TenoText 8x10.ttf') format('truetype'); }
+@font-face { font-family: 'TenoText 8x11(+Extended ASCII)'; src: url('/fonts/TenoText 8x11(+Extended ASCII).ttf') format('truetype'); }
+@font-face { font-family: 'TenoText 7x13'; src: url('/fonts/TenoText 7x13.otf') format('opentype'); }
+@font-face { font-family: 'TenoText 11x31'; src: url('/fonts/TenoText 11x31.otf') format('opentype'); }
+@font-face { font-family: 'TenoGlyph 4x4'; src: url('/fonts/TenoGlyph 4x4.ttf') format('truetype'); }
+@font-face { font-family: 'TenoGlyph Magic'; src: url('/fonts/TenoGlyph Magic.otf') format('opentype'); }
 
 :root {
     --fallback-stack: "Yu Gothic", "Hiragino Sans", Meiryo, system-ui, sans-serif;

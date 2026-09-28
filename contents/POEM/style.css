@@ -7,9 +7,8 @@
    ============================================================ */
 
 :root {
-    /* 本文専用の日本語ゴシック。UI側の --font-body（PixelMplus12）とは別枠。
-       半角カタカナや絵文字が本文に出てくるのでフォールバックを厚めに取る。 */
-    --font-poem: 'M PLUS 2', 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
+    /* 本文専用の日本語ゴシック。実体は theme.css の --font-read（POLICY と共通） */
+    --font-poem: var(--font-read);
 
     /* 作品タイトルと INDEX 用。本文以外は PixelMplus12 に揃える。
        PixelMplus12 に無い文字だけ本文フォントへ逃がしたいので、

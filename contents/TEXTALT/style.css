@@ -12,11 +12,10 @@
    画面のUI文字（TenoText 8x8 / PixelMplus12）とは別物 */
 @font-face {
     font-family: 'TenoText';
-    src: url('TenoText 8x11(+Extended ASCII).ttf');
+    src: url('/fonts/TenoText 8x11(+Extended ASCII).ttf');
 }
 
-/* ヘッダはスクロールしても残す */
-body.alt-app .site-header { position: sticky; top: 0; z-index: 100; }
+/* ヘッダはスクロールしても残す → index.html の header に class="sticky"（theme.css） */
 
 /* ---- Preview ---- */
 .preview-body {

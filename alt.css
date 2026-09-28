@@ -239,9 +239,7 @@ select.none-selected { border-color: var(--danger); color: var(--danger); }
 .sidebar .btn {
     width: 100%;
     padding: 7px 10px;
-    font-size: 12px;
-    line-height: 16px;
-    letter-spacing: 1px;
+    letter-spacing: 1px;   /* .btn の既定は 2px。サイドバー内だけ詰める */
 }
 .btn:disabled {
     background: var(--border);

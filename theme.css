@@ -29,6 +29,11 @@
     --font-mono:    'PixelMplus12', 'Courier New', monospace;
     --font-heading: 'TenoText 8x8', var(--font-mono);
     --font-body:    'PixelMplus12', var(--font-mono);
+    /* 本文専用の日本語ゴシック（POEM / POLICY）。ビットマップではない。
+       UI 側の --font-body とは別枠。半角カナや絵文字が出るのでフォールバックを厚めに取る */
+    --font-read:    'M PLUS 2', 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
+    /* フッターなどの控えめな文字色（PROFILE / POLICY） */
+    --muted:    #aabbcc;
 }
 
 @font-face {
@@ -65,6 +70,8 @@ body {
     align-items: baseline;
     gap: 4px 16px;
 }
+/* スクロールしても残すヘッダ（TEXTALT / TENOMOJI）。<header class="site-header sticky"> */
+.site-header.sticky { position: sticky; top: 0; z-index: 100; }
 /* 見出しフォント（TenoText 8x8）を使う要素の約束：
    - font-size は 8 の倍数だけ。8=等倍 / 16=2倍 / 24=3倍。
      20px や 12px のような中途半端な値はドットが非整数倍に潰れる
