@@ -539,7 +539,9 @@ function renderInputPreview() {
     }
 
     el.inputPreview.replaceChildren(frag);
-    el.inputPreview.style.fontSize = `${Math.max(16, font.pixelGrid ? font.emPx * 2 : 20)}px`;
+    const previewPx = Math.max(16, font.pixelGrid ? font.emPx * 2 : 20);
+    el.inputPreview.style.fontSize = `${previewPx}px`;
+    el.inputPreview.style.lineHeight = `${Math.round(previewPx * 1.5)}px`;
 
     if (missing.size === 0) {
         el.missingReport.innerHTML = `<span class="all-ok">ALL COVERED</span>`;
