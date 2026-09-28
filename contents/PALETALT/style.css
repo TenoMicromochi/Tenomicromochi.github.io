@@ -1,7 +1,7 @@
 /* ============================================================
    PALETALT-K — style.css
 
-   画面の骨格（100vhシェル・サイドバー・設定行・セグメントボタン・
+   画面の骨格（100vhシェル・左右タブのパネル・設定行・セグメントボタン・
    キャンバス枠・トースト・折り返し）は /alt.css が持っている。
    ここに書くのは PALETALT にしかない部品だけ：
    ディザ操作の帯と、抽出したパレットの表示。
@@ -9,8 +9,6 @@
 
 @import url('/theme.css');
 @import url('/alt.css');
-
-/* 設定カラムは2本（INPUT〜THUMBNAILS / PALETTE SIZE〜EXPORT） */
 
 /* ── ディザ操作（ビューツールバーの右端） ──
    1280px でツールバーが1段に収まるよう詰めてある。緩めると2段に折り返し、
@@ -24,7 +22,7 @@
 .dither-fine {
   display: flex; align-items: center; gap: 4px;
   font-family: var(--font-body);
-  font-size: 9px; color: var(--sub); letter-spacing: 1px;
+  font-size: 12px; line-height: 16px; color: var(--sub); letter-spacing: 1px;
   padding: 4px 6px; border: 1px solid var(--border);
   border-radius: var(--radius); background: var(--bg); user-select: none;
 }
@@ -39,8 +37,8 @@
   background: var(--panel); padding: 8px;
 }
 .palette-head { display: flex; align-items: baseline; justify-content: space-between; }
-.palette-title { font-family: var(--font-heading); font-size: 8px; letter-spacing: 2px; color: var(--accent); }
-.palette-count { font-size: 9px; letter-spacing: 1px; color: var(--sub); }
+.palette-title { font-family: var(--font-heading); font-size: 8px; line-height: 8px; letter-spacing: 2px; color: var(--accent); }
+.palette-count { font-size: 12px; line-height: 16px; letter-spacing: 1px; color: var(--sub); }
 
 .palette-strip {
   display: flex; flex-wrap: wrap; gap: 4px;
@@ -59,11 +57,11 @@
   display: flex; flex-direction: column; gap: 1px;
   padding: 3px 4px; border-top: 1px solid var(--border);
 }
-.swatch-hex { font-size: 9px; letter-spacing: 0.5px; color: var(--text); font-weight: bold; }
-.swatch-share { font-size: 8px; letter-spacing: 0.5px; color: var(--sub); }
+.swatch-hex { font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text); font-weight: bold; }
+.swatch-share { font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--sub); }
 
 /* HEX ラベルを消したときは色チップだけの細い並びにする */
 .palette-strip.nolabel .swatch { width: 44px; }
 .palette-strip.nolabel .swatch-meta { display: none; }
 
-.pal-hint { font-size: 9px; color: var(--sub); letter-spacing: 1px; }
+.pal-hint { font-size: 12px; line-height: 16px; color: var(--sub); letter-spacing: 1px; }

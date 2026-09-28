@@ -23,11 +23,15 @@
   <div class="logo">PALET<em>ALT</em>-K</div>
   <div class="tagline">image to color palette extractor</div>
 </header>
-<!-- 設定カラムは2本。3列目（成果物）は alt.css 側の 1fr -->
-<div class="app-shell" style="--alt-cols: 224px 224px">
+<!-- 左右タブ型（ての標準ツールUI）。パネルは成果物の上に被せて開閉する -->
+<div class="workspace">
 
-<!-- COL 1 -->
-<div class="sidebar">
+<button class="edge-tab edge-tab-left" id="tabLeft" type="button" aria-label="Toggle image panel"><span id="tabLeftLabel">IMAGE</span></button>
+<button class="edge-tab edge-tab-right" id="tabRight" type="button" aria-label="Toggle palette panel"><span id="tabRightLabel">PALETTE</span></button>
+
+<!-- LEFT：入力・サンプリング・調整 -->
+<aside class="side-panel side-panel-left" id="panelLeft">
+<div class="panel-col">
   <div class="section">
     <div class="section-title">INPUT IMAGE</div>
     <div class="drop-zone" id="dropZone">
@@ -99,9 +103,11 @@
     <button class="btn secondary" id="dlImageBtn" disabled>DOWNLOAD QUANTIZED PNG</button>
   </div>
 </div>
+</aside>
 
-<!-- COL 2 -->
-<div class="sidebar">
+<!-- RIGHT：パレット・出力 -->
+<aside class="side-panel side-panel-right hidden" id="panelRight">
+<div class="panel-col">
   <div class="section">
     <div class="section-title">PALETTE SIZE</div>
     <div class="ctrl-row">
@@ -221,6 +227,7 @@
     </div>
   </div>
 </div>
+</aside>
 
 <!-- CANVAS AREA -->
 <div class="work-area">
@@ -300,5 +307,6 @@
 <script src="js/export.js"></script>
 <script src="js/controls.js"></script>
 <script src="js/main.js"></script>
+<script src="js/panels.js"></script>
 </body>
 </html>

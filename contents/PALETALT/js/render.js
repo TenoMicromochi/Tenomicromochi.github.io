@@ -203,7 +203,10 @@ const Render = (() => {
    */
   function fitScale(cv) {
     const area = cv.parentElement.parentElement;   // .work-area
-    const maxW = Math.min(720, area.clientWidth - 24);
+    const cs = getComputedStyle(area);
+    const padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);   // 縦タブぶん左右を広く取っている
+    const padY = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+    const maxW = Math.min(720, area.clientWidth - padX);
 
     const pal = $('paletteBlock'), info = $('infoBar');
     const palOn = pal.style.display !== 'none';
@@ -212,7 +215,7 @@ const Render = (() => {
       + (palOn ? pal.offsetHeight : 0)
       + (infoOn ? info.offsetHeight : 0)
       + 8 * (1 + palOn + infoOn)                   // .work-area の gap
-      + 24 + 2;                                    // padding と枠線
+      + padY + 2;                                  // padding と枠線
     const maxH = Math.min(area.clientHeight, window.innerHeight) - used;
 
     const s = Math.min(Math.floor(maxW / cv.width), Math.floor(maxH / cv.height));
