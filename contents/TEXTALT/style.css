@@ -251,6 +251,7 @@ body.alt-app .site-header { position: sticky; top: 0; z-index: 100; }
     background: #f8fafb;
     overflow: auto;
     max-height: calc(100vh - 80px);
+    max-height: calc(100dvh - 80px);
     display: block;
     border: 1px solid var(--border);
     border-radius: var(--radius);

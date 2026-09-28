@@ -30,6 +30,7 @@
    page-content / script]。page-content だけを伸ばして中でスクロールさせる。 */
 body.poem-app {
     height: 100vh;
+    height: 100dvh;
     display: flex;
     flex-direction: column;
     overflow: hidden;

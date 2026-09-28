@@ -134,6 +134,14 @@ const SODENMIR_GROUPS = [
         SODENMIR_GROUPS.forEach((group) => mobileNav.appendChild(makeGroup(group)));
         document.body.insertBefore(mobileNav, topbar.nextSibling);
 
+        // alt.css のモバイルナビは上部ナビの真下に被せるので、高さを実測して渡す。
+        // 画像の読み込み前は低く出るので、load でも測り直す。
+        const syncTopbarHeight = () => document.documentElement.style
+            .setProperty('--sodenmir-topbar-h', topbar.offsetHeight + 'px');
+        syncTopbarHeight();
+        addEventListener('resize', syncTopbarHeight);
+        topbar.querySelectorAll('img').forEach((img) => img.addEventListener('load', syncTopbarHeight));
+
         mobileToggle.addEventListener('click', () => {
             const open = mobileNav.classList.toggle('open');
             mobileToggle.classList.toggle('open', open);

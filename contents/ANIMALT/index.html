@@ -388,21 +388,5 @@
 <script src="js/controls.js"></script>
 <script src="js/main.js"></script>
 
-<!-- サイト共通シェルとの繋ぎ。
-     このページだけ body が 100vh の全画面レイアウトなので、モバイルナビを
-     上部ナビの真下へ被せる必要がある（通常フローのままだと作業領域を潰す）。
-     バナー画像の大きさでナビの高さが変わるため、数値を決め打ちにせず実測を流す。
-     menu.js も DOMContentLoaded で組み立てるが、あちらのリスナが先に
-     登録されるので、こちらが走る時点では既に挿入されている。 -->
-<script>
-addEventListener('DOMContentLoaded', () => {
-  const bar = document.getElementById('sodenmir-topbar');
-  if (!bar) return;
-  const sync = () => document.documentElement.style
-    .setProperty('--sodenmir-topbar-h', bar.offsetHeight + 'px');
-  sync();
-  addEventListener('resize', sync);
-});
-</script>
 </body>
 </html>

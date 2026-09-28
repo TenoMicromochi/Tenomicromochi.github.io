@@ -27,6 +27,7 @@
    ヘッダを固定して、その下だけがスクロールする作業画面。 */
 body.alt-app {
     height: 100vh;
+    height: 100dvh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -263,7 +264,7 @@ select.none-selected { border-color: var(--danger); color: var(--danger); }
 
 /* ── ドロップゾーン（画像を受け取るツール） ── */
 .drop-zone {
-    border: 1.5px dashed var(--border);
+    border: 1px dashed var(--border);
     border-radius: var(--radius);
     padding: 10px 8px;
     text-align: center;
@@ -462,14 +463,15 @@ select.none-selected { border-color: var(--danger); color: var(--danger); }
    （body が overflow:hidden なので、押し出された分は見ることもできない）。
    ここだけ被せる形にして、作業領域の高さを変えない。
    body が flex コンテナなので、絶対配置の静的位置はコンテナの先頭に潰れる。
-   top を実測値で明示する。変数は各ツールの main.js 末尾が流し込む。
+   top を実測値で明示する。変数は menu.js が流し込む。
    既定値の 56px は main.css の min-height と同じで、
-   スクリプトが動かなくても大きくは外れない。 */
+   menu.js が動かなくても大きくは外れない。 */
 #sodenmir-topbar { flex-shrink: 0; }
 #sodenmir-mobile-nav {
     position: absolute; left: 0; right: 0; z-index: 9998;
     top: var(--sodenmir-topbar-h, 56px);
     max-height: calc(100vh - var(--sodenmir-topbar-h, 56px));
+    max-height: calc(100dvh - var(--sodenmir-topbar-h, 56px));
     overflow-y: auto;
 }
 

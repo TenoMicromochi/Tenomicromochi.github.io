@@ -8,6 +8,7 @@ body {
     font-family: var(--font-mono);
     font-size: 12px;
     min-height: 100vh;
+    min-height: 100dvh;
     padding: 0 0 40px 0;
 }
 
