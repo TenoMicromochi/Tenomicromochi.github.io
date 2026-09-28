@@ -6,13 +6,14 @@
 /* .site-header / .panel / .tag / .status-line 等は theme.css 側の定義をそのまま使う。 */
 
 .label {
-    font-size: 10px;
+    font-size: 12px;
+    line-height: 16px;
     letter-spacing: 2px;
     color: var(--accent);
     font-weight: bold;
 }
 
-.level-hint { font-size: 10px; color: var(--sub); margin-top: 6px; }
+.level-hint { font-size: 12px; line-height: 16px; color: var(--sub); margin-top: 6px; }
 
 /* ── 全体シェル：左サイドバー＋右メイン ── */
 .gallery-shell {
@@ -83,12 +84,12 @@
     flex-shrink: 0;
 }
 
-.category-labels { display: flex; flex-direction: column; line-height: 1.3; flex: 1; min-width: 0; }
-.category-ja { font-size: 11px; }
-.category-en { font-size: 9px; color: var(--sub); }
+.category-labels { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.category-ja { font-size: 12px; line-height: 16px; }
+.category-en { font-size: 12px; line-height: 16px; color: var(--sub); }
 .category-item.active .category-en { color: #dfeaea; }
 
-.category-count { font-size: 10px; color: var(--sub); }
+.category-count { font-size: 12px; line-height: 16px; color: var(--sub); }
 
 .gallery-main { flex: 1; min-width: 0; }
 
@@ -159,14 +160,16 @@
     overflow: hidden;
 }
 .card-title-ja {
-    font-size: 11px;
+    font-size: 12px;
+    line-height: 16px;
     color: var(--text);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 .card-title-en {
-    font-size: 9px;
+    font-size: 12px;
+    line-height: 16px;
     color: var(--sub);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -178,7 +181,7 @@
     gap: 6px;
     align-items: center;
 }
-.card-meta .dims { font-size: 9px; color: var(--sub); }
+.card-meta .dims { font-size: 12px; line-height: 16px; color: var(--sub); }
 
 /* ── 拡張子バッジ（button_extension_png/gif.png、ドット絵なので等倍/2倍のみ） ── */
 .ext-badge {
@@ -356,12 +359,12 @@
     gap: 10px;
 }
 
-.modal-title-ja { font-size: 15px; font-weight: bold; color: var(--text); }
-.modal-title-en { font-size: 11px; color: var(--sub); margin-top: -6px; }
+.modal-title-ja { font-size: 24px; line-height: 32px; font-weight: bold; color: var(--text); }
+.modal-title-en { font-size: 12px; line-height: 16px; color: var(--sub); margin-top: -6px; }
 .modal-tags { display: flex; gap: 6px; flex-wrap: wrap; }
 .modal-desc-block { border-top: 1px dotted var(--border2); padding-top: 10px; }
-.modal-desc-ja { font-size: 11px; color: var(--text); line-height: 1.7; }
-.modal-desc-en { font-size: 10px; color: var(--sub); line-height: 1.6; margin-top: 6px; }
+.modal-desc-ja { font-size: 12px; color: var(--text); line-height: 20px; }
+.modal-desc-en { font-size: 12px; color: var(--sub); line-height: 20px; margin-top: 6px; }
 .modal-dims { display: flex; flex-direction: column; gap: 6px; }
 .modal-dims .status-line { text-align: center; }
 
