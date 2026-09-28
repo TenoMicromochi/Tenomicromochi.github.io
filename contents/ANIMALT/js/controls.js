@@ -10,10 +10,6 @@ const Controls = (() => {
 
 function init() {
 
-  /* ---------- パネル ---------- */
-  ui.tabLeft.addEventListener('click', () => togglePanel('left'));
-  ui.tabRight.addEventListener('click', () => togglePanel('right'));
-
   /* ---------- 入力 ---------- */
   ui.fileInput.addEventListener('change', (e) => loadFile(e.target.files[0]));
   ['dragenter', 'dragover'].forEach((ev) =>

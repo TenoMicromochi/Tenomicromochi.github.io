@@ -29,7 +29,6 @@
 
   Controls.init();
   syncPaletteMode();
-  syncTabs();
   drawPaperSwatches();
   updateClipInfo();   // 素材を読む前から、いまの設定だと何コマになるかを出しておく
 

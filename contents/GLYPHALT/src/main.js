@@ -42,31 +42,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('glyphAllOnB').addEventListener('click', () => glyphSlots.B.setAllEnabled(true));
   document.getElementById('glyphAllOffB').addEventListener('click', () => glyphSlots.B.setAllEnabled(false));
 
-  // 左右パネルの開閉(_standard/tool-ui/main.js と同じ振る舞い)。
-  // 左右どちらも独立に開閉できる。両方開くと中央が潰れる幅では、開いたほうを残して反対側を閉じる
-  const PANELS = {
-    left:  { panel: document.getElementById('panelLeft'),  tab: document.getElementById('tabLeft'),  label: document.getElementById('tabLeftLabel'),  name: 'SETTINGS' },
-    right: { panel: document.getElementById('panelRight'), tab: document.getElementById('tabRight'), label: document.getElementById('tabRightLabel'), name: 'PALETTE & GLYPHS' },
-  };
-  function togglePanel(side) {
-    const me = PANELS[side], other = PANELS[side === 'left' ? 'right' : 'left'];
-    const opening = me.panel.classList.contains('hidden');
-    me.panel.classList.toggle('hidden', !opening);
-    // 幅が取れない(非表示タブ等で 0)ときは閉じない。0 を「狭い」と読むと常に片方が消える
-    const w = document.documentElement.clientWidth || 0;
-    if (opening && w > 0 && w < 1100) other.panel.classList.add('hidden');
-    syncTabs();
-  }
-  function syncTabs() {
-    for (const p of Object.values(PANELS)) {
-      const open = !p.panel.classList.contains('hidden');
-      p.tab.classList.toggle('on', open);
-      p.label.textContent = open ? '✕ CLOSE' : p.name;
-    }
-  }
-  PANELS.left.tab.addEventListener('click', () => togglePanel('left'));
-  PANELS.right.tab.addEventListener('click', () => togglePanel('right'));
-  syncTabs();
+  // 左右パネルの開閉は /alt-panels.js（全ツール共通）
 
   // 選択された画像ファイルを読み込み、最大1024px以内にリサイズして入力データとして保持する
   function loadImage(file) {

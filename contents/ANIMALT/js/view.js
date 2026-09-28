@@ -10,8 +10,6 @@
 
 const ui = {};
 for (const id of [
-  // panels
-  'tabLeft','tabRight','tabLeftLabel','tabRightLabel','panelLeft','panelRight',
   // source
   'dropZone','fileInput','fileName','srcInfo','videoFps','srcSpeed','srcSpeedN',
   'clipStart','clipStartN','clipLen','clipLenN','clipInfo',
@@ -35,32 +33,6 @@ for (const id of [
 ]) ui[id] = document.getElementById(id);
 
 const player = new Render.Player(ui.out);
-
-/* ---------- パネル ---------- */
-/* GLYPHALT と同じ「キャンバスの上に被せて translateX で仕舞う」方式。
- * 左右どちらも独立に開閉でき、狭い画面では片方を開くともう片方を閉じる。 */
-function togglePanel(side) {
-  const el = side === 'left' ? ui.panelLeft : ui.panelRight;
-  const other = side === 'left' ? ui.panelRight : ui.panelLeft;
-  const opening = el.classList.contains('hidden');
-  el.classList.toggle('hidden', !opening);
-
-  // 両方開くと中央が潰れる幅なら、開いたほうを残して反対側を閉じる。
-  // 幅が取れない状況（描画されていないタブなど）では 0 が返るので、
-  // そのときは閉じない — 0 を「狭い」と解釈すると常に片方が消える
-  const w = document.documentElement.clientWidth || window.innerWidth || 0;
-  if (opening && w > 0 && w < 1100) other.classList.add('hidden');
-  syncTabs();
-}
-
-function syncTabs() {
-  const l = !ui.panelLeft.classList.contains('hidden');
-  const r = !ui.panelRight.classList.contains('hidden');
-  ui.tabLeft.classList.toggle('on', l);
-  ui.tabRight.classList.toggle('on', r);
-  ui.tabLeftLabel.textContent = l ? '✕ CLOSE' : 'INPUT / GLYPH';
-  ui.tabRightLabel.textContent = r ? '✕ CLOSE' : 'COLOR / PALETTE';
-}
 
 /* ---------- スライダーと数値入力の連結 ----------
  * スライダーだけでは1刻みを合わせにくいので、必ず数値入力を隣に置く。
