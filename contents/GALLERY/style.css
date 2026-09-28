@@ -47,7 +47,8 @@
     color: var(--accent);
 }
 .sidebar-head-icon {
-    /* GALLARY.png は32x32のドット絵。補完で潰れないよう等倍表示。 */
+    /* GALLARY.png は 16x16 のドット絵を 2 倍で書き出した 32x32。中身を 32px（2 倍）にする。 */
+    box-sizing: content-box;
     width: 32px;
     height: 32px;
     object-fit: contain;
@@ -73,7 +74,8 @@
 .category-item.active .category-count { color: #fff; opacity: 0.8; }
 
 .category-icon {
-    /* FOLDER.png も32x32のドット絵。等倍表示（縮小しない）。 */
+    /* FOLDER.png も 16x16 を 2 倍で書き出した 32x32。中身を 32px（2 倍）にする。 */
+    box-sizing: content-box;
     width: 32px;
     height: 32px;
     object-fit: contain;

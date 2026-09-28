@@ -36,6 +36,16 @@
     box-sizing: border-box;
 }
 
+/* ドット絵アイコンは content-box にして、width/height を中身の寸法（実寸の整数倍）で書く。
+   border-box だと 1px の枠線の分だけ中身が縮んで非整数倍になる（実寸 16 → 表示 14 など）。
+   上の `#sodenmir-topbar *` は ID を含むので、上部ナビ内は ID 付きで上書きする。 */
+#sodenmir-topbar .sodenmir-top-icon,
+#sodenmir-topbar .sodenmir-row-icon,
+#sodenmir-topbar .sodenmir-brand-icon,
+.sodenmir-row-icon {
+    box-sizing: content-box;
+}
+
 .sodenmir-branding {
     display: flex;
     align-items: center;
@@ -45,8 +55,8 @@
 }
 
 .sodenmir-brand-icon {
-    width: 40px;
-    height: 40px;
+    width: 32px;   /* TENOKUN_ICON は 32x32 を 8 倍で書き出してある。1 倍 */
+    height: 32px;
     display: block;
     border: 1px solid #038C7F;
     background: #fff;

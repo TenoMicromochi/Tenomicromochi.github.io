@@ -37,6 +37,7 @@ body { line-height: 20px; }
 }
 
 .profile-icon {
+    box-sizing: content-box;   /* 中身が 160px（TENOKUN_ICON 32x32 の 5 倍） */
     width: 160px;
     height: 160px;
     border: 1px solid var(--border);

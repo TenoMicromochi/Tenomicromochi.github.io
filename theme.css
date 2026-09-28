@@ -50,6 +50,8 @@
     font-weight: bold;
 }
 
+/* ドット絵の <img> に枠線を付けるときは box-sizing: content-box にして、width/height を
+   中身の寸法（実寸の整数倍）で書く。border-box のままだと枠線の分だけ中身が縮み、非整数倍になる */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {

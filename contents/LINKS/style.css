@@ -20,6 +20,7 @@
 }
 
 .link-icon {
+    box-sizing: content-box;   /* 中身が 32px（icons の 2 倍） */
     width: 32px;
     height: 32px;
     object-fit: contain;

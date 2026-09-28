@@ -74,6 +74,7 @@ body {
 }
 
 .home-card-icon {
+    box-sizing: content-box;   /* 中身が 32px（icons は 2 倍、TENOKUN は 1 倍） */
     width: 32px;
     height: 32px;
     object-fit: contain;
