@@ -42,6 +42,7 @@
 #sodenmir-topbar .sodenmir-top-icon,
 #sodenmir-topbar .sodenmir-row-icon,
 #sodenmir-topbar .sodenmir-brand-icon,
+.sodenmir-top-icon,
 .sodenmir-row-icon {
     box-sizing: content-box;
 }
