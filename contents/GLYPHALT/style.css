@@ -58,14 +58,6 @@
 }
 .catalog-more { font-size: 12px; line-height: 16px; color: var(--sub); letter-spacing: 1px; }
 
-.section { gap: 8px; }
-
-/* ── スライダー＋数値入力の横並び ──
-   alt.css の .ctrl-inputs と役割は同じだが、こちらは数値欄が広い */
-.ctrl-input-row { display: flex; align-items: center; gap: 8px; }
-.ctrl-input-row input[type=range] { flex: 1; }
-.ctrl-number { width: 56px; flex: none; }
-
 /* 単独で置く数値入力（サイズ指定など）。
    alt.css が見ているのは .ctrl-inputs の中だけなので、ここで揃える */
 input[type=number] {

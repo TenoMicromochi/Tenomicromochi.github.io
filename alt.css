@@ -98,7 +98,7 @@ body.alt-app .site-header .logo { font-size: 16px; line-height: 24px; }
 }
 
 /* ── 設定セクション ── */
-.section { display: flex; flex-direction: column; gap: 5px; }
+.section { display: flex; flex-direction: column; gap: 4px; }
 
 .alt-app .section-title {
     font-size: 8px;
@@ -114,7 +114,10 @@ body.alt-app .site-header .logo { font-size: 16px; line-height: 24px; }
 }
 
 /* ── 設定行：ラベル＋スライダー＋数値入力 ──
-   ALT ツールで一番よく出る形。ラベル右端に現在値を出す。 */
+   ALT ツールで一番よく出る形。数値ボックスのある行は次の形に詰める（高さ 29px）。
+       LONG EDGE (px)          [ 384 ]     ← 数値ボックス 18px（字 16 + 枠 2）をラベル行の右端へ
+       [━━━━━━━━━━●━━━━━━━━━━━━━━]        ← スライダー 11px（上下 margin 4 + 太さ 3）を行の幅いっぱいに
+   数値ボックスの無い行（スライダーだけ）は下の flex のまま。 */
 .ctrl-row { display: flex; flex-direction: column; gap: 2px; }
 
 .ctrl-label {
@@ -134,6 +137,15 @@ body.alt-app .site-header .logo { font-size: 16px; line-height: 24px; }
 }
 
 .ctrl-inputs { display: flex; align-items: center; gap: 4px; }
+.ctrl-row:has(> .ctrl-inputs > input[type=number]) {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 0 4px;
+}
+.ctrl-row:has(> .ctrl-inputs > input[type=number]) > .ctrl-label { grid-column: 1; grid-row: 1; }
+/* ラベル右端の現在値は数値ボックスと二重になるので隠す（span と更新する JS は残す） */
+.ctrl-row:has(> .ctrl-inputs > input[type=number]) > .ctrl-label span { display: none; }
+.ctrl-inputs:has(> input[type=number]) { display: contents; }
+.ctrl-inputs > input[type=number] { grid-column: 2; grid-row: 1; }
+.ctrl-inputs:has(> input[type=number]) > input[type=range] { grid-column: 1 / -1; grid-row: 2; margin: 4px 0; }
 .ctrl-inputs input[type=range] { flex: 1; min-width: 0; }
 .ctrl-inputs input[type=number] {
     width: 52px;
@@ -141,7 +153,7 @@ body.alt-app .site-header .logo { font-size: 16px; line-height: 24px; }
     background: var(--bg);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 2px 3px;
+    padding: 0 3px;
     font-family: var(--font-body);
     font-size: 12px;
     line-height: 16px;
@@ -184,7 +196,7 @@ body.alt-app .site-header .logo { font-size: 16px; line-height: 24px; }
     background: var(--bg);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 3px 5px;
+    padding: 1px 4px;
     font-family: var(--font-body);
     font-size: 12px;
     line-height: 16px;

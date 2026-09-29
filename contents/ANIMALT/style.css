@@ -35,14 +35,9 @@
 .hint.warn { color: var(--danger); }
 
 /* ── Controls ──
-   スライダーだけでは1刻みを合わせにくいので、必ず数値入力を隣に置く */
-.ctrl-number {
-  width: 52px; flex: none;
-  background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 2px 3px; font-family: var(--font-body); font-size: 12px; line-height: 16px;
-  color: var(--text); outline: none; text-align: right;
-}
-.ctrl-number:focus { border-color: var(--accent); }
+   スライダーだけでは1刻みを合わせにくいので、必ず数値入力を隣に置く。
+   枠・寸法・フォーカスは alt.css の .ctrl-inputs input[type=number]。ここは右寄せだけ */
+.ctrl-number { text-align: right; }
 
 textarea {
   width: 100%; background: var(--bg); border: 1px solid var(--border);
