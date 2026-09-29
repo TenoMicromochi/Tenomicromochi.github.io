@@ -7,6 +7,11 @@
    スタイルとぶつからないよう、body/*等の汎用セレクタは
    極力使わずクラス/ID限定で書くこと。
    ========================================= */
+/* 上部タブはマルモニカ（12x16 設計）。等倍は 16px、2 倍は 32px。16px 以外にしない */
+@font-face {
+    font-family: 'MaruMonica';
+    src: url('/fonts/x12y16pxMaruMonica.ttf') format('truetype');
+}
 @font-face {
     font-family: 'TenoText 7x13';
     src: url('/fonts/TenoText 7x13.otf') format('opentype');
@@ -28,7 +33,7 @@
     background-position: left bottom;
     image-rendering: pixelated;
     border-bottom: 2px solid #A9D9D0;
-    font-family: var(--font-body);
+    font-family: 'MaruMonica', 'PixelMplus12', monospace;
     line-height: 16px;   /* body の倍率指定（PROFILE / POLICY）を受け継がない */
 }
 
@@ -90,8 +95,9 @@
     background-color: rgba(255, 255, 255, 0.75);
     cursor: pointer;
     list-style: none;
-    font-family: var(--font-body);
-    font-size: 12px;
+    font-family: 'MaruMonica', 'PixelMplus12', monospace;
+    font-size: 16px;
+    line-height: 16px;
     color: var(--sub);
 }
 .sodenmir-group-summary::-webkit-details-marker { display: none; }
@@ -108,7 +114,6 @@
 }
 .sodenmir-top-item.active .sodenmir-top-text {
     color: #FFFFFF;
-    font-weight: bold;
 }
 
 .sodenmir-top-icon {
@@ -121,12 +126,16 @@
     flex-shrink: 0;
 }
 
+/* 開閉記号は 6x5 の画像を等倍で出す（閉じている＝下向き / 開いている＝上向き） */
 .sodenmir-caret {
-    font-size: 12px;
-    color: var(--sub);
+    width: 6px;
+    height: 5px;
+    flex-shrink: 0;
+    background: url('/images/tab_triangle_down.png') no-repeat;
+    image-rendering: pixelated;
 }
 .sodenmir-group[open] > .sodenmir-group-summary .sodenmir-caret {
-    transform: rotate(180deg);
+    background-image: url('/images/tab_triangle_up.png');
 }
 
 .sodenmir-group {
@@ -152,8 +161,9 @@
     padding: 6px 10px;
     text-decoration: none;
     border-bottom: 1px dotted var(--border2);
-    font-family: var(--font-body);
-    font-size: 12px;
+    font-family: 'MaruMonica', 'PixelMplus12', monospace;
+    font-size: 16px;
+    line-height: 16px;
     color: var(--sub);
 }
 .sodenmir-row-item:last-child { border-bottom: none; }
@@ -162,7 +172,7 @@
     background-color: var(--text);
     color: #ffffff;
 }
-.sodenmir-row-item.active .sodenmir-row-text { color: #ffffff; font-weight: bold; }
+.sodenmir-row-item.active .sodenmir-row-text { color: #ffffff; }
 
 .sodenmir-row-icon {
     width: 16px;
@@ -180,8 +190,8 @@
     padding: 6px 12px;
     border: 1px solid var(--border);
     background: rgba(255, 255, 255, 0.85);
-    font-family: var(--font-body);
-    font-size: 12px;
+    font-family: 'MaruMonica', 'PixelMplus12', monospace;
+    font-size: 16px;
     line-height: 16px;
     color: var(--sub);
     cursor: pointer;
@@ -196,6 +206,7 @@
     flex-direction: column;
     background: var(--bg);
     border-bottom: 2px solid #A9D9D0;
+    font-family: 'MaruMonica', 'PixelMplus12', monospace;
     line-height: 16px;
 }
 #sodenmir-mobile-nav.open { display: flex; }

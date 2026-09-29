@@ -9,7 +9,7 @@
 
 
 /* AA のプレビューと出力に使う等幅ドットフォント。
-   画面のUI文字（TenoText 8x8 / PixelMplus12）とは別物 */
+   画面のUI文字（TenoText 8x8 / マルミーニャ）とは別物 */
 @font-face {
     font-family: 'TenoText';
     src: url('/fonts/TenoText 8x11(+Extended ASCII).ttf');
@@ -38,7 +38,6 @@
     color: var(--text);
     font-size: 12px;
     line-height: 16px;
-    font-weight: bold;
     min-width: 32px;
     text-align: right;
     letter-spacing: 0;
@@ -117,7 +116,6 @@
     font-family: var(--font-mono);
     font-size: 12px;
     line-height: 16px;
-    font-weight: bold;
     cursor: pointer;
     letter-spacing: 1px;
     transition: background 0.1s;
@@ -185,7 +183,6 @@
     text-align: center;
     font-size: 12px;
     line-height: 16px;
-    font-weight: bold;
     color: var(--text);
     background: var(--bg);
     height: 24px;

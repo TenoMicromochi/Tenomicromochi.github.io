@@ -10,11 +10,11 @@
     /* 本文専用の日本語ゴシック。実体は theme.css の --font-read（POLICY と共通） */
     --font-poem: var(--font-read);
 
-    /* 作品タイトルと INDEX 用。本文以外は PixelMplus12 に揃える。
-       PixelMplus12 に無い文字だけ本文フォントへ逃がしたいので、
+    /* 作品タイトルと INDEX 用。本文以外はマルミーニャに揃える。
+       マルミーニャと PixelMplus12 に無い文字だけ本文フォントへ逃がしたいので、
        theme.css の --font-body（フォールバックが等幅）ではなくここで組み直す。
-       PixelMplus12 は 12px 設計なので、使う側の font-size は 12 の倍数だけにすること。 */
-    --font-ui-jp: 'PixelMplus12', 'M PLUS 2', 'Noto Sans JP', sans-serif;
+       マルミーニャは 12px 設計なので、使う側の font-size は 12 の倍数だけにすること。 */
+    --font-ui-jp: 'MaruMinya', 'PixelMplus12', 'M PLUS 2', 'Noto Sans JP', sans-serif;
     /* 選択中のポエムのテーマカラー。JS が #poem-content-side に上書きする */
     --c: var(--border);
     /* 未選択のカラーボックスの色。形は保ったまま色だけ抜く */
@@ -97,7 +97,7 @@ body.poem-app .page-content.wide {
 .cat-summary::-webkit-details-marker { display: none; }
 .cat-summary:hover { background: var(--hover); }
 
-/* font-weight は付けない。PixelMplus12 はビットマップ調なので
+/* font-weight は付けない。マルミーニャはビットマップ調なので
    中間ウェイトを指定すると合成ボールドがかかって輪郭が滲む */
 .cat-ja  { font-family: var(--font-ui-jp); font-size: 12px; color: var(--text); }
 .cat-en  { font-family: var(--font-mono); font-size: 12px; line-height: 16px; letter-spacing: 1px; color: var(--sub); }
@@ -233,7 +233,7 @@ body.poem-app .page-content.wide {
 .heading-text { min-width: 0; }
 .t-ja {
     font-family: var(--font-ui-jp);
-    /* PixelMplus12 は 12px 設計。16px だと 1.33 倍になってドットが潰れるので、
+    /* マルミーニャは 12px 設計。16px だと 1.33 倍になってドットが潰れるので、
        ちょうど2倍の 24px にする。24px の .swatch-lg とも高さが揃う。 */
     font-size: 24px;
     line-height: 32px;
@@ -272,7 +272,6 @@ body.poem-app .page-content.wide {
     font-family: var(--font-mono);
     font-size: 12px;
     line-height: 16px;
-    font-weight: bold;
     cursor: pointer;
     transition: background 0.1s;
 }

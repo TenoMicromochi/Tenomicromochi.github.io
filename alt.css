@@ -19,7 +19,7 @@
    各ツールの style.css に書く。ここには入れない。
 
    ビットマップフォントは等倍の整数倍だけ。line-height / letter-spacing は整数 px。
-     TenoText 8x8 : 8 / 16 / 24     PixelMplus12 : 12 / 24
+     TenoText 8x8 : 8 / 16 / 24     マルミーニャ : 12 / 24　マルモニカ（上部タブ）: 16
    詳細と見本は _standard/pixel-style/。
    ドット絵は補間禁止・整数倍のみ（CLAUDE.md の不変条件）。
    ============================================================ */
@@ -129,7 +129,6 @@ body.alt-app .site-header .logo { font-size: 16px; line-height: 24px; }
 }
 .ctrl-label span {
     color: var(--text);
-    font-weight: bold;
     min-width: 32px;
     text-align: right;
 }
@@ -272,7 +271,6 @@ select.none-selected { border-color: var(--danger); color: var(--danger); }
     font-family: var(--font-body);
     font-size: 12px;
     line-height: 16px;
-    font-weight: bold;
     letter-spacing: 1px;
     cursor: pointer;
     border: 1px solid var(--border);
@@ -371,7 +369,7 @@ select.none-selected { border-color: var(--danger); color: var(--danger); }
     border: 1px solid var(--border);
     border-radius: var(--radius);
 }
-.info-chip strong { color: var(--accent); }
+.info-chip strong { color: var(--accent); font-weight: normal; }
 
 /* ── 進捗 ── */
 .progress-wrap { display: none; flex-direction: column; gap: 3px; }

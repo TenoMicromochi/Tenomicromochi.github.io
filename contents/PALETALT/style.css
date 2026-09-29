@@ -25,7 +25,7 @@
   border-radius: var(--radius); background: var(--bg); user-select: none;
 }
 .dither-fine input[type=range] { width: 60px; }
-.dither-fine .dither-val { color: var(--text); font-weight: bold; min-width: 15px; text-align: right; }
+.dither-fine .dither-val { color: var(--text); min-width: 15px; text-align: right; }
 .dither-fine.disabled { opacity: 0.4; pointer-events: none; }
 
 /* ── 抽出したパレット ── */
@@ -55,7 +55,7 @@
   display: flex; flex-direction: column; gap: 1px;
   padding: 3px 4px; border-top: 1px solid var(--border);
 }
-.swatch-hex { font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text); font-weight: bold; }
+.swatch-hex { font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--text); }
 .swatch-share { font-size: 12px; line-height: 16px; letter-spacing: 0; color: var(--sub); }
 
 /* HEX ラベルを消したときは色チップだけの細い並びにする */

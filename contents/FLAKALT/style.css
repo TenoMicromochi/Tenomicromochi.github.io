@@ -136,6 +136,7 @@ body.nocrt #crt { display: none; }
 .flak-about { max-width: 720px; margin: 0 auto; }
 .flak-about .panel-body p { margin-bottom: 10px; line-height: 20px; }
 .flak-about .panel-body p:last-child { margin-bottom: 0; }
+.flak-about strong { font-weight: normal; }   /* ドット絵フォントは太字にしない */
 
 .flak-keys {
     display: grid;

@@ -30,10 +30,11 @@
     /* --danger の濃い側。枠線とホバーに使う（--accent と --accent2 の関係と同じ） */
     --danger2:   #662222;
     --radius:   3px;
-    /* Courier New はビットマップではないので、等幅枠も PixelMplus12 にする */
-    --font-mono:    'PixelMplus12', 'Courier New', monospace;
+    /* Courier New はビットマップではないので、等幅枠もマルミーニャにする。
+       PixelMplus12 は同じ等幅（半角 6px / 全角 12px）で、マルミーニャに無い字（▶ など）の受け皿 */
+    --font-mono:    'MaruMinya', 'PixelMplus12', 'Courier New', monospace;
     --font-heading: 'TenoText 8x8', var(--font-mono);
-    --font-body:    'PixelMplus12', var(--font-mono);
+    --font-body:    'MaruMinya', var(--font-mono);
     /* 本文専用の日本語ゴシック（POEM / POLICY）。ビットマップではない。
        UI 側の --font-body とは別枠。半角カナや絵文字が出るのでフォールバックを厚めに取る */
     --font-read:    'M PLUS 2', 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
@@ -50,10 +51,13 @@
     src: url('/fonts/PixelMplus12-Regular.ttf') format('truetype');
 }
 @font-face {
-    font-family: 'PixelMplus12';
-    src: url('/fonts/PixelMplus12-Bold.ttf') format('truetype');
-    font-weight: bold;
+    font-family: 'MaruMinya';
+    src: url('/fonts/x12y12pxMaruMinya.ttf') format('truetype');
 }
+
+/* ドット絵フォントは太字を持たない。ブラウザの合成ボールドで輪郭が滲むのを止める。
+   M PLUS 2（--font-read）は本物の太字を持つので、POEM / POLICY 本文の太字は残る */
+:root { font-synthesis: none; }
 
 /* ドット絵の <img> に枠線を付けるときは box-sizing: content-box にして、width/height を
    中身の寸法（実寸の整数倍）で書く。border-box のままだと枠線の分だけ中身が縮み、非整数倍になる */
@@ -137,7 +141,6 @@ body {
     font-family: var(--font-body);
     font-size: 12px;
     line-height: 16px;
-    font-weight: bold;
     letter-spacing: 2px;
     cursor: pointer;
     transition: background 0.1s;

@@ -1,7 +1,7 @@
 
-/* リニューアルに伴い、このページは PixelMplus12 に統一 */
+/* リニューアルに伴い、このページはドット絵フォント（--font-body = マルミーニャ）に統一 */
 body {
-    font-family: 'PixelMplus12', var(--font-mono);
+    font-family: var(--font-body);
 }
 
 @font-face {

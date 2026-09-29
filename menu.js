@@ -87,7 +87,7 @@ const SODENMIR_GROUPS = [
 
             const caret = document.createElement('span');
             caret.className = 'sodenmir-caret';
-            caret.textContent = '▾';
+            caret.setAttribute('aria-hidden', 'true');
 
             summary.appendChild(img);
             summary.appendChild(span);

@@ -9,7 +9,6 @@
     line-height: 16px;
     letter-spacing: 2px;
     color: var(--accent);
-    font-weight: bold;
 }
 
 .level-hint { font-size: 12px; line-height: 16px; color: var(--sub); margin-top: 6px; }
@@ -360,7 +359,7 @@
     gap: 10px;
 }
 
-.modal-title-ja { font-size: 24px; line-height: 32px; font-weight: bold; color: var(--text); }
+.modal-title-ja { font-size: 24px; line-height: 32px; color: var(--text); }
 .modal-title-en { font-size: 12px; line-height: 16px; color: var(--sub); margin-top: -6px; }
 .modal-tags { display: flex; gap: 6px; flex-wrap: wrap; }
 .modal-desc-block { border-top: 1px dotted var(--border2); padding-top: 10px; }

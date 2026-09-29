@@ -44,7 +44,6 @@ body {
     font-family: var(--font-mono);
     font-size: 24px;
     line-height: 32px;
-    font-weight: bold;
     letter-spacing: 3px;
     cursor: pointer;
     color: #fff;
@@ -69,7 +68,6 @@ body {
     color: var(--success);
     min-height: 16px;
     text-align: center;
-    font-weight: bold;
 }
 
 /* ---- Panel ---- */
@@ -101,7 +99,6 @@ body {
     color: var(--text);
     font-size: 12px;
     line-height: 16px;
-    font-weight: bold;
     min-width: 24px;
     text-align: right;
     font-family: var(--font-mono);
