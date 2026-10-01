@@ -8,7 +8,7 @@ const LINK_DATA = [
     },
     {
         title: "DISCORD - あーく・そどむ",
-        url: "https://t.co/amifWLaZYL",
+        url: "https://discord.gg/NHBpwWvfAq",
         image: "/images/icons/DISCORD.png",
         buttonText: "←VISIT！",
         description: "僕が管理者のDiscordサーバーです\nもしよければ覗いていってね"
