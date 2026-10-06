@@ -1,0 +1,42 @@
+#software-list { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+
+/* ヘッダ右端の言語切替 */
+.lang-switch { margin-left: auto; display: flex; gap: 4px; }
+.lang-switch .tag { cursor: pointer; }
+.lang-switch .tag.on { background: var(--text); color: #fff; border-color: var(--text); }
+
+.card { border: 1px solid var(--border); background: var(--panel); border-radius: var(--radius); }
+.card-top { display: flex; gap: 12px; padding: 12px; align-items: center; border-bottom: 1px dotted var(--border); }
+.card-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.card-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
+.card-top .sw-tagline { color: var(--accent2); }
+.card-body { padding: 12px 12px 12px 88px; display: flex; flex-direction: column; gap: 12px; }
+.about { color: var(--text); }
+.card-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.spec-line { color: var(--sub); }
+@media (max-width: 600px) { .card-body { padding-left: 12px; } }
+
+/* ドット絵は補間なし。16x16 を 4 倍の 64px で出す */
+img.px { image-rendering: pixelated; image-rendering: crisp-edges; display: block; flex-shrink: 0; width: 64px; height: 64px; }
+
+/* アイコンの台座。中身 64x64、枠は外側（theme.css の border-box に注意） */
+.icon-box {
+    box-sizing: content-box; width: 64px; height: 64px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
+    flex-shrink: 0;
+}
+
+.sw-name { font-family: var(--font-heading); font-size: 16px; line-height: 16px; letter-spacing: 2px; color: var(--accent); }
+.sw-ver  { font-family: var(--font-body); font-size: 12px; line-height: 16px; color: var(--sub); }
+.sw-tagline { font-size: 12px; line-height: 16px; color: var(--text); }
+
+.dl-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.dl-buttons .btn { text-decoration: none; display: inline-block; }
+.dl-buttons .btn:hover { color: #fff; }
+.dl-buttons .btn.secondary:hover { color: var(--accent); }
+
+/* 機能リスト：■ の代わりに 4x4 の四角 */
+.features { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+.features li { position: relative; padding-left: 12px; }
+.features li::before { content: ''; position: absolute; left: 0; top: 6px; width: 4px; height: 4px; background: var(--accent); }
