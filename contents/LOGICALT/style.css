@@ -1,0 +1,349 @@
+/* ============================================================
+   LOGICALT — style.css
+   画面 = プレイスペース（上）+ ドック（段1・段2）+ システムバー（1行）
+   フォントはマルミーニャ 12px（等倍）。サイズ・行の高さ・余白はすべて整数 px。
+   並び：1 土台 / 2 部品 / 3 プレイスペース / 4 ドック / 5 システムバー
+   ============================================================ */
+
+/* ============ 1 土台 ============ */
+@font-face {
+  font-family: 'MaruMinya';
+  src: url('/fonts/x12y12pxMaruMinya.ttf') format('truetype');
+}
+
+:root {
+  /* 色：役目で名前を付ける */
+  --surface:           #1E1E1E;   /* ドックの面・ボタンの面 */
+  --bg-tier1:     #262626;   /* 段1の面（段2より少し明るい） */
+  --line:         #3A3A3A;   /* 区切り線 */
+  --fg:           #C8C8C8;   /* 文字 */
+  --text-sub:          #808080;   /* 見出し・ラベル */
+  --edge:         #5A5A5A;   /* ボタン枠 */
+  --edge-bright:  #8A8A8A;   /* 段1のボタン枠 / 段2・引き出しで選択中のボタンの背景 */
+  --dim:          #4A4A4A;   /* 使えない */
+  --hover-bg:        #2E2E2E;
+  --na:           #6A6A6A;   /* 今の設定では効かない項目 */
+  --mk-active:    #6A6A6A;   /* 選択中の素材ボタンのキー番号（たまたま --na と同じ値） */
+  --fg-onoff:     #9A9A9A;   /* 選択中で使えないボタンの文字（段1・既定） */
+  --fg-drawer:    #A0A0A0;   /* 引き出しのボタンの文字 */
+  --lab-mid:      #707070;   /* 段2のラベル */
+  --off-edge-1:   #444;      /* 段1の使えないボタンの枠 */
+  --off-edge-2:   #333;      /* 段2・引き出しの使えないボタンの枠 */
+  --onoff-edge-1: #666;      /* 段1の選択中で使えないボタンの枠 */
+  --run:          #5EC966;   /* RUN の色（LAMP GREEN） */
+  --pause:        #EA9B05;   /* PAUSE の色（LAMP AMBER） */
+  --back:         #E0904C;   /* BACK の色（HOLE の色と同じ値。JS の色表とは別に持つ） */
+
+  /* ボタン .b の見た目。段ごとに、この変数だけを上書きする */
+  --b-h: 22px;                 /* 高さ（行の高さは 高さ - 枠 x 2） */
+  --b-w: 1px;                  /* 枠の太さ */
+  --b-bg: var(--surface);
+  --b-fg: var(--fg);
+  --b-edge: var(--edge);
+  --b-hover-bg: var(--hover-bg);
+  --b-on-bg: var(--fg);        /* 選択中 */
+  --b-on-fg: var(--surface);
+  --b-on-edge: var(--fg);
+  --b-off-fg: var(--dim);      /* 使えない */
+  --b-off-edge: var(--dim);
+  --b-onoff-bg: var(--line);   /* 選択中で使えない */
+  --b-onoff-fg: var(--fg-onoff);
+  --b-onoff-edge: var(--dim);
+
+  --lab-fg: var(--text-sub);
+  font-synthesis: none;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* 画面は縮めない：幅 1280px を下回るときは、ページ全体ではなく body の中を横スクロールする。
+   ページ全体がはみ出すと、スマホのブラウザが全体を縮小表示してドットが崩れる（html を hidden にして、body をスクロールの箱にする） */
+html { height: 100%; overflow: hidden; }
+body {
+  height: 100%;
+  display: flex; flex-direction: column;
+  overflow-x: auto; overflow-y: hidden;
+  background: #000;
+  color: var(--fg);
+  font-family: 'MaruMinya', monospace;
+  font-size: 12px; line-height: 16px; letter-spacing: 1px;
+  -webkit-font-smoothing: none;
+}
+
+button, input { font: inherit; letter-spacing: inherit; color: inherit; border-radius: 0; }
+
+/* 実行状態：RUN / PAUSE の間だけ --state（色）と、それに伴う変数が入る。各部品は var(--state, 普段の色) で使う */
+body[data-state="RUN"], body[data-state="PAUSE"] {
+  --state-fg: #000;
+  --lock-dim: .45;               /* 編集部分（素材・描き方）を沈める */
+  --screen-cursor: default;
+}
+body[data-state="RUN"]   { --state: var(--run); }
+body[data-state="PAUSE"] { --state: var(--pause); }
+/* 作業面：BACK のときだけ --layer（色）が入る */
+body[data-cur-layer="BACK"] { --layer: var(--back); --layer-fg: #000; }
+
+
+/* ============ 2 部品 ============ */
+
+/* ボタン */
+.b {
+  flex: none;
+  display: inline-flex; align-items: center; justify-content: center;
+  height: var(--b-h); padding: 0 5px;
+  background: var(--b-bg); color: var(--b-fg);
+  border: var(--b-w) solid var(--b-edge);
+  line-height: calc(var(--b-h) - 2 * var(--b-w));
+  cursor: pointer; white-space: nowrap;
+}
+.b:hover:not(:disabled):not(.active) { background: var(--b-hover-bg); }
+.b.active { background: var(--b-on-bg); color: var(--b-on-fg); border-color: var(--b-on-edge); }
+.b:disabled { color: var(--b-off-fg); border-color: var(--b-off-edge); cursor: default; }
+.b.active:disabled { background: var(--b-onoff-bg); color: var(--b-onoff-fg); border-color: var(--b-onoff-edge); }
+.b.na:not(.active):not(:disabled) { color: var(--na); border-color: var(--dim); }   /* 今の描き方では効かない */
+.b.n { width: 18px; padding: 0; }
+
+/* アイコンボタン（12x12 のドット絵を等倍で。色は currentColor） */
+.ic-b { width: 24px; padding: 0; }
+.ic { display: block; width: 12px; height: 12px; background: currentColor;
+      image-rendering: crisp-edges; image-rendering: pixelated;
+      -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+      -webkit-mask-size: 12px 12px; mask-size: 12px 12px; }
+
+/* つながったボタン（どれか1つを選ぶ。枠の太さぶん重ねて、境目を 1 本にする） */
+.seg { display: inline-flex; }
+.seg > .b + .b { margin-left: calc(-1 * var(--b-w)); }
+.seg > .b.active { position: relative; z-index: 1; }
+
+/* グループ・区切り・ラベル */
+.grp { display: inline-flex; align-items: center; gap: 2px; }
+.sep { flex: none; width: 1px; height: 16px; background: var(--line); margin: 0 1px; }
+.lab { color: var(--lab-fg); }
+.val { min-width: 28px; }
+.x   { color: var(--text-sub); margin: 0 -3px; }
+
+/* チェックボックス */
+.chk { display: inline-flex; align-items: center; gap: 4px; height: 22px; cursor: pointer; }
+.chk.na { color: var(--na); }
+.chk:has(input:disabled) { color: var(--dim); cursor: default; }
+input[type=checkbox] {
+  -webkit-appearance: none; appearance: none;
+  flex: none; width: 12px; height: 12px;
+  background: var(--surface); border: 1px solid var(--edge); cursor: pointer;
+}
+input[type=checkbox]:checked { background: var(--fg); background-clip: content-box; padding: 2px; }
+input[type=checkbox]:disabled { border-color: var(--dim); cursor: default; }
+input[type=checkbox]:checked:disabled { background: var(--dim); }
+
+/* 数値欄 */
+.num {
+  width: 36px; height: 22px; padding: 0 3px;
+  background: var(--surface); border: 1px solid var(--edge); outline: none;
+  text-align: right;
+}
+.num.g { width: 29px; }
+.num:focus { border-color: var(--fg); }
+
+/* スライダー（自前。つまみ 5x12、位置は整数 px） */
+.sld { position: relative; flex: none; height: 22px; cursor: pointer; }
+.sld .trk { position: absolute; left: 2px; right: 2px; top: 10px; height: 2px; background: var(--edge); }
+.sld .thm { position: absolute; left: 0; top: 5px; width: 5px; height: 12px; background: var(--fg); }
+.sld .tk  { position: absolute; top: 19px; width: 1px; height: 2px; background: var(--text-sub); }
+.sld:hover .thm { background: #FFFFFF; }
+#tpsSld   { width: 115px; }   /* 1px = 10 目盛り、2 の累乗ごとに 10px */
+#otherSld { width: 105px; }   /* 1px = 1% */
+
+/* LAMP の16色の色見本 */
+.sws { gap: 0; }
+.sw {
+  flex: none; width: 15px; height: 22px; padding: 2px 1px;
+  background: transparent; border: 1px solid transparent; cursor: pointer;
+}
+.sw span { display: block; width: 11px; height: 16px; }
+.sw:hover:not(:disabled):not(.active) { border-color: var(--edge); }
+.sw.active { border-color: var(--fg); }
+.sw.active.off { border-color: var(--edge); }      /* LAMP 以外を選んでいる間 */
+.sw:disabled { cursor: default; }
+.sw:disabled span { opacity: .3; }
+.sw.active:disabled { border-color: var(--dim); }
+
+/* 素材ボタン：上段＝キー番号（小）＋色見本、下段＝名前（12px 等倍） */
+.mb { width: 46px; flex-direction: column; justify-content: center; gap: 0; line-height: 16px; }
+.mb .mt { display: flex; align-items: center; justify-content: center; gap: 4px; height: 18px; }
+.mb .mk { color: var(--text-sub); line-height: 16px; }
+.mb.active .mk { color: var(--mk-active); }
+.mb .mn { display: block; line-height: 16px; letter-spacing: 0; }
+.mb .chip { flex: none; width: 14px; height: 14px; outline: 1px solid rgba(0, 0, 0, .6); }
+.mb .chip.eraser { background: #000; }
+.b:disabled .chip { opacity: .35; }
+
+
+/* ============ 3 プレイスペース ============ */
+.stage {
+  position: relative;
+  flex: 1 1 auto; min-width: 1280px; min-height: 0;
+  overflow: hidden;
+}
+#screen { position: absolute; left: 0; top: 0; image-rendering: crisp-edges; image-rendering: pixelated; cursor: var(--screen-cursor, crosshair); touch-action: none; }
+
+/* 貼り付け中のバー（キャンバスの左下。上部は空けたまま） */
+.ctx {
+  position: absolute; left: 8px; bottom: 8px;
+  display: flex; align-items: center; gap: 12px;
+  height: 28px; padding: 0 2px;
+  background: var(--surface); border: 1px solid var(--fg);
+  white-space: nowrap;
+}
+.ctx[hidden] { display: none; }
+.ctx-t { background: var(--fg); color: var(--surface); padding: 0 6px; line-height: 22px; }
+.ctx .dim { color: var(--text-sub); }
+.ctx .lab { margin-right: -6px; }
+
+/* 選択範囲の大きさ（11x9 など） */
+.selsize {
+  position: absolute; left: 0; top: 0;
+  padding: 0 4px; line-height: 16px;
+  background: var(--surface); border: 1px solid var(--edge); color: var(--fg);
+  white-space: pre; pointer-events: none;
+}
+.selsize[hidden] { display: none; }
+
+.toast {
+  display: none;
+  position: absolute; right: 8px; bottom: 8px;
+  padding: 2px 8px;
+  background: var(--surface); border: 1px solid var(--edge);
+  white-space: pre; pointer-events: none;
+}
+
+/* SETTINGS の引き出し（キャンバスの右下に重ねる。ふだんは hidden） */
+.drawer {
+  --b-fg: var(--fg-drawer);
+  --b-edge: var(--dim);
+  --b-on-bg: var(--edge-bright);
+  --b-on-edge: var(--edge-bright);
+  --b-off-edge: var(--off-edge-2);
+  --b-onoff-bg: var(--edge-bright);
+  --b-onoff-fg: var(--dim);
+  --b-onoff-edge: var(--off-edge-2);
+  position: absolute; right: 8px; bottom: 8px;
+  width: 292px; padding: 4px 8px 8px;
+  background: var(--surface); border: 1px solid var(--edge);
+  color: var(--text-sub);
+}
+.drawer[hidden] { display: none; }
+.dh { display: flex; align-items: center; justify-content: space-between; height: 24px; color: var(--fg); }
+.dh .b { --b-h: 18px; }
+.dr { display: flex; align-items: center; gap: 8px; height: 22px; margin-top: 4px; }
+.dr .lab.w { width: 48px; }
+
+
+/* ============ 4 ドック ============ */
+.dock {
+  flex: none; min-width: 1280px;
+  display: flex; flex-direction: column;
+  background: var(--surface);
+  border-top: 2px solid var(--state, var(--line));          /* RUN / PAUSE では実行状態の色 */
+}
+.fill { flex: 1 1 auto; }
+.col { display: flex; flex-direction: column; }
+
+/* 段1：素材・RUN・描き方・面・UNDO（2倍。ボタンは枠を太く、明るく） */
+.main {
+  --b-h: 44px;
+  --b-w: 2px;
+  --b-edge: var(--edge-bright);
+  --b-hover-bg: var(--line);
+  --b-off-edge: var(--off-edge-1);
+  --b-onoff-bg: var(--dim);
+  --b-onoff-edge: var(--onoff-edge-1);
+  display: flex; align-items: center; gap: 8px;
+  height: 52px; padding: 4px 8px;
+  background: var(--bg-tier1);
+}
+.sep2 { flex: none; width: 2px; height: 44px; background: var(--line); }
+.b2 { width: 48px; }
+.b2 .ic { width: 24px; height: 24px; -webkit-mask-size: 24px 24px; mask-size: 24px 24px; }
+/* RUN / PAUSE ボタンは、押している間 --state の色 */
+.main [data-run="RUN"], .main [data-run="PAUSE"] {
+  --b-on-bg: var(--state, var(--fg));
+  --b-on-edge: var(--state, var(--fg));
+  --b-on-fg: var(--state-fg, var(--surface));
+}
+/* RUN / PAUSE 中は、素材と描き方の列を沈める */
+.main #matRow, .main #shapeRow { opacity: var(--lock-dim, 1); }
+
+/* LAMP の16色：2段 x 8 */
+.main .sws { display: grid; grid-template-columns: repeat(8, 22px); grid-auto-rows: 22px; }
+.main .sw { width: 22px; height: 22px; padding: 3px; }
+.main .sw span { width: 14px; height: 14px; }
+
+/* 面（FRONT / BACK）。BACK が作業面のときは --layer の色 */
+#layerSeg {
+  --b-on-bg: var(--layer, var(--fg));
+  --b-on-edge: var(--layer, var(--fg));
+  --b-on-fg: var(--layer-fg, var(--surface));
+}
+.b-layer { --b-h: 22px; width: 84px; }
+.col > .b-layer + .b-layer { margin-top: calc(-1 * var(--b-w)); }
+.col > .b-layer.active { position: relative; z-index: 1; }
+
+/* 段2：1倍。枠は細く暗く */
+.mid {
+  --b-edge: var(--dim);
+  --b-on-bg: var(--edge-bright);
+  --b-on-edge: var(--edge-bright);
+  --b-off-edge: var(--off-edge-2);
+  --b-onoff-bg: var(--edge-bright);
+  --b-onoff-fg: var(--surface);
+  --b-onoff-edge: var(--off-edge-2);
+  --lab-fg: var(--lab-mid);
+  display: flex; align-items: center; gap: 8px;
+  height: 30px; padding: 4px 8px;
+  border-top: 1px solid var(--line);
+}
+/* RUN / PAUSE 中は、左端の札（EDIT / LOCKED）が --state の色 */
+.modetag {
+  flex: none; width: 56px; text-align: center; line-height: 20px;
+  color: var(--state-fg, var(--text-sub));
+  background: var(--state, transparent);
+  border: 1px solid var(--state, var(--line));
+}
+.cur { flex: none; min-width: 120px; color: var(--fg); }
+.b-settings {
+  --b-edge: var(--edge);
+  --b-on-bg: var(--fg);
+  --b-on-edge: var(--edge);
+}
+
+
+/* ============ 5 システムバー ============ */
+.sysbar {
+  flex: none; min-width: 1280px;
+  display: flex; align-items: center; gap: 12px;
+  height: 24px; padding: 0 8px;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  white-space: nowrap;
+}
+.hint { flex: 1 1 auto; min-width: 0; overflow: hidden; white-space: pre; color: var(--text-sub); }
+.status { display: flex; gap: 12px; }
+.st-state {
+  padding: 0 4px; line-height: 14px;
+  color: var(--state-fg, var(--fg));
+  background: var(--state, transparent);
+  border: 1px solid var(--state, var(--edge));
+}
+.st-layer {
+  padding: 0 4px; line-height: 16px;
+  background: var(--layer, var(--fg));
+  color: var(--layer-fg, var(--surface));
+}
+
+
+/* ============ 6 サイト共通の上部タブとの取り合い ============ */
+/* サイト版では menu.js が body の先頭に上部タブを差し込む（Sandbox では対象が無く、何も起きない）。
+   上部タブは body（縦の flex）の1段で、縮めない。残りをプレイスペースが使う */
+#sodenmir-topbar, #sodenmir-mobile-nav { flex: none; }
+/* body の文字の設定（色・字間・文字のなめらか表示）は、アプリ用。上部タブは他のページと同じ設定に戻す */
+#sodenmir-topbar, #sodenmir-mobile-nav { color: var(--text); letter-spacing: normal; -webkit-font-smoothing: auto; }

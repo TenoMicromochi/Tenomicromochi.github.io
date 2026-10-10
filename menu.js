@@ -21,6 +21,7 @@ const SODENMIR_GROUPS = [
         label: "GAMES", icon: "/images/icons/GAMES.png",
         items: [
             { label: "FLAKALT", dir: "/contents/FLAKALT/", path: "/contents/FLAKALT/index.html", icon: "/images/icons/FLIGHT.png" },
+            { label: "LOGICALT", dir: "/contents/LOGICALT/", path: "/contents/LOGICALT/index.html", icon: "/images/icons/LOGIC.png" },
         ],
     },
     {
