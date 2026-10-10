@@ -16,171 +16,75 @@
 <link rel="stylesheet" href="/main.css">
 <script src="/menu.js" defer></script>
 </head>
-<body data-state="STOP" data-cur-layer="FRONT">
+<body data-mode="STOP" data-tab="BUILD" data-layer="FRONT">
 
-<!-- ============ PLAY SPACE ============ -->
-<div class="stage" id="canvasStack">
+<!-- ============ CANVAS ============ -->
+<div id="canvasStack">
   <canvas id="screen"></canvas>
-
-  <!-- paste context bar (shows only while pasting) -->
-  <div class="ctx" id="pasteCtx" hidden>
-    <span class="ctx-t">PASTING</span>
-    <span class="lab">MODE</span>
-    <span class="seg" id="pasteModeSeg">
-      <button class="b" data-mode="ALL"     data-hint="PASTE MODE ALL  - OVERWRITE, EMPTY TOO">ALL</button>
-      <button class="b" data-mode="CIRCUIT" data-hint="PASTE MODE CIRCUIT  - WRITE NON-EMPTY CELLS ONLY">CIRCUIT</button>
-    </span>
-    <span>LEFT CLICK: PLACE</span>
-    <span class="dim">R / SHIFT+R: ROTATE</span>
-    <span class="dim">F / SHIFT+F: FLIP</span>
-    <button class="b" id="cancelPasteBtn" data-hint="CANCEL PASTE  [ESC] [RIGHT CLICK]">CANCEL PASTE</button>
-  </div>
-
-  <!-- selection size, next to the lower right corner of the selection -->
   <div class="selsize" id="selSize" hidden></div>
-
-  <!-- TIER 3 : drawer, rarely used. Closed by default -->
-  <div class="drawer" id="drawer" hidden>
-    <div class="dh"><span>SETTINGS</span><button class="b" id="drawerClose" data-hint="CLOSE SETTINGS">CLOSE</button></div>
-    <div class="dr"><span class="lab w">PASTE</span>
-      <span class="seg" id="editModeSeg">
-        <button class="b" data-mode="ALL"     data-hint="PASTE MODE ALL  - OVERWRITE, EMPTY TOO">ALL</button>
-        <button class="b" data-mode="CIRCUIT" data-hint="PASTE MODE CIRCUIT  - WRITE NON-EMPTY CELLS ONLY">CIRCUIT</button>
-      </span>
-    </div>
-    <div class="dr"><span class="lab w">SCOPE</span>
-      <span class="seg" id="scopeSeg">
-        <button class="b" data-scope="BOTH"   data-hint="SELECTION SCOPE BOTH  - SELECTION TAKES FRONT AND BACK">BOTH</button>
-        <button class="b" data-scope="ACTIVE" data-hint="SELECTION SCOPE ACTIVE  - SELECTION TAKES ACTIVE LAYER ONLY">ACTIVE</button>
-      </span>
-    </div>
-    <div class="dr">
-      <label class="chk" id="autoCrossChk" data-hint="AUTO CROSS  - WIRE ACROSS WIRE BECOMES CROSS (PEN / LINE)"><input type="checkbox" id="autoCross" checked><span>AUTO CROSS</span></label>
-      <label class="chk" data-hint="NET HIGHLIGHT  - HIGHLIGHT WHAT THE CELL UNDER THE CURSOR CONNECTS TO"><input type="checkbox" id="netHl"><span>NET HL</span></label>
-    </div>
-    <div class="dr"><span class="lab w">OTHER</span>
-      <div class="sld" id="otherSld" data-max="100" data-hint="OTHER LAYER OPACITY  0 - 100%"><i class="trk"></i><i class="thm"></i></div>
-      <span class="val" id="otherV">30%</span>
-    </div>
-    <div class="dr"><span class="lab w">GLOW</span>
-      <span class="seg" id="glowSeg">
-        <button class="b" data-glow="0" data-hint="GLOW OFF">OFF</button>
-        <button class="b n" data-glow="1" data-hint="GLOW 1">1</button>
-        <button class="b n" data-glow="2" data-hint="GLOW 2">2</button>
-        <button class="b n" data-glow="3" data-hint="GLOW 3">3</button>
-        <button class="b n" data-glow="4" data-hint="GLOW 4">4</button>
-        <button class="b n" data-glow="5" data-hint="GLOW 5">5</button>
-      </span>
-    </div>
-    <div class="dr">
-      <label class="chk" data-hint="GRID  - SHOWN AT x4 AND ABOVE"><input type="checkbox" id="gridOn"><span>GRID</span></label>
-      <input class="num g" id="gridW" type="text" value="8" maxlength="3" data-hint="GRID WIDTH  1 - 256">
-      <span class="x">x</span>
-      <input class="num g" id="gridH" type="text" value="8" maxlength="3" data-hint="GRID HEIGHT  1 - 256">
-    </div>
-    <div class="dr">
-      <button class="b" id="saveSelBtn" data-hint="SAVE SEL  - SELECTION AS MODULE PNG (FOLLOWS SCOPE)">SAVE SEL</button>
-      <button class="b" id="loadModBtn" data-hint="LOAD MODULE  - PNG TO PASTE PREVIEW (DROP ALSO WORKS)">LOAD MODULE</button>
-    </div>
-  </div>
-
   <div class="toast" id="toast"></div>
 </div>
 
-<!-- ============ DOCK ============ -->
-<div class="dock" id="dock">
-
-  <!-- TIER 1 : always used (2x) -->
-  <div class="main">
-    <span class="seg g2" id="runRow">
-      <button class="b b2 ic-b" data-run="STOP"  data-ic="stop"  data-hint="STOP  - BACK TO INITIAL STATE, EDITING ON"></button>
-      <button class="b b2 ic-b" data-run="RUN"   data-ic="run"   data-hint="RUN  - EDITING LOCKED"></button>
-      <button class="b b2 ic-b" data-run="PAUSE" data-ic="pause" data-hint="PAUSE  - EDITING LOCKED"></button>
-      <button class="b b2 ic-b" data-run="STEP"  data-ic="step"  data-hint="STEP  - ADVANCE 1 TICK (ENTERS PAUSE)"></button>
-    </span>
-    <i class="sep2"></i>
-    <span class="seg g2" id="matRow"></span>
-    <span class="sws" id="lampRow"></span>
-    <i class="sep2"></i>
-    <span class="seg g2" id="shapeRow">
-      <button class="b b2 ic-b" data-shape="PEN"    data-ic="pen"    data-hint="PEN  - SHIFT: STRAIGHT"></button>
-      <button class="b b2 ic-b" data-shape="LINE"   data-ic="line"   data-hint="LINE  - SHIFT: EVEN STAIRS"></button>
-      <button class="b b2 ic-b" data-shape="RECT"   data-ic="rect"   data-hint="RECT  - SHIFT: SQUARE"></button>
-      <button class="b b2 ic-b" data-shape="SELECT" data-ic="select" data-hint="SELECT  - DRAG INSIDE TO MOVE"></button>
-    </span>
-    <i class="sep2"></i>
-    <span class="col" id="layerSeg">
-      <button class="b b-layer" data-layer="0" data-hint="WORK ON FRONT  [TAB]">FRONT</button>
-      <button class="b b-layer" data-layer="1"  data-hint="WORK ON BACK  [TAB]">BACK</button>
-    </span>
-    <span class="seg g2">
-      <button class="b b2 ic-b" id="undoBtn" data-ic="undo" data-hint="UNDO  [CTRL+Z]"></button>
-      <button class="b b2 ic-b" id="redoBtn" data-ic="redo" data-hint="REDO  [CTRL+Y]"></button>
-    </span>
+<!-- ============ DECK : BUILD / PLAY / FILE ============ -->
+<div class="deck">
+  <div class="tabs">
+    <button class="tab" data-tab="BUILD" data-hint="BUILD  - DRAW AND EDIT. THE CIRCUIT IS AT ITS START STATE">BUILD</button>
+    <button class="tab" data-tab="PLAY"  data-hint="PLAY  - RUN THE CIRCUIT. EDITING IS PUT AWAY">PLAY</button>
+    <button class="tab" data-tab="FILE"  data-hint="FILE  - SAVE, LOAD, PARTS, RESET">FILE</button>
   </div>
 
-  <!-- TIER 2 : sometimes used (1x) -->
-  <div class="mid">
-    <span class="modetag" id="modeTag">EDIT</span>
-    <span class="cur" id="matHead">1 WIRE</span>
-    <i class="sep"></i>
-    <span class="grp">
-      <button class="b ic-b" id="copyBtn"  data-ic="copy"  data-hint="COPY  [CTRL+C]"></button>
-      <button class="b ic-b" id="cutBtn"   data-ic="cut"   data-hint="CUT  [CTRL+X]"></button>
-      <button class="b ic-b" id="pasteBtn" data-ic="paste" data-hint="PASTE  [CTRL+V]"></button>
-      <button class="b ic-b" id="delBtn"   data-ic="trash" data-hint="DELETE  [DEL]"></button>
-    </span>
-    <span class="grp">
-      <button class="b ic-b" id="rotCwBtn"  data-ic="rotcw"  data-hint="ROTATE CW  [R]"></button>
-      <button class="b ic-b" id="rotCcwBtn" data-ic="rotccw" data-hint="ROTATE CCW  [SHIFT+R]"></button>
-      <button class="b ic-b" id="flipHBtn"  data-ic="fliph"  data-hint="FLIP H  [F]"></button>
-      <button class="b ic-b" id="flipVBtn"  data-ic="flipv"  data-hint="FLIP V  [SHIFT+F]"></button>
-    </span>
-    <i class="sep"></i>
-    <span class="grp" id="shape2Row">
-      <button class="b ic-b" data-shape="CIRCLE" data-ic="circle" data-hint="CIRCLE  - SHIFT: ROUND"></button>
-      <button class="b ic-b" data-shape="FILL"   data-ic="fill"   data-hint="FILL  - SAME CELLS ON ACTIVE LAYER"></button>
-    </span>
-    <span class="seg" id="fillSeg">
-      <button class="b ic-b" data-hollow="0" data-ic="filled" data-hint="FILLED  (RECT / CIRCLE)"></button>
-      <button class="b ic-b" data-hollow="1" data-ic="hollow" data-hint="HOLLOW  (RECT / CIRCLE)"></button>
-    </span>
-    <i class="sep"></i>
-    <span class="lab">TPS</span>
-    <div class="sld" id="tpsSld" data-max="1100" data-ticks="100" data-hint="TPS  1 - 2048 (LOG)"><i class="trk"></i><i class="thm"></i></div>
-    <input class="num" id="tpsN" type="text" value="10" maxlength="4" data-hint="TPS  1 - 2048">
-    <i class="sep"></i>
-    <span class="grp">
-      <button class="b ic-b" id="fitAllBtn"     data-ic="fit"  data-hint="FIT ALL  [HOME]"></button>
-      <button class="b ic-b" id="zoomSelBtn" data-ic="zsel" data-hint="ZOOM SEL  [Z]"></button>
-    </span>
-    <i class="sep"></i>
-    <span class="grp">
-      <button class="b" id="saveBtn" data-hint="SAVE  - BOTH LAYERS AS PNG (INITIAL STATE)">SAVE</button>
-      <button class="b" id="loadBtn" data-hint="LOAD  - REPLACE BOTH LAYERS WITH A PNG">LOAD</button>
-    </span>
-    <span class="fill"></span>
-    <button class="b b-settings" id="settingsBtn" data-hint="SETTINGS  - PASTE MODE, SCOPE, AUTO CROSS, OTHER, GLOW, GRID, NET HL, MODULES">SETTINGS</button>
+  <!-- BUILD -->
+  <div class="page" id="pBuild">
+    <div class="grp"><h3>1. Pick a part</h3><div class="parts" id="parts"></div></div>
+    <div class="grp" id="lampGrp"><h3>Color</h3><div class="lamps" id="lamps"></div></div>
+    <div class="grp"><h3>2. How to draw</h3>
+      <div id="shapes"></div>
+      <div class="row" id="shapeOpt">
+        <label id="autoCrossChk" data-hint="AUTO CROSS  - DRAWING STRAIGHT ACROSS A LINE PUTS A CROSS THERE (PEN / LINE)"><input type="checkbox" id="autoCross">Auto cross</label>
+      </div>
+    </div>
+    <div class="grp"><h3>3. Change</h3>
+      <div id="editRow"></div>
+      <div class="row" id="editRow2"></div>
+    </div>
+    <div class="grp"><h3>Layer [Tab] &amp; view</h3>
+      <div class="row"><span class="seg" id="layerSeg"></span></div>
+      <div class="row"><span class="sub w">Other</span><div class="sld" id="otherSld"></div><span class="val" id="otherV"></span></div>
+      <div class="row"><label data-hint="SHOW CONNECTIONS  - HIGHLIGHT WHAT THE CELL UNDER THE CURSOR CONNECTS TO"><input type="checkbox" id="netHl">Show connections</label></div>
+      <div class="row"><label data-hint="GRID LINES (x4 AND ABOVE)"><input type="checkbox" id="gridOn">Grid</label>
+        <input class="num g" id="gridW" maxlength="3" data-hint="GRID WIDTH  1 - 256"><span class="sub">x</span><input class="num g" id="gridH" maxlength="3" data-hint="GRID HEIGHT  1 - 256"></div>
+    </div>
+  </div>
+
+  <!-- PLAY -->
+  <div class="page" id="pPlay" hidden>
+    <div class="grp big"><h3>Run</h3><div class="row" id="runRow"></div></div>
+    <div class="grp"><h3>Speed (ticks / second)</h3>
+      <div class="row"><div class="sld" id="tpsSld"></div><input class="num" id="tpsN" maxlength="4" data-hint="TICKS PER SECOND  1 - 2048"></div>
+      <div class="row" id="tpsPresets"></div>
+    </div>
+    <div class="grp"><h3>How to play</h3><p class="sub">Click a T-FF (cyan) to flip it.<br>Shift+drag to select and copy.<br>Back to BUILD resets to the start.</p></div>
+    <div class="grp"><h3>Look</h3><div class="row"><span class="sub w">Glow</span><span class="seg" id="glowSeg"></span></div></div>
+    <div class="grp"><h3>Layer [Tab]</h3><div class="row"><span class="seg" id="layerSeg2"></span></div></div>
+  </div>
+
+  <!-- FILE -->
+  <div class="page" id="pFile" hidden>
+    <div class="cards" id="fileCards"></div>
   </div>
 </div>
 
-<!-- ============ SYSTEM BAR : hint / status ============ -->
-<div class="sysbar" id="sysbar">
-  <input type="file" id="fileInput" accept="image/png" hidden>
-  <input type="file" id="modInput" accept="image/png" hidden>
+<!-- ============ STATUS ============ -->
+<footer class="status" id="status">
   <span class="hint" id="hint"></span>
-  <span class="status" id="status">
-    <span id="stXY">X 2048 Y 2048</span>
-    <span id="stMat">EMPTY</span>
-    <span id="stZoom">x8</span>
-    <span id="stTps">TPS 60</span>
-    <span id="stState" class="st-state">STOP</span>
-    <span id="stTick">TICK 0</span>
-    <span id="stLayer" class="st-layer">FRONT</span>
-    <span id="stUnknown" hidden></span>
-    <span id="stSave"></span>
-  </span>
-</div>
+  <span id="stState" class="state"></span>
+  <span id="stLayer" class="layer"></span>
+  <span id="stUnknown" class="unknown" hidden></span>
+  <span id="stXY"></span>
+  <span id="stZoom"></span>
+  <span id="stTick"></span>
+  <span id="stSave"></span>
+</footer>
 
 <script type="module" src="js/main.js"></script>
 </body>

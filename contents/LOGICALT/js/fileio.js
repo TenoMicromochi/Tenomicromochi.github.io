@@ -5,6 +5,9 @@ import { bufFromDecoded } from './clip.js';
 
 const isPng = (f) => f && (f.type === 'image/png' || /\.png$/i.test(f.name || ''));
 
+const SAMPLE_URL = 'sample.png';
+const RESET_MESSAGE = 'Reset the canvas? Your current circuit will be replaced with the sample. (UNDO can restore it)';
+
 // app = { world, editor, renderer, toast, canEdit, rebuildNow, visibleCenter, setUnknown(n), redraw() }
 export function createFileIo(app) {
   const { world, editor, renderer, toast } = app;
@@ -59,5 +62,43 @@ export function createFileIo(app) {
     app.redraw();
   }
 
-  return { savePng, saveSel, loadFile, loadModule };
+  // サンプル回路（sample.png）を読む。失敗したら console に warn を 1 行出して null（file:// で開いた・ファイルが無いなど）
+  async function fetchSample() {
+    try {
+      const res = await fetch(SAMPLE_URL);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const dec = await decodePng(await res.blob());
+      if (dec.error) throw new Error(dec.error);
+      return dec;
+    } catch (e) {
+      console.warn('sample load failed:', e.message || e);
+      return null;
+    }
+  }
+
+  // 初めて開いたとき：サンプルを置く（UNDO の対象にしない）。画面合わせは fit() に任せる。置けたら true
+  async function placeSample(fit) {
+    const dec = await fetchSample();
+    if (!dec) return false;
+    editor.placeImage(dec, false);
+    app.setUnknown(dec.unknown);
+    fit();
+    return true;
+  }
+
+  // RESET：確認のあと、LOAD と同じ処理でサンプルに置き換える（1手として UNDO できる）
+  async function resetToSample() {
+    if (!app.canEdit()) return;
+    if (!confirm(RESET_MESSAGE)) return;
+    const dec = await fetchSample();
+    if (!dec) { toast('Could not read the sample', 'error'); return; }
+    editor.placeImage(dec, true);
+    app.rebuildNow();
+    app.setUnknown(dec.unknown);
+    app.fitAll();
+    toast('Reset to the sample');
+    app.redraw();
+  }
+
+  return { savePng, saveSel, loadFile, loadModule, placeSample, resetToSample };
 }

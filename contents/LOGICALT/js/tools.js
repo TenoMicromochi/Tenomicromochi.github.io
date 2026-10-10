@@ -33,6 +33,7 @@ export class Editor {
     this.sel = null;                 // {x0,y0,x1,y1}
     this.clip = null;                // clip.js のバッファ
     this.pasteBuf = null;            // 貼り付けプレビューの中身
+    this.pasteOff = { x: 0, y: 0 };  // プレビューをカーソルからずらした量（十字キー。プレビュー中だけ持つ）
     this.pasteMode = 'ALL';
     this.pasting = false;
     this.cursor = { x: -1, y: -1 };
@@ -220,13 +221,29 @@ export class Editor {
     } else if (drag.kind === 'MOVE') {
       const [dx, dy] = this.moveDelta(drag, shift);
       if (!dx && !dy) return;
-      const r = drag.rect, nx = r.x0 + dx, ny = r.y0 + dy;
-      world.beginRecord();
-      eraseRegion(world, r, bufLayers(drag.buf, drag.layer));
-      placeBuf(world, drag.buf, nx, ny, this.pasteMode, drag.layer);
-      this.pushHistory(world.endRecord());
-      this.sel = { x0: Math.max(0, nx), y0: Math.max(0, ny), x1: Math.min(W - 1, nx + drag.buf.w - 1), y1: Math.min(H - 1, ny + drag.buf.h - 1) };
+      this.applyMove(drag.rect, drag.buf, drag.layer, dx, dy);
     }
+  }
+  // 選択範囲 rect にあった中身 buf を (dx, dy) 動かして、1手にする。選択の枠も同じだけ動く（ドラッグと十字キーで共通）
+  applyMove(rect, buf, layer, dx, dy) {
+    const world = this.world, nx = rect.x0 + dx, ny = rect.y0 + dy;
+    world.beginRecord();
+    eraseRegion(world, rect, bufLayers(buf, layer));
+    placeBuf(world, buf, nx, ny, this.pasteMode, layer);
+    this.pushHistory(world.endRecord());
+    this.sel = { x0: Math.max(0, nx), y0: Math.max(0, ny), x1: Math.min(W - 1, nx + buf.w - 1), y1: Math.min(H - 1, ny + buf.h - 1) };
+  }
+  // 十字キー：貼り付け中ならプレビューを、そうでなければ選択範囲の中身を 1 セル動かす。動いたら true
+  // 動かす先がキャンバスの外にかかるときは動かさない
+  nudge(dx, dy) {
+    if (this.pasting) { this.pasteOff.x += dx; this.pasteOff.y += dy; return true; }
+    const s = this.sel;
+    if (!s || this.drag) return false;
+    const buf = copyRegion(this.world, s, this.scopeLayers());
+    const nx = s.x0 + dx, ny = s.y0 + dy;
+    if (nx < 0 || ny < 0 || nx + buf.w > W || ny + buf.h > H) return false;
+    this.applyMove({ ...s }, buf, this.layer, dx, dy);
+    return true;
   }
   cancelDrag() {
     const drag = this.drag;
@@ -317,14 +334,14 @@ export class Editor {
   }
   startPasteBuf(buf) {
     this.cancelDrag();
-    this.pasteBuf = buf; this.pasting = true;
+    this.pasteBuf = buf; this.pasting = true; this.pasteOff = { x: 0, y: 0 };
     return true;
   }
-  cancelPaste() { this.pasting = false; this.pasteBuf = null; }
+  cancelPaste() { this.pasting = false; this.pasteBuf = null; this.pasteOff = { x: 0, y: 0 }; }
   commitPaste(x, y) {
     const world = this.world;
     world.beginRecord();
-    placeBuf(world, this.pasteBuf, x, y, this.pasteMode, this.layer);
+    placeBuf(world, this.pasteBuf, x + this.pasteOff.x, y + this.pasteOff.y, this.pasteMode, this.layer);
     this.pushHistory(world.endRecord());
   }
 
@@ -442,7 +459,8 @@ export class Editor {
 
     // 貼り付けプレビュー
     if (this.pasting && this.pasteBuf && this.cursor.x >= 0) {
-      const buf = this.pasteBuf, [px, py, pw, ph] = r.rect(this.cursor.x, this.cursor.y, buf.w, buf.h);
+      const buf = this.pasteBuf, off = this.pasteOff;
+      const [px, py, pw, ph] = r.rect(this.cursor.x + off.x, this.cursor.y + off.y, buf.w, buf.h);
       if (this.pasteMode === 'ALL') { ctx.fillStyle = '#000000'; ctx.globalAlpha = 0.7; ctx.fillRect(px, py, pw, ph); }
       this.drawBuf(ctx, buf, px, py, pw, ph, 0.75, this.layer);
       outline(px, py, pw, ph, '#ffff00');

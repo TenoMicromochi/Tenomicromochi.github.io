@@ -1,4 +1,4 @@
-// main.js — 組み立て・STOP/RUN/PAUSE/STEP・メインループ・UI 配線
+// main.js — 組み立て・STOP/RUN/PAUSE/STEP・メインループ。画面の欄は ui.js（app を渡して、描画のたびに sync を呼ぶ）
 import { M, MAT_NAMES } from './materials.js';
 import { World, inCanvas } from './world.js';
 import { rebuild } from './topology.js';
@@ -7,7 +7,7 @@ import { Renderer } from './render.js';
 import { Editor } from './tools.js';
 import { initInput } from './input.js';
 import { drawGrid, drawHighlight, placeSelSize } from './overlays.js';
-import { buildDock, makeSlider, syncDock } from './dock.js';
+import { createUi } from './ui.js';
 import { createAutosave } from './autosave.js';
 import { createFileIo } from './fileio.js';
 
@@ -33,6 +33,7 @@ const grid = { on: false, w: 8, h: 8 };
 let tpsCount = 0, tpsStamp = performance.now(), tpsShown = 0;
 let needDraw = true, drawnVersion = -1;
 let unknownCount = 0;
+let ui = null;                      // ui.js（boot で作る）
 
 // ---------- 通知 ----------
 let toastTimer = 0;
@@ -144,20 +145,20 @@ function drawOverlays(ctx, r) {
   placeSelSize(r, editor.pasting ? null : editor.selInfo());
 }
 
-// 画面の状態をドックとシステムバーに反映する（差分だけ書く）。ボタンの暗さ・選択・ステータスのすべて
+// 今の状態をまとめて ui.js に渡す（ui.js は差分だけ書く）
 function updateInfo() {
+  if (!ui) return;
   const c = editor.cursor;
-  let xy = 'X - Y -', name = '-';
-  if (c.x >= 0) {
-    xy = `X ${c.x} Y ${c.y}`;
-    name = inCanvas(c.x, c.y) ? MAT_NAMES[world.mat[editor.cell(c.x, c.y)]] : 'OUT';
-  }
-  syncDock({
-    mode, tick: tickCount, edit: canEdit(), selSize: editor.selInfo(),
+  const onCanvas = c.x >= 0 && inCanvas(c.x, c.y);
+  ui.sync({
+    mode, edit: canEdit(), tick: tickCount, tps, glow, otherPct, netHl, grid,
     mat: editor.mat, lampColor: editor.lampColor, shape: editor.shape, hollow: editor.hollow, autoCross: editor.autoCross,
     scope: editor.scope, layer: editor.layer, pasteMode: editor.pasteMode, pasting: editor.pasting, sel: editor.sel,
-    canUndo: editor.undoStack.length > 0, canRedo: editor.redoStack.length > 0,
-    glow, scale: renderer.view.scale, otherPct, xy, matName: name, tps, saveText: auto.statusText(), unknown: unknownCount,
+    canUndo: editor.undoStack.length > 0, canRedo: editor.redoStack.length > 0, hasClip: !!editor.clip,
+    scale: renderer.view.scale,
+    cursor: c.x >= 0 ? { x: c.x, y: c.y } : null,
+    cursorMatName: c.x < 0 ? '-' : onCanvas ? MAT_NAMES[world.mat[editor.cell(c.x, c.y)]] : 'OUT',
+    saveText: auto.statusText(), unknown: unknownCount,
   });
 }
 
@@ -168,13 +169,18 @@ function requestDraw() { needDraw = true; }
 function visibleRect() { return { cx: canvas.width / 2, cy: canvas.height / 2, w: canvas.width, h: canvas.height }; }
 const visibleCenter = () => { const v = visibleRect(); return [v.cx, v.cy]; };
 let pendingCenter = null; // レイアウト確定後に最初の中心を当てる
+let pendingFit = false;   // レイアウト確定後に、使っているセル全体へ画面を合わせる（サンプルを置いたとき）
 function fitCanvas() {
   const stack = $('canvasStack');
   // 画面中央のセルを保ったままサイズを変える
   const v = renderer.view, cw = canvas.width, ch = canvas.height;
   const cx = (cw / 2 - v.panX) / v.ds, cy = (ch / 2 - v.panY) / v.ds;
   renderer.resize(stack.clientWidth, stack.clientHeight);
-  if (pendingCenter && stack.clientWidth > 1 && stack.clientHeight > 1) {
+  const laidOut = stack.clientWidth > 1 && stack.clientHeight > 1;
+  if (pendingFit && laidOut) {
+    pendingFit = false; pendingCenter = null;
+    fitAll();
+  } else if (pendingCenter && laidOut) {
     renderer.centerOn(pendingCenter.x, pendingCenter.y, ...visibleCenter());
     pendingCenter = null;
   } else if (cw > 1 && ch > 1) renderer.centerOn(cx - 0.5, cy - 0.5);
@@ -198,23 +204,17 @@ function zoomSel() {
 // 起動時：自動保存してあったものを読み込む
 async function restoreAutosave() {
   const center = await auto.restore(editor);
-  if (!center) return;
+  if (!center) return false;
   rebuildNow();
   pendingCenter = center; fitCanvas();
+  return true;
 }
 
 // ---------- 編集の操作 ----------
 const clampTps = (v) => Math.max(1, Math.min(2048, Math.round(+v) || 1));
-const tpsFromSlider = (v) => clampTps(2 ** (v / 100));
-let tpsSlider = null, otherSlider = null;
-function setTps(v) {
-  tps = clampTps(v);
-  if (tpsSlider) tpsSlider.set(Math.log2(tps) * 100);
-  $('tpsN').value = tps; updateInfo();
-}
+function setTps(v) { tps = clampTps(v); updateInfo(); }
 function setOther(v) {
   otherPct = Math.max(0, Math.min(100, Math.round(+v) || 0));
-  if (otherSlider) otherSlider.set(otherPct);
   requestDraw(); updateInfo();
 }
 
@@ -255,93 +255,61 @@ function setLayer(layer) {
 }
 const toggleLayer = () => setLayer(editor.layer ^ 1);
 
-// ---------- UI の配線 ----------
-const onClick = (id, fn) => $(id).addEventListener('click', fn);
-// ボタンの列（.b を並べた要素）で、押されたボタンを fn に渡す。skipDisabled = false なら無効のボタンも通す
-function onPick(id, fn, { selector = '.b', skipDisabled = true } = {}) {
-  onClick(id, (e) => {
-    const b = e.target.closest(selector);
-    if (!b || (skipDisabled && b.disabled)) return;
-    fn(b);
-  });
-}
+// ---------- ui.js に渡す窓口 ----------
 const redrawUi = () => { updateInfo(); requestDraw(); };
 
-const { savePng, saveSel, loadFile, loadModule } = createFileIo({
-  world, editor, renderer, toast, canEdit, rebuildNow, visibleCenter,
+const { savePng, saveSel, loadFile, loadModule, placeSample, resetToSample } = createFileIo({
+  world, editor, renderer, toast, canEdit, rebuildNow, visibleCenter, fitAll,
   setUnknown: (n) => { unknownCount = n; },
   redraw: redrawUi,
 });
+// ファイルを選ぶ窓を開く（input 要素はその場で作る）
+function pickFile(onFile) {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = 'image/png';
+  input.addEventListener('change', () => { const file = input.files[0]; if (file) onFile(file); });
+  input.click();
+}
+// 画面中央を動かさずに倍率を1段変える
+function zoomBy(d) { renderer.setScaleIdx(renderer.view.scaleIdx + d, { sx: canvas.width / 2, sy: canvas.height / 2 }); redrawUi(); }
+
+const app = {
+  M, grid,
+  get mode() { return mode; }, canEdit,
+  run, pause, stop, step: stepOnce,
+  setTps, setOther, setLayer, toggleLayer, undo, redo, fitAll, zoomSel, zoomBy,
+  setGlow(v) { glow = v; redrawUi(); },
+  setNetHl(v) { netHl = !!v; redrawUi(); },
+  setGrid(on, w, h) {
+    grid.on = !!on;
+    if (w) grid.w = Math.max(1, Math.min(256, Math.round(w)));
+    if (h) grid.h = Math.max(1, Math.min(256, Math.round(h)));
+    redrawUi();
+  },
+  setMat(m) { if (canEdit()) { editor.setMat(m); redrawUi(); } },
+  setLamp(c) { if (canEdit()) { editor.lampColor = c; editor.setMat(M.LAMP); redrawUi(); } },
+  setShape(s) { if (canEdit()) { editor.setShape(s); redrawUi(); } },
+  setHollow(v) { editor.hollow = !!v; redrawUi(); },
+  setScope(s) { editor.scope = s; redrawUi(); },
+  setPasteMode(m) { editor.pasteMode = m; redrawUi(); },
+  setAutoCross(v) { editor.autoCross = !!v; redrawUi(); },
+  copy() { editor.copy(); redrawUi(); },
+  cut() { if (canEdit()) { editor.cut(); redrawUi(); } },
+  del() { if (canEdit()) { editor.del(); redrawUi(); } },
+  paste() { if (canEdit()) { editor.startPaste(); redrawUi(); } },
+  cancelPaste() { editor.cancelPaste(); redrawUi(); },
+  transform(op) { if (canEdit()) { editor.transform(op); redrawUi(); } },
+  savePng, saveSel,
+  openLoad() { if (canEdit()) pickFile(loadFile); },
+  openModule() { if (canEdit()) pickFile(loadModule); },
+  reset: resetToSample,
+  redraw: redrawUi,
+};
 
 function wireUi() {
-  buildDock();
-  tpsSlider = makeSlider($('tpsSld'), (v) => { tps = tpsFromSlider(v); $('tpsN').value = tps; updateInfo(); });
-  otherSlider = makeSlider($('otherSld'), setOther);
-  otherSlider.set(otherPct);
-
-  onPick('matRow', (b) => { editor.setMat(+b.dataset.mat); redrawUi(); });
-  onPick('lampRow', (b) => { editor.lampColor = +b.dataset.lamp; editor.setMat(M.LAMP); redrawUi(); }, { selector: '.sw' });
-  for (const id of ['shapeRow', 'shape2Row']) onPick(id, (b) => { editor.setShape(b.dataset.shape); redrawUi(); });
-
-  // SETTINGS の引き出し：開閉の状態は STOP / RUN をまたいで保つ（hidden 属性だけが持つ）
-  const toggleDrawer = (open) => { $('drawer').hidden = !open; $('settingsBtn').classList.toggle('active', open); };
-  onClick('settingsBtn', () => toggleDrawer($('drawer').hidden));
-  onClick('drawerClose', () => toggleDrawer(false));
-  onPick('fillSeg', (b) => { editor.hollow = b.dataset.hollow === '1'; updateInfo(); });
-  onPick('layerSeg', (b) => setLayer(+b.dataset.layer), { skipDisabled: false });
-  onPick('scopeSeg', (b) => { editor.scope = b.dataset.scope; updateInfo(); });
-  $('autoCross').addEventListener('change', (e) => { editor.autoCross = e.target.checked; updateInfo(); });
-  // ALL / CIRCUIT：EDIT パネルと貼り付けバーのどちらで選んでも同じ設定
-  for (const id of ['pasteModeSeg', 'editModeSeg']) onPick(id, (b) => { editor.pasteMode = b.dataset.mode; redrawUi(); });
-  onClick('cancelPasteBtn', () => { editor.cancelPaste(); redrawUi(); });
-  onPick('glowSeg', (b) => { glow = +b.dataset.glow; redrawUi(); }, { skipDisabled: false });
-
-  const runActions = { RUN: run, PAUSE: pause, STOP: stop, STEP: stepOnce };
-  document.querySelectorAll('[data-run]').forEach((b) => b.addEventListener('click', () => runActions[b.dataset.run]()));
-  onClick('undoBtn', undo);
-  onClick('redoBtn', redo);
-  onClick('fitAllBtn', fitAll);
-  onClick('zoomSelBtn', zoomSel);
-  onClick('copyBtn', () => { editor.copy(); requestDraw(); });
-  onClick('cutBtn', () => { if (canEdit()) { editor.cut(); requestDraw(); } });
-  onClick('delBtn', () => { if (canEdit()) { editor.del(); requestDraw(); } });
-  onClick('pasteBtn', () => {
-    if (!canEdit()) return;
-    if (editor.pasting) editor.cancelPaste(); else editor.startPaste();
-    redrawUi();
-  });
-  for (const [id, op] of [['rotCwBtn', 'cw'], ['rotCcwBtn', 'ccw'], ['flipHBtn', 'fh'], ['flipVBtn', 'fv']]) {
-    onClick(id, () => { if (canEdit()) { editor.transform(op); requestDraw(); } });
-  }
-
-  onClick('saveSelBtn', saveSel);
-  onClick('saveBtn', savePng);
-  onClick('loadBtn', () => { if (canEdit()) $('fileInput').click(); });
-  onClick('loadModBtn', () => { if (canEdit()) $('modInput').click(); });
-  for (const [inputId, load] of [['fileInput', loadFile], ['modInput', loadModule]]) {
-    $(inputId).addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      e.target.value = '';
-      if (file) load(file);
-    });
-  }
-
-  $('tpsN').addEventListener('input', () => { if ($('tpsN').value !== '') setTps($('tpsN').value); });
-  $('tpsN').addEventListener('blur', () => { $('tpsN').value = tps; });
-  for (const id of ['tpsN', 'gridW', 'gridH']) $(id).addEventListener('keydown', (e) => { if (e.key === 'Enter') e.target.blur(); });
-  $('gridOn').addEventListener('change', (e) => { grid.on = e.target.checked; requestDraw(); });
-  for (const [id, key] of [['gridW', 'w'], ['gridH', 'h']]) {
-    const el = $(id);
-    el.addEventListener('input', () => {
-      if (el.value === '') return;
-      grid[key] = Math.max(1, Math.min(256, Math.round(+el.value) || 1));
-      requestDraw();
-    });
-    el.addEventListener('blur', () => { el.value = grid[key]; });
-  }
-  $('netHl').addEventListener('change', (e) => { netHl = e.target.checked; requestDraw(); });
-
-  document.querySelectorAll('button').forEach((b) => b.addEventListener('pointerup', () => b.blur()));
+  ui = createUi(app);
+  // ボタンを押したあとにフォーカスを残さない（Space や Enter でもう一度押されないように）
+  document.addEventListener('pointerup', (e) => { const b = e.target.closest && e.target.closest('button'); if (b) b.blur(); });
   new ResizeObserver(fitCanvas).observe($('canvasStack'));
   window.addEventListener('resize', fitCanvas);
   // ウィンドウのどこに PNG を落としても、ブラウザが画像を開いてしまわないようにする
@@ -362,7 +330,10 @@ async function boot() {
 
   const demos = demo ? await import('./demos.js').catch(() => null) : null;   // 無くてもアプリは動く（サイト版には入れない）
   const focus = demos && Object.hasOwn(demos.DEMOS, demo) ? demos.DEMOS[demo](world) : null;
-  if (!focus) await restoreAutosave();
+  // 自動保存があればそれを復元し、無ければ（初めて開いたとき）サンプルを置く。?demo=… のときは置かない
+  if (!focus && !(await restoreAutosave()) && !demo) {
+    await placeSample(() => { pendingFit = true; fitCanvas(); });
+  }
   if (auto.enabled) auto.warm();
   if (params.get('layer') === 'back') editor.layer = 1; // 確認用：?layer=back で BACK を作業面にして始める
   if (focus) {

@@ -7,6 +7,9 @@ const DRAG_PX = 4; // クリックとドラッグの区別（CSS ピクセル）
 const DIGIT_MAT = {};
 MAT_ORDER.forEach((m, k) => { DIGIT_MAT['Digit' + ((k + 1) % 10)] = m; });
 
+// 十字キー：選択範囲の中身（貼り付け中はプレビュー）を 1 セル動かす
+const ARROW_STEP = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+
 export function initInput(app) {
   const { canvas, renderer, editor } = app;
   let spaceDown = false, active = null; // active: 'draw' | 'pan' | 'pending'
@@ -21,6 +24,13 @@ export function initInput(app) {
   };
   const inField = (e) => e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) && e.target.type !== 'checkbox' && e.target.type !== 'button';
   const startPan = (p) => { pan = { sx: p.sx, sy: p.sy, px: renderer.view.panX, py: renderer.view.panY }; };
+
+  // 修飾キー無しの矢印キー。入力欄の外では、ページのスクロールを止める
+  function nudge(e) {
+    e.preventDefault();
+    const [dx, dy] = ARROW_STEP[e.key];
+    if (editor.nudge(dx, dy)) { app.requestDraw(); app.updateInfo(); }
+  }
 
   canvas.addEventListener('contextmenu', (e) => e.preventDefault());
   canvas.addEventListener('auxclick', (e) => e.preventDefault());
@@ -149,6 +159,7 @@ export function initInput(app) {
       else if (e.key === 'Escape') { editor.escape(); app.updateInfo(); app.requestDraw(); }
       else if (e.key === 'Home') { app.fitAll(); e.preventDefault(); }
       else if (k === 'z') { app.zoomSel(); }
+      else if (e.key in ARROW_STEP && !e.shiftKey) e.preventDefault();   // 十字キーは編集用。RUN / PAUSE 中は何もしない（ページも動かさない）
       return;
     }
     if (ctrl && k === 'z' && !e.shiftKey) { app.undo(); e.preventDefault(); }
@@ -157,6 +168,7 @@ export function initInput(app) {
     else if (ctrl && k === 'x') { editor.cut(); app.requestDraw(); e.preventDefault(); }
     else if (ctrl && k === 'v') { editor.startPaste(); app.updateInfo(); app.requestDraw(); e.preventDefault(); }
     else if (ctrl || e.altKey) return;
+    else if (e.key in ARROW_STEP && !e.shiftKey) nudge(e);
     else if (e.key === 'Delete') { editor.del(); app.requestDraw(); e.preventDefault(); }
     else if (e.key === 'Escape') { editor.escape(); app.updateInfo(); app.requestDraw(); }
     else if (e.key === 'Home') { app.fitAll(); e.preventDefault(); }
