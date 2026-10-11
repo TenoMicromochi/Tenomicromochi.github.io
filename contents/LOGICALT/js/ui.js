@@ -17,6 +17,15 @@ export function createUi(app) {
   }
   for (const b of $$('.tab')) b.addEventListener('click', () => setTab(b.dataset.tab));
 
+  // ---- 欄の開け閉め（下の帯の左端）。閉じてもタブと状態はそのまま ----
+  const deckTgl = $('deckTgl');
+  function setDeck(open) {
+    document.body.dataset.deck = open ? 'open' : 'closed';
+    deckTgl.textContent = open ? '▼ CLOSE' : '▲ OPEN';
+  }
+  deckTgl.addEventListener('click', () => setDeck(document.body.dataset.deck === 'closed'));
+  setDeck(true);
+
   const seg = (items, key) => {
     const s = document.createElement('span'); s.className = 'seg';
     for (const [label, val, hint, fn] of items) { const b = btn(label, hint, fn); b.dataset.on = `${key}=${val}`; s.append(b); }

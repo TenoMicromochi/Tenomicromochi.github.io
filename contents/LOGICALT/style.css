@@ -130,6 +130,8 @@ body[data-mode="PAUSE"] #runRow [data-run="PAUSE"] { background: var(--pc-pause)
   background: var(--pc-bg); border-top: 1px solid var(--pc-line); white-space: nowrap; font-size: 12px; }
 .status .b { height: 24px; }
 .status .ic-b { width: 26px; }
+.deck-tgl { width: 76px; font-size: 11px; font-weight: 600; letter-spacing: .04em; }
+body[data-deck="closed"] .deck { display: none; }   /* 欄を閉じた分だけキャンバスが伸びる（main.js の ResizeObserver が拾う） */
 .hint { flex: 1; min-width: 0; overflow: hidden; color: var(--pc-sub); white-space: pre; }
 .state, .layer, .unknown { padding: 1px 8px; border-radius: 10px; background: var(--pc-panel2); font-weight: 600; font-size: 11px; }
 body[data-mode="RUN"] .state { background: var(--pc-run); color: #0b1a0e; }
