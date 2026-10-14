@@ -35,8 +35,9 @@
 
   <!-- BUILD -->
   <div class="page" id="pBuild">
-    <div class="grp"><h3>1. Pick a part</h3><div class="parts" id="parts"></div></div>
-    <div class="grp" id="lampGrp"><h3>Color</h3><div class="lamps" id="lamps"></div></div>
+    <div class="grp"><h3>1. Pick a part</h3><div class="parts" id="parts"></div>
+      <div id="lampGrp"><div class="lamps" id="lamps" data-hint="LAMP COLOR"></div></div>
+    </div>
     <div class="grp"><h3>2. How to draw</h3>
       <div id="shapes"></div>
       <div class="row" id="shapeOpt">
@@ -48,11 +49,20 @@
       <div class="row" id="editRow2"></div>
     </div>
     <div class="grp"><h3>Layer [Tab] &amp; view</h3>
-      <div class="row"><span class="seg" id="layerSeg"></span></div>
-      <div class="row"><span class="sub w">Other</span><div class="sld" id="otherSld"></div><span class="val" id="otherV"></span></div>
-      <div class="row"><label data-hint="SHOW CONNECTIONS  - HIGHLIGHT WHAT THE CELL UNDER THE CURSOR CONNECTS TO"><input type="checkbox" id="netHl">Show connections</label></div>
-      <div class="row"><label data-hint="GRID LINES (x4 AND ABOVE)"><input type="checkbox" id="gridOn">Grid</label>
-        <input class="num g" id="gridW" maxlength="3" data-hint="GRID WIDTH  1 - 256"><span class="sub">x</span><input class="num g" id="gridH" maxlength="3" data-hint="GRID HEIGHT  1 - 256"></div>
+      <div class="cols">
+        <div class="col">
+          <div class="row"><span class="seg" id="layerSeg"></span></div>
+          <div class="row"><span class="sub w">Other</span><div class="sld" id="otherSld"></div><span class="val" id="otherV"></span></div>
+          <div class="row"><label data-hint="SHOW CONNECTIONS  - HIGHLIGHT WHAT THE CELL UNDER THE CURSOR CONNECTS TO"><input type="checkbox" id="netHl">Show connections</label></div>
+          <div class="row" id="fullRow"></div>
+        </div>
+        <div class="col">
+          <div class="row"><label data-hint="GRID LINES  - SEE SHOW FROM. ALSO SNAPS PASTING (SHIFT)"><input type="checkbox" id="gridOn">Grid</label>
+            <span class="gsize" id="gridWBox"><input class="num g" id="gridW" maxlength="3" data-hint="GRID WIDTH  1 - 256"></span><span class="sub">x</span><span class="gsize" id="gridHBox"><input class="num g" id="gridH" maxlength="3" data-hint="GRID HEIGHT  1 - 256"></span></div>
+          <div class="row" id="showFromRow"></div>
+          <div class="row" id="shiftRow"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -63,9 +73,10 @@
       <div class="row"><div class="sld" id="tpsSld"></div><input class="num" id="tpsN" maxlength="4" data-hint="TICKS PER SECOND  1 - 2048"></div>
       <div class="row" id="tpsPresets"></div>
     </div>
-    <div class="grp"><h3>How to play</h3><p class="sub">Click a T-FF (cyan) to flip it.<br>Shift+drag to select and copy.<br>Back to BUILD resets to the start.</p></div>
-    <div class="grp"><h3>Look</h3><div class="row"><span class="sub w">Glow</span><span class="seg" id="glowSeg"></span></div></div>
-    <div class="grp"><h3>Layer [Tab]</h3><div class="row"><span class="seg" id="layerSeg2"></span></div></div>
+    <div class="grp"><h3>How to play</h3><p class="sub">Press Run to start.<br>Click a T-FF (cyan) to flip it.<br>Shift+drag to select and copy.<br>Back to BUILD resets to the start.</p></div>
+    <div class="grp"><h3>Look</h3><div class="row"><span class="sub w">Glow</span><div class="sld" id="glowSld"></div><span class="val" id="glowV"></span></div>
+      <div class="row"><span class="sub w">Other</span><div class="sld" id="otherSld2"></div><span class="val" id="otherV2"></span></div></div>
+    <div class="grp"><h3>Layer [Tab]</h3><div class="row"><span class="seg" id="layerSeg2"></span></div><div class="row" id="fullRow2"></div></div>
   </div>
 
   <!-- FILE -->

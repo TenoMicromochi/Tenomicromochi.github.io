@@ -2,9 +2,9 @@
 import { M, isNet, isBody, lampColorOf } from './materials.js';
 import { W, H, inCanvas, cellIndex, cellX, cellY, cellLayer, otherLayer } from './world.js';
 
-// グリッドの基準はキャンバスの (0,0)。倍率 4 以上のときだけ、セルの境界に 1 デバイスピクセルの線
+// グリッドの基準はキャンバスの (0,0)。grid.showFrom 倍以上のときだけ（縮小中は出さない）、セルの境界に 1 デバイスピクセルの線
 export function drawGrid(ctx, r, grid) {
-  if (!grid.on || r.view.scale < 4) return;
+  if (!grid.on || r.view.n > 1 || r.view.scale < grid.showFrom) return;
   const v = r.view, ds = v.ds, cw = r.canvas.width, ch = r.canvas.height;
   const gw = Math.max(1, grid.w | 0), gh = Math.max(1, grid.h | 0);
   ctx.fillStyle = 'rgba(255,255,255,0.18)';
@@ -124,7 +124,7 @@ function netHighlight(world, x, y, layer) {
 
 let cache = { key: '', set: null };
 export function drawHighlight(ctx, r, world, cursor, layer) {
-  if (cursor.x < 0) return;
+  if (cursor.x < 0 || r.view.n > 1) return;   // 縮小中は出さない
   const key = cursor.x + ',' + cursor.y + ',' + layer + ',' + world.version;
   if (cache.key !== key) cache = { key, set: netHighlight(world, cursor.x, cursor.y, layer) };
   const set = cache.set;

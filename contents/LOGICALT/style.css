@@ -59,7 +59,8 @@ svg.ic { width: 18px; height: 18px; flex: none; }
 .sld .trk { position: absolute; left: 2px; right: 2px; top: 13px; height: 4px; border-radius: 2px; background: var(--pc-edge); }
 .sld .thm { position: absolute; left: 0; top: 8px; width: 14px; height: 14px; margin-left: -4px; border-radius: 50%; background: var(--pc-fg); box-shadow: 0 1px 3px rgba(0,0,0,.5); }
 #tpsSld { width: 140px; }
-#otherSld { width: 104px; }
+#otherSld { width: 76px; }
+#glowSld, #otherSld2 { width: 104px; }
 
 .num { width: 56px; height: 30px; padding: 0 8px; border-radius: var(--pc-radius); background: var(--pc-bg); border: 1px solid var(--pc-edge); outline: none; text-align: right; }
 .num.g { width: 42px; }
@@ -94,15 +95,15 @@ body[data-tab="PLAY"][data-mode="PAUSE"] .tab[data-tab="PLAY"] { background: var
 .grp h3 { font-size: 11px; font-weight: 600; letter-spacing: .08em; color: var(--pc-sub); margin-bottom: 8px; white-space: nowrap; text-transform: uppercase; }
 .row { display: flex; align-items: center; gap: 4px; min-height: 30px; margin-bottom: 2px; }
 .w { width: 40px; }
-.val { width: 36px; color: var(--pc-sub); }
+.val { width: 32px; color: var(--pc-sub); }
 
 /* BUILD */
-.parts { display: grid; grid-template-columns: repeat(5, 86px); gap: 4px; }
+.parts { display: grid; grid-template-columns: repeat(5, 82px); gap: 4px; }
 .parts .b { justify-content: flex-start; height: 30px; padding: 0 6px; gap: 6px; font-size: 12px; }
 .parts .k { color: var(--pc-sub); font-size: 11px; width: 8px; }
 .parts .b.on .k { color: rgba(255,255,255,.7); }
-.lamps { display: grid; grid-template-columns: repeat(4, 26px); gap: 4px; }
-.lamps button { width: 26px; height: 26px; padding: 4px; border-radius: 6px; background: transparent; border: 2px solid transparent; cursor: pointer; }
+.lamps { display: grid; grid-template-columns: repeat(16, 24px); gap: 2px; margin-top: 6px; }
+.lamps button { width: 24px; height: 26px; padding: 4px 3px; border-radius: 6px; background: transparent; border: 2px solid transparent; cursor: pointer; }
 .lamps button i { display: block; width: 14px; height: 14px; border-radius: 3px; }
 .lamps button.on { border-color: var(--pc-fg); }
 .lamps button:disabled { cursor: default; }
@@ -146,3 +147,17 @@ body[data-layer="BACK"] .layer { background: var(--pc-back); color: #1a1005; }
   flex: none; color: var(--text);
   font-family: var(--font-body); font-size: 12px; line-height: 16px;
 }
+
+/* ============ 第14段：View の2列・グリッド幅の ▲▼・全画面 ============ */
+.cols { display: flex; gap: 10px; }
+.col { display: flex; flex-direction: column; }
+.gsize { display: inline-flex; align-items: center; gap: 2px; }
+.spin { display: inline-flex; flex-direction: column; gap: 1px; }
+.spin button { width: 18px; height: 14px; padding: 0; border: 0; border-radius: 3px; background: var(--pc-panel2); color: var(--pc-sub);
+  font-size: 8px; line-height: 14px; cursor: pointer; }
+.spin button:hover { background: var(--pc-hover); color: var(--pc-fg); }
+.w2 { width: 60px; white-space: nowrap; }
+.col .seg > .b { padding: 0 8px; }
+/* 全画面のとき、サイト版の上部タブを出さない（Sandbox では対象が無く、何も起きない） */
+body[data-full="1"] #sodenmir-topbar, body[data-full="1"] #sodenmir-mobile-nav { display: none; }
+#editRow2 > .b { grid-column: 1 / -1; justify-self: start; }   /* Done placing が出ても、Change の幅を広げない */

@@ -8,11 +8,11 @@ export function createUi(app) {
   let cur = null, tab = 'BUILD';
 
   // ---- 場面の切り替え ----
-  // BUILD に戻る = STOP（最初の状態へ）、PLAY に入る = RUN。FILE は今の状態のまま
+  // BUILD に戻る = STOP（最初の状態へ）、PLAY に入る = PAUSE（TICK 0 の最初の状態で止まる。Run で動き出す）。FILE は今の状態のまま
   function setTab(t) {
     tab = t;
     if (t === 'BUILD') app.stop();
-    if (t === 'PLAY' && app.mode === 'STOP') app.run();
+    if (t === 'PLAY' && app.mode === 'STOP') app.enterPause();
     app.redraw();
   }
   for (const b of $$('.tab')) b.addEventListener('click', () => setTab(b.dataset.tab));
@@ -67,7 +67,7 @@ export function createUi(app) {
     del: btn('ic:trash', 'DELETE THE SELECTION  [DEL]', app.del),
     rcw: btn('ic:rotcw', 'ROTATE RIGHT  [R]', () => app.transform('cw')), rccw: btn('ic:rotccw', 'ROTATE LEFT  [SHIFT+R]', () => app.transform('ccw')),
     fh: btn('ic:fliph', 'FLIP LEFT-RIGHT  [F]', () => app.transform('fh')), fv: btn('ic:flipv', 'FLIP UP-DOWN  [SHIFT+F]', () => app.transform('fv')),
-    done: btn('Done placing', 'STOP PLACING  [ESC] [RIGHT CLICK]', app.cancelPaste),
+    done: btn('Done placing', 'STOP PLACING  [R-CLICK]', app.cancelPaste),
   };
   $('editRow').append(E.undo, E.redo, E.copy, E.cut, E.paste, E.del, E.rcw, E.rccw, E.fh, E.fv);
   $('editRow2').append(
@@ -84,14 +84,31 @@ export function createUi(app) {
   }
   const otherSld = makeSlider($('otherSld'), 100, (v) => app.setOther(v));
   $('otherSld').dataset.hint = 'OTHER LAYER  - HOW MUCH YOU SEE OF THE OTHER LAYER  0 - 100%';
+  const otherSld2 = makeSlider($('otherSld2'), 100, (v) => app.setOther(v));   // PLAY の Look 欄の Other（BUILD の Other と同じ値）
+  $('otherSld2').dataset.hint = $('otherSld').dataset.hint;
   $('netHl').addEventListener('change', (e) => app.setNetHl(e.target.checked));
   $('gridOn').addEventListener('change', (e) => app.setGrid(e.target.checked));
   for (const [id, key] of [['gridW', 'w'], ['gridH', 'h']]) {
     const el = $(id); el.value = app.grid[key];
+    // ▲▼：クリックで ±1（1〜256）
+    const spin = document.createElement('span'); spin.className = 'spin';
+    for (const [t, d] of [['▲', 1], ['▼', -1]]) {
+      const b = btn(t, `${key === 'w' ? 'GRID WIDTH' : 'GRID HEIGHT'}  ${d > 0 ? '+1' : '-1'}`, () => app.setGrid(app.grid.on, key === 'w' ? app.grid.w + d : 0, key === 'h' ? app.grid.h + d : 0));
+      b.classList.remove('b'); spin.append(b);
+    }
+    $(id + 'Box').append(spin);
     el.addEventListener('input', () => { if (el.value) app.setGrid(app.grid.on, key === 'w' ? +el.value : 0, key === 'h' ? +el.value : 0); });
     el.addEventListener('blur', () => { el.value = app.grid[key]; });
     el.addEventListener('keydown', (e) => { if (e.key === 'Enter') el.blur(); });
   }
+
+  // Show from（この倍率以上でだけグリッドの線）／ Shift（BUILD の範囲選択）／ Full screen
+  const fromSeg = seg([1, 2, 4, 8].map((v) => ['x' + v, v, `GRID LINES ONLY AT x${v} AND ABOVE`, () => app.setShowFrom(v)]), 'showFrom');
+  $('showFromRow').append(Object.assign(label('Show from'), { className: 'sub w2' }), fromSeg);
+  const shiftSeg = seg([['Square', 'false', 'SHIFT+DRAG SELECTS A SQUARE', () => app.setShiftSnap(false)], ['Grid snap', 'true', 'SHIFT+DRAG SELECTS WHOLE GRID CELLS (WHEN GRID IS ON)', () => app.setShiftSnap(true)]], 'shiftSnap');
+  $('shiftRow').append(Object.assign(label('Shift'), { className: 'sub w2' }), shiftSeg);
+  const fullBtns = [0, 1].map(() => btn('Full screen', 'FULL SCREEN  [F11]', app.toggleFull));
+  $('fullRow').append(fullBtns[0]); $('fullRow2').append(fullBtns[1]);
 
   // ---- PLAY ----
   const runRow = $('runRow');
@@ -104,9 +121,9 @@ export function createUi(app) {
   $('tpsSld').dataset.hint = 'SPEED  1 - 2048 TICKS PER SECOND';
   tpsN.addEventListener('input', () => { if (tpsN.value !== '') app.setTps(tpsN.value); });
   tpsN.addEventListener('keydown', (e) => { if (e.key === 'Enter') tpsN.blur(); });
-  for (const t of [1, 10, 60, 600]) { const b = btn(String(t), `SPEED ${t}`, () => app.setTps(t)); b.dataset.tps = t; $('tpsPresets').append(b); }
-  const glowSeg = $('glowSeg');
-  ['Off', 1, 2, 3, 4, 5].forEach((n, k) => { const b = btn(String(n), `LAMP GLOW ${n}`.toUpperCase(), () => app.setGlow(k)); b.dataset.glow = k; glowSeg.append(b); });
+  for (const t of [1, 16, 64, 128, 256]) { const b = btn(String(t), `SPEED ${t}`, () => app.setTps(t)); b.dataset.tps = t; $('tpsPresets').append(b); }
+  const glowSld = makeSlider($('glowSld'), 100, (v) => app.setGlow(v));
+  $('glowSld').dataset.hint = 'LAMP GLOW  - 0% IS OFF, 100% IS THE STRONGEST';
 
   // ---- FILE ----
   const card = (title, say, text, hint, fn, needsEdit) => {
@@ -131,9 +148,10 @@ export function createUi(app) {
   const showHint = initHints($('hint'), () => {
     if (!cur) return '';
     if (tab === 'FILE') return 'FILES ARE PNG IMAGES. 1 PIXEL = 1 CELL';
-    if (!cur.edit) return 'CLICK T-FF: FLIP   SHIFT+DRAG: SELECT   R-DRAG: PAN   WHEEL: ZOOM';
-    if (cur.pasting) return 'CLICK: PLACE   ARROWS: NUDGE 1 CELL   R / F: ROTATE / FLIP   ESC: DONE';
-    if (cur.sel) return 'DRAG INSIDE: MOVE   ARROWS: MOVE 1 CELL   CTRL+C / X / V   R / F: ROTATE / FLIP   ESC: DESELECT';
+    if (!cur.edit) return cur.zoomOut ? 'SHIFT+DRAG: SELECT   R-DRAG: PAN   WHEEL: ZOOM   R-CLICK: DESELECT' : 'CLICK T-FF: FLIP   SHIFT+DRAG: SELECT   R-DRAG: PAN   WHEEL: ZOOM   R-CLICK: DESELECT';
+    if (cur.pasting) return 'CLICK: PLACE   ARROWS: NUDGE 1 CELL   R / F: ROTATE / FLIP   R-CLICK: DONE' + (cur.grid.on ? '   SHIFT: SNAP TO GRID' : '');
+    if (cur.zoomOut) return 'ZOOM IN TO DRAW   L-DRAG: SELECT   CTRL+C / V   R-DRAG: PAN   WHEEL: ZOOM   R-CLICK: DESELECT';
+    if (cur.sel) return 'DRAG INSIDE: MOVE   ARROWS: MOVE 1 CELL   CTRL+C / X / V   R / F: ROTATE / FLIP   R-CLICK: DESELECT';
     return 'L-DRAG: DRAW   R-DRAG: PAN   WHEEL: ZOOM   MID-CLICK: PICK   1-0: PARTS   TAB: LAYER';
   });
 
@@ -147,31 +165,35 @@ export function createUi(app) {
     setHidden($('pBuild'), tab !== 'BUILD'); setHidden($('pPlay'), tab !== 'PLAY'); setHidden($('pFile'), tab !== 'FILE');
 
     // BUILD
-    for (const b of $$('[data-mat]', parts)) { setCls(b, 'on', +b.dataset.mat === s.mat); setDis(b, !s.edit); }
-    for (const b of $$('[data-lamp]', lamps)) { setCls(b, 'on', +b.dataset.lamp === s.lampColor); setDis(b, !s.edit); }
+    const noDraw = !s.edit || s.zoomOut;   // 縮小中は描けない
+    for (const b of $$('[data-mat]', parts)) { setCls(b, 'on', +b.dataset.mat === s.mat); setDis(b, noDraw); }
+    for (const b of $$('[data-lamp]', lamps)) { setCls(b, 'on', +b.dataset.lamp === s.lampColor); setDis(b, noDraw); }
     if (s.mat === M.LAMP) delete $('lampGrp').dataset.off; else $('lampGrp').dataset.off = '';
-    for (const b of $$('[data-shape]', shapes)) { setCls(b, 'on', b.dataset.shape === s.shape && !s.pasting); setDis(b, !s.edit); }
+    for (const b of $$('[data-shape]', shapes)) { setCls(b, 'on', b.dataset.shape === s.shape && !s.pasting); setDis(b, noDraw); }
     const boxShape = s.shape === 'RECT' || s.shape === 'CIRCLE';
     setHidden(fillSeg, !boxShape);
     setHidden($('autoCrossChk'), boxShape || !(s.shape === 'PEN' || s.shape === 'LINE'));
     $('autoCross').checked = s.autoCross;
-    const val = { pasteMode: s.pasteMode, scope: s.scope, hollow: String(s.hollow) };
+    const val = { pasteMode: s.pasteMode, scope: s.scope, hollow: String(s.hollow), showFrom: String(s.grid.showFrom), shiftSnap: String(s.shiftSnap) };
     for (const b of $$('[data-on]')) { const [k, v] = b.dataset.on.split('='); setCls(b, 'on', val[k] === v); }
     setDis(E.undo, !s.edit || !s.canUndo); setDis(E.redo, !s.edit || !s.canRedo);
     setDis(E.copy, !s.sel);
-    for (const k of ['cut', 'del']) setDis(E[k], !s.edit || !s.sel);
+    for (const k of ['cut', 'del']) setDis(E[k], noDraw || !s.sel);
     setDis(E.paste, !s.edit || !s.hasClip);
-    for (const k of ['rcw', 'rccw', 'fh', 'fv']) setDis(E[k], !s.edit || (!s.sel && !s.pasting));
+    for (const k of ['rcw', 'rccw', 'fh', 'fv']) setDis(E[k], !s.edit || (!s.pasting && (s.zoomOut || !s.sel)));
     setHidden(E.done, !s.pasting);
     for (const b of $$('[data-layer]')) setCls(b, 'on', +b.dataset.layer === s.layer);
     otherSld.set(s.otherPct); setText($('otherV'), s.otherPct + '%');
+    otherSld2.set(s.otherPct); setText($('otherV2'), s.otherPct + '%');
     $('netHl').checked = s.netHl; $('gridOn').checked = s.grid.on;
+    for (const b of fullBtns) setCls(b, 'on', s.full);
 
     // PLAY
     for (const b of $$('[data-tps]')) setCls(b, 'on', +b.dataset.tps === s.tps);
     if (document.activeElement !== tpsN) tpsN.value = s.tps;
+    for (const id of ['gridW', 'gridH']) { const el = $(id), v = String(s.grid[id === 'gridW' ? 'w' : 'h']); if (document.activeElement !== el && el.value !== v) el.value = v; }
     tpsSld.set(tpsToSlider(s.tps));
-    for (const b of $$('[data-glow]', glowSeg)) setCls(b, 'on', +b.dataset.glow === s.glow);
+    glowSld.set(s.glow); setText($('glowV'), s.glow + '%');
 
     // FILE
     for (const b of $$('[data-needs-edit="1"]')) setDis(b, !s.edit);

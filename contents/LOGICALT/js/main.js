@@ -24,12 +24,15 @@ const auto = createAutosave(world, { enabled: !demo, onSaved: () => updateInfo()
 let topo = null;
 let mode = 'STOP'; // 'STOP' | 'RUN' | 'PAUSE'
 const canEdit = () => mode === 'STOP';
-let tps = 10, tickAcc = 0;          // tickAcc = まだ消化していないティック数（小数）
+const canDraw = () => canEdit() && renderer.view.n === 1;   // 縮小中（x0.5 以下）は描けない
+let tps = 16, tickAcc = 0;          // tickAcc = まだ消化していないティック数（小数）
 let tickCount = 0;
-let glow = 1;
+let glow = 50;                      // GLOW 0〜100%（0 = Off）
 let otherPct = 30;                  // もう一方の面の透明度（0〜100%）
 let netHl = false;
-const grid = { on: false, w: 8, h: 8 };
+const grid = { on: false, w: 8, h: 8, showFrom: 4 };   // showFrom = この倍率以上でだけ線を出す（x1 / x2 / x4 / x8）
+let full = false;                   // 全画面（Fullscreen API か、ブラウザ自身の F11）
+editor.view = renderer.view; editor.grid = grid;
 let tpsCount = 0, tpsStamp = performance.now(), tpsShown = 0;
 let needDraw = true, drawnVersion = -1;
 let unknownCount = 0;
@@ -76,6 +79,11 @@ function stop() {
   mode = 'STOP';
   rebuildNow(); initState(topo, world);
   tickCount = 0; tickAcc = 0; needDraw = true; updateInfo();
+}
+// PLAY に入ったとき：最初の状態（TICK 0）で止まる。Run で動き出す
+function enterPause() {
+  if (mode !== 'STOP') return;
+  enterRun(); mode = 'PAUSE'; needDraw = true; updateInfo();
 }
 function stepOnce() {
   if (mode === 'RUN') return;
@@ -140,7 +148,7 @@ function step(now) {
 }
 function drawOverlays(ctx, r) {
   drawGrid(ctx, r, grid);
-  if (netHl) drawHighlight(ctx, r, world, editor.cursor, editor.layer);
+  if (netHl && r.view.n === 1) drawHighlight(ctx, r, world, editor.cursor, editor.layer);
   editor.overlay(ctx, r);
   placeSelSize(r, editor.pasting ? null : editor.selInfo());
 }
@@ -155,7 +163,7 @@ function updateInfo() {
     mat: editor.mat, lampColor: editor.lampColor, shape: editor.shape, hollow: editor.hollow, autoCross: editor.autoCross,
     scope: editor.scope, layer: editor.layer, pasteMode: editor.pasteMode, pasting: editor.pasting, sel: editor.sel,
     canUndo: editor.undoStack.length > 0, canRedo: editor.redoStack.length > 0, hasClip: !!editor.clip,
-    scale: renderer.view.scale,
+    scale: renderer.view.scale, zoomOut: renderer.view.n > 1, full, shiftSnap: editor.shiftSnap,
     cursor: c.x >= 0 ? { x: c.x, y: c.y } : null,
     cursorMatName: c.x < 0 ? '-' : onCanvas ? MAT_NAMES[world.mat[editor.cell(c.x, c.y)]] : 'OUT',
     saveText: auto.statusText(), unknown: unknownCount,
@@ -174,7 +182,7 @@ function fitCanvas() {
   const stack = $('canvasStack');
   // 画面中央のセルを保ったままサイズを変える
   const v = renderer.view, cw = canvas.width, ch = canvas.height;
-  const cx = (cw / 2 - v.panX) / v.ds, cy = (ch / 2 - v.panY) / v.ds;
+  const cx = (cw / 2 - v.panX) / v.ds * v.n, cy = (ch / 2 - v.panY) / v.ds * v.n;
   renderer.resize(stack.clientWidth, stack.clientHeight);
   const laidOut = stack.clientWidth > 1 && stack.clientHeight > 1;
   if (pendingFit && laidOut) {
@@ -270,6 +278,24 @@ function pickFile(onFile) {
   input.addEventListener('change', () => { const file = input.files[0]; if (file) onFile(file); });
   input.click();
 }
+// ---------- 全画面 ----------
+// Fullscreen API（ボタン・F11）か、ブラウザ自身の全画面（F11 をページが受け取れなかったとき）。どちらでも同じ見た目：サイト版の上部タブを隠す
+const fsMedia = window.matchMedia('(display-mode: fullscreen)');   // ブラウザ自身の F11 全画面
+function checkFull() {
+  const f = !!document.fullscreenElement || fsMedia.matches;
+  if (f === full) return;
+  full = f;
+  document.body.dataset.full = f ? '1' : '';
+  fitCanvas(); updateInfo();
+}
+function toggleFull() {
+  if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  else if (full) { /* ブラウザ自身の全画面：ページからは抜けられない（F11 で戻る） */ }
+  else document.documentElement.requestFullscreen().catch(() => {});
+}
+document.addEventListener('fullscreenchange', checkFull);
+fsMedia.addEventListener('change', checkFull);
+
 // 画面中央を動かさずに倍率を1段変える
 function zoomBy(d) { renderer.setScaleIdx(renderer.view.scaleIdx + d, { sx: canvas.width / 2, sy: canvas.height / 2 }); redrawUi(); }
 
@@ -278,17 +304,21 @@ const app = {
   get mode() { return mode; }, canEdit,
   run, pause, stop, step: stepOnce,
   setTps, setOther, setLayer, toggleLayer, undo, redo, fitAll, zoomSel, zoomBy,
-  setGlow(v) { glow = v; redrawUi(); },
+  setGlow(v) { glow = Math.max(0, Math.min(100, Math.round(+v) || 0)); redrawUi(); },
   setNetHl(v) { netHl = !!v; redrawUi(); },
+  setShowFrom(v) { grid.showFrom = v; redrawUi(); },
+  setShiftSnap(v) { editor.shiftSnap = !!v; redrawUi(); },
+  toggleFull,
+  enterPause,
   setGrid(on, w, h) {
     grid.on = !!on;
     if (w) grid.w = Math.max(1, Math.min(256, Math.round(w)));
     if (h) grid.h = Math.max(1, Math.min(256, Math.round(h)));
     redrawUi();
   },
-  setMat(m) { if (canEdit()) { editor.setMat(m); redrawUi(); } },
-  setLamp(c) { if (canEdit()) { editor.lampColor = c; editor.setMat(M.LAMP); redrawUi(); } },
-  setShape(s) { if (canEdit()) { editor.setShape(s); redrawUi(); } },
+  setMat(m) { if (canDraw()) { editor.setMat(m); redrawUi(); } },
+  setLamp(c) { if (canDraw()) { editor.lampColor = c; editor.setMat(M.LAMP); redrawUi(); } },
+  setShape(s) { if (canDraw()) { editor.setShape(s); redrawUi(); } },
   setHollow(v) { editor.hollow = !!v; redrawUi(); },
   setScope(s) { editor.scope = s; redrawUi(); },
   setPasteMode(m) { editor.pasteMode = m; redrawUi(); },
@@ -319,14 +349,14 @@ function wireUi() {
 
 // ---------- 起動 ----------
 // demos.js と debug.js は、確認用なので ?demo=… があるとき（debug.js は ?debug=1 でも）だけ読み込む
-const DEMO_SCALE_IDX = { stress: 1, layers: 5 };   // 倍率の添字（既定は 4）
+const DEMO_SCALE_IDX = { stress: 4, layers: 8 };   // 倍率の添字（x2 / x32。既定は 7 = x16）
 
 async function boot() {
   wireUi();
   fitCanvas();
-  renderer.setScaleIdx(2, null); // x4
+  renderer.setScaleIdx(5, null); // x4
   pendingCenter = { x: 2048, y: 2048 };
-  initInput({ canvas, renderer, editor, canEdit, toggleLayer, toggleRunAt, toggleInitialAt, undo, redo, requestDraw, updateInfo, fitAll, zoomSel, loadModule });
+  initInput({ canvas, renderer, editor, canEdit, toggleLayer, toggleRunAt, toggleInitialAt, undo, redo, requestDraw, updateInfo, fitAll, zoomSel, loadModule, toggleFull });
 
   const demos = demo ? await import('./demos.js').catch(() => null) : null;   // 無くてもアプリは動く（サイト版には入れない）
   const focus = demos && Object.hasOwn(demos.DEMOS, demo) ? demos.DEMOS[demo](world) : null;
@@ -337,12 +367,13 @@ async function boot() {
   if (auto.enabled) auto.warm();
   if (params.get('layer') === 'back') editor.layer = 1; // 確認用：?layer=back で BACK を作業面にして始める
   if (focus) {
-    renderer.setScaleIdx(DEMO_SCALE_IDX[demo] ?? 4, null);
+    renderer.setScaleIdx(DEMO_SCALE_IDX[demo] ?? 7, null);
     pendingCenter = { x: focus.cx, y: focus.cy }; fitCanvas();
   }
   setTps(tps);
   if (params.get('tps')) setTps(params.get('tps'));
   if (params.get('run') === '1') run();
+  checkFull();
   if (!demo && !auto.savedAt) auto.markSaved();
   updateInfo();
   if (demo || params.get('debug') === '1') await import('./debug.js').then((m) => m.installDebugHooks(debugApp), () => {});
@@ -352,7 +383,8 @@ async function boot() {
 const debugApp = {
   world, editor, renderer, grid, auto,
   rebuildNow, stepOnce, run, pause, stop, setTps, fitAll, zoomSel, loadModule, saveSel, loadFile, savePng, restoreAutosave,
-  setLayer, toggleLayer, setOther, toggleRunAt, toggleInitialAt, canEdit,
+  setLayer, toggleLayer, setOther, toggleRunAt, toggleInitialAt, canEdit, enterPause,
+  setGlow: app.setGlow,
   get topo() { return topo; },
   get mode() { return mode; },
   get tickCount() { return tickCount; },

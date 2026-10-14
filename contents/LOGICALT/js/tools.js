@@ -14,6 +14,7 @@ function clampedRect(ax, ay, bx, by) {
   const y0 = Math.max(0, Math.min(ay, by)), y1 = Math.min(H - 1, Math.max(ay, by));
   return (x1 >= x0 && y1 >= y0) ? { x0, y0, x1, y1, w: x1 - x0 + 1, h: y1 - y0 + 1 } : null;
 }
+const NOT_NOW = 'Zoom in to edit';   // 縮小中（x0.5 以下）は描けない・書き換えられない
 const inRect = (r, x, y) => r && x >= r.x0 && x <= r.x1 && y >= r.y0 && y <= r.y1;
 
 let fillMark = null;
@@ -38,11 +39,17 @@ export class Editor {
     this.pasting = false;
     this.cursor = { x: -1, y: -1 };
     this.shift = false;
+    this.view = null;                // renderer.view（縮小中かどうかを見る。main.js が渡す）
+    this.grid = null;                // main.js の grid（貼り付けの吸着と Grid snap が見る）
+    this.shiftSnap = false;          // BUILD の範囲選択の Shift：false = Square、true = Grid snap
     this.drag = null;
     this.preMap = null;              // PEN の「描く前」の素材
     this.undoStack = []; this.redoStack = [];
     this.histCells = 0;
   }
+
+  // 縮小中（x0.5 以下）は 1ブロック = n×n セル。0 以下の縮小では描けない
+  get zn() { return this.view ? this.view.n : 1; }
 
   // ---- 書き込み ----
   put(x, y, m, aux) {
@@ -119,6 +126,7 @@ export class Editor {
   down(x, y, shift) {
     this.shift = shift;
     if (this.pasting) { this.commitPaste(x, y); return; }
+    if (this.zn > 1) { this.drag = { kind: 'SELECT', sx: x, sy: y, x, y }; return; }   // 縮小中は左ドラッグ = 範囲選択だけ
     if (this.shape === 'FILL') { this.doFill(x, y); return; }
     const drag = { kind: this.shape, sx: x, sy: y, x, y };
     if (this.shape === 'SELECT' && inRect(this.sel, x, y)) {
@@ -136,8 +144,29 @@ export class Editor {
   // RUN / PAUSE 中の範囲選択（Shift＋左ドラッグ）
   beginSelect(x, y) {
     if (this.pasting) return;
-    this.drag = { kind: 'SELECT', sx: x, sy: y, x, y };
+    this.drag = { kind: 'SELECT', sx: x, sy: y, x, y, play: true };   // play = PLAY の選択（正方形もスナップもかけない）
   }
+
+  // 範囲選択のドラッグが指す矩形の角 {x0,y0,x1,y1}（端を含むセル座標。キャンバスの外にかかっていてもそのまま）
+  //  BUILD で Shift：Square = 正方形、Grid snap（Grid が ON のとき）= 始点のマスからカーソルのマスまでを丸ごと
+  //  縮小中は、始点とカーソルのブロックを丸ごと含む
+  selCorners(drag, shift) {
+    let ax = drag.sx, ay = drag.sy, bx = drag.x, by = drag.y;
+    const g = this.grid;
+    if (shift && !drag.play) {
+      if (this.shiftSnap && g && g.on) {
+        const gw = Math.max(1, g.w | 0), gh = Math.max(1, g.h | 0);
+        const ga = Math.floor(ax / gw), gb = Math.floor(bx / gw), ha = Math.floor(ay / gh), hb = Math.floor(by / gh);
+        return { x0: Math.min(ga, gb) * gw, x1: (Math.max(ga, gb) + 1) * gw - 1, y0: Math.min(ha, hb) * gh, y1: (Math.max(ha, hb) + 1) * gh - 1 };
+      }
+      [bx, by] = squareEnd(ax, ay, bx, by);
+    }
+    const n = this.zn;
+    let x0 = Math.min(ax, bx), x1 = Math.max(ax, bx), y0 = Math.min(ay, by), y1 = Math.max(ay, by);
+    if (n > 1) { x0 = Math.floor(x0 / n) * n; y0 = Math.floor(y0 / n) * n; x1 = Math.floor(x1 / n) * n + n - 1; y1 = Math.floor(y1 / n) * n + n - 1; }
+    return { x0, y0, x1, y1 };
+  }
+  selClamped(drag, shift) { const c = this.selCorners(drag, shift); return clampedRect(c.x0, c.y0, c.x1, c.y1); }
 
   penWrite(drag) {
     // 向きの分かるセルから順に書く（最初のセルは 2 点目が決まってから）
@@ -216,7 +245,7 @@ export class Editor {
       else ellipseCells(drag.sx, drag.sy, ex, ey, !this.hollow, fn);
       this.pushHistory(world.endRecord());
     } else if (drag.kind === 'SELECT') {
-      const r = clampedRect(drag.sx, drag.sy, x, y);
+      const r = this.selClamped(drag, shift);
       this.sel = r && { x0: r.x0, y0: r.y0, x1: r.x1, y1: r.y1 };
     } else if (drag.kind === 'MOVE') {
       const [dx, dy] = this.moveDelta(drag, shift);
@@ -238,7 +267,7 @@ export class Editor {
   nudge(dx, dy) {
     if (this.pasting) { this.pasteOff.x += dx; this.pasteOff.y += dy; return true; }
     const s = this.sel;
-    if (!s || this.drag) return false;
+    if (!s || this.drag || this.zn > 1) return false;
     const buf = copyRegion(this.world, s, this.scopeLayers());
     const nx = s.x0 + dx, ny = s.y0 + dy;
     if (nx < 0 || ny < 0 || nx + buf.w > W || ny + buf.h > H) return false;
@@ -292,7 +321,7 @@ export class Editor {
 
   // ---- スポイト ----
   pick(x, y) {
-    if (!inCanvas(x, y)) return false;
+    if (!inCanvas(x, y) || this.zn > 1) return false;
     const i = this.cell(x, y), m = this.world.mat[i], aux = this.world.aux[i];
     this.cancelPaste();
     this.mat = m;
@@ -304,10 +333,11 @@ export class Editor {
   setShape(s) { this.cancelPaste(); this.cancelDrag(); this.shape = s; }
   setMat(m) { this.cancelPaste(); this.mat = m; this.onFlag = 0; }
 
-  escape() {
-    if (this.pasting) { this.cancelPaste(); return; }
-    this.cancelDrag();
-    this.sel = null;
+  // 右クリック（動かさずに離す）：貼り付け中ならやめる、選択中なら外す。何かやったら true
+  cancelOrDeselect() {
+    if (this.pasting) { this.cancelPaste(); return true; }
+    if (this.sel) { this.cancelDrag(); this.sel = null; return true; }
+    return false;
   }
 
   // ---- 選択範囲 ----
@@ -319,13 +349,17 @@ export class Editor {
   }
   del() {
     const s = this.sel;
+    if (this.zn > 1) { this.hooks.onMessage(NOT_NOW); return false; }
     if (!s) { this.hooks.onMessage('Select an area first'); return false; }
     this.world.beginRecord();
     eraseRegion(this.world, s, this.scopeLayers());
     this.pushHistory(this.world.endRecord());
     return true;
   }
-  cut() { if (this.copy()) this.del(); }
+  cut() {
+    if (this.zn > 1) { this.hooks.onMessage(NOT_NOW); return; }
+    if (this.copy()) this.del();
+  }
 
   // ---- 貼り付け（連続して貼れる） ----
   startPaste() {
@@ -338,10 +372,20 @@ export class Editor {
     return true;
   }
   cancelPaste() { this.pasting = false; this.pasteBuf = null; this.pasteOff = { x: 0, y: 0 }; }
+  // 貼る物の左上のセル。カーソルの位置に十字キーのずらしを足したもの。Grid が ON で Shift を押している間は、いちばん近いグリッドの交点に丸める
+  pastePos(x, y) {
+    let px = x + this.pasteOff.x, py = y + this.pasteOff.y;
+    const g = this.grid;
+    if (this.shift && g && g.on) {
+      const gw = Math.max(1, g.w | 0), gh = Math.max(1, g.h | 0);
+      px = Math.round(px / gw) * gw; py = Math.round(py / gh) * gh;
+    }
+    return [px, py];
+  }
   commitPaste(x, y) {
-    const world = this.world;
+    const world = this.world, [px, py] = this.pastePos(x, y);
     world.beginRecord();
-    placeBuf(world, this.pasteBuf, x + this.pasteOff.x, y + this.pasteOff.y, this.pasteMode, this.layer);
+    placeBuf(world, this.pasteBuf, px, py, this.pasteMode, this.layer);
     this.pushHistory(world.endRecord());
   }
 
@@ -349,6 +393,7 @@ export class Editor {
   transform(op) {
     const f = (b) => op === 'cw' ? rotateBuf(b, true) : op === 'ccw' ? rotateBuf(b, false) : op === 'fh' ? flipBuf(b, true) : flipBuf(b, false);
     if (this.pasting) { this.pasteBuf = f(this.pasteBuf); return true; }
+    if (this.zn > 1) { this.hooks.onMessage(NOT_NOW); return false; }
     const s = this.sel;
     if (!s) { this.hooks.onMessage('Select an area first'); return false; }
     const world = this.world, layers = this.scopeLayers(), nb = f(copyRegion(world, s, layers));
@@ -387,7 +432,7 @@ export class Editor {
   // 選択範囲の大きさの表示用：ドラッグ中の範囲・移動中の範囲・確定した範囲。{x0,y0,x1,y1,w,h}（端を含むセル座標。範囲外はキャンバスに切る）
   selInfo() {
     const drag = this.drag;
-    if (drag && drag.kind === 'SELECT') return clampedRect(drag.sx, drag.sy, drag.x, drag.y);
+    if (drag && drag.kind === 'SELECT') return this.selClamped(drag, this.shift);
     if (drag && drag.kind === 'MOVE') {
       const [dx, dy] = this.moveDelta(drag, this.shift), r = drag.rect;
       return { x0: r.x0 + dx, y0: r.y0 + dy, x1: r.x0 + dx + drag.buf.w - 1, y1: r.y0 + dy + drag.buf.h - 1, w: drag.buf.w, h: drag.buf.h };
@@ -435,7 +480,8 @@ export class Editor {
       ctx.globalAlpha = 1;
       outline(px, py, pw, ph, 'rgba(255,255,255,0.5)');
     } else if (drag && drag.kind === 'SELECT') {
-      const [px, py, pw, ph] = cellRect(drag.sx, drag.sy, drag.x, drag.y);
+      const c = this.selCorners(drag, this.shift);
+      const [px, py, pw, ph] = cellRect(c.x0, c.y0, c.x1, c.y1);
       ctx.fillStyle = 'rgba(255,255,255,0.15)'; ctx.fillRect(px, py, pw, ph);
       outline(px, py, pw, ph, '#ffffff');
     } else if (drag && drag.kind === 'MOVE') {
@@ -459,8 +505,9 @@ export class Editor {
 
     // 貼り付けプレビュー
     if (this.pasting && this.pasteBuf && this.cursor.x >= 0) {
-      const buf = this.pasteBuf, off = this.pasteOff;
-      const [px, py, pw, ph] = r.rect(this.cursor.x + off.x, this.cursor.y + off.y, buf.w, buf.h);
+      const buf = this.pasteBuf;
+      const [qx, qy] = this.pastePos(this.cursor.x, this.cursor.y);
+      const [px, py, pw, ph] = r.rect(qx, qy, buf.w, buf.h);
       if (this.pasteMode === 'ALL') { ctx.fillStyle = '#000000'; ctx.globalAlpha = 0.7; ctx.fillRect(px, py, pw, ph); }
       this.drawBuf(ctx, buf, px, py, pw, ph, 0.75, this.layer);
       outline(px, py, pw, ph, '#ffff00');

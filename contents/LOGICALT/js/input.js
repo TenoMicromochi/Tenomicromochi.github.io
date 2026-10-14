@@ -56,10 +56,10 @@ export function initInput(app) {
       canvas.setPointerCapture(e.pointerId); e.preventDefault(); return;
     }
     if (e.button === 0 && !app.canEdit()) {
-      // RUN / PAUSE：Shift＋ドラッグで範囲選択。そうでなければ、作業面の TFF の上なら今の状態を切り替えるだけ
+      // RUN / PAUSE：Shift＋ドラッグで範囲選択。そうでなければ、作業面の TFF の上なら今の状態を切り替えるだけ（縮小中は何もしない）
       canvas.setPointerCapture(e.pointerId); e.preventDefault();
       if (e.shiftKey) { active = 'draw'; editor.beginSelect(p.x, p.y); }
-      else { active = 'click'; app.toggleRunAt(p.x, p.y); }
+      else { active = 'click'; if (renderer.view.n === 1) app.toggleRunAt(p.x, p.y); }
       app.requestDraw();
       return;
     }
@@ -90,17 +90,15 @@ export function initInput(app) {
     if (active === 'draw') editor.up(p.x, p.y, e.shiftKey);
     else if (active === 'pending' && !pend.moved) {
       const c = pend.cell;
-      const onTff = inCanvas(c.x, c.y) && editor.world.mat[editor.cell(c.x, c.y)] === M.TFF;
+      const onTff = renderer.view.n === 1 && inCanvas(c.x, c.y) && editor.world.mat[editor.cell(c.x, c.y)] === M.TFF;
       if (pend.button === 1) {
-        // スポイトは編集の一部。RUN / PAUSE 中はクリックだけ無効
+        // スポイトは編集の一部。RUN / PAUSE 中と縮小中はクリックだけ無効
         if (app.canEdit() && editor.pick(c.x, c.y)) app.updateInfo();
-      } else if (editor.pasting) {
-        // プレビュー中は取り消しだけ（TFF の上でも切り替えない）
-        editor.cancelPaste(); app.updateInfo();
+      } else if (editor.cancelOrDeselect()) {
+        // 右クリックのキャンセル：貼り付け中ならやめる（TFF の上でも切り替えない）、選択中なら外す
+        app.updateInfo();
       } else if (app.canEdit() && onTff) {
         app.toggleInitialAt(c.x, c.y);
-      } else {
-        editor.sel = null; app.updateInfo();
       }
     }
     active = null; pend = null; pan = null;
@@ -138,6 +136,8 @@ export function initInput(app) {
 
   window.addEventListener('keydown', (e) => {
     if (e.key === 'Shift') { editor.shift = true; app.requestDraw(); }
+    // F11：ページの全画面（入力欄の中でも）
+    if (e.key === 'F11') { e.preventDefault(); app.toggleFull(); return; }
     // Tab：作業面の切り替え（RUN / PAUSE 中も）。ブラウザのフォーカス移動は止める
     if (e.key === 'Tab') {
       e.preventDefault();
@@ -153,10 +153,9 @@ export function initInput(app) {
     const ctrl = e.ctrlKey || e.metaKey, k = e.key.toLowerCase();
     const edit = app.canEdit();
     if (!edit) {
-      // RUN / PAUSE 中に使えるキー：COPY・Esc・Home・Z だけ。そのほかは無視
+      // RUN / PAUSE 中に使えるキー：COPY・Home・Z だけ。そのほかは無視
       if (ctrl && k === 'c') { editor.copy(); app.requestDraw(); e.preventDefault(); }
       else if (ctrl || e.altKey) return;
-      else if (e.key === 'Escape') { editor.escape(); app.updateInfo(); app.requestDraw(); }
       else if (e.key === 'Home') { app.fitAll(); e.preventDefault(); }
       else if (k === 'z') { app.zoomSel(); }
       else if (e.key in ARROW_STEP && !e.shiftKey) e.preventDefault();   // 十字キーは編集用。RUN / PAUSE 中は何もしない（ページも動かさない）
@@ -170,12 +169,11 @@ export function initInput(app) {
     else if (ctrl || e.altKey) return;
     else if (e.key in ARROW_STEP && !e.shiftKey) nudge(e);
     else if (e.key === 'Delete') { editor.del(); app.requestDraw(); e.preventDefault(); }
-    else if (e.key === 'Escape') { editor.escape(); app.updateInfo(); app.requestDraw(); }
     else if (e.key === 'Home') { app.fitAll(); e.preventDefault(); }
     else if (k === 'z') { app.zoomSel(); }
     else if (k === 'r') { editor.transform(e.shiftKey ? 'ccw' : 'cw'); app.requestDraw(); }
     else if (k === 'f') { editor.transform(e.shiftKey ? 'fv' : 'fh'); app.requestDraw(); }
-    else if (e.code in DIGIT_MAT && !e.shiftKey) {
+    else if (e.code in DIGIT_MAT && !e.shiftKey && renderer.view.n === 1) {   // 縮小中は素材を選べない
       editor.setMat(DIGIT_MAT[e.code]);
       if (editor.mat === M.LAMP) editor.lampColor = 0; // 8 は白に固定
       app.updateInfo(); app.requestDraw();
