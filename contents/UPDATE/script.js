@@ -1,7 +1,23 @@
 const UPDATE_LOGS = [
     {
+        date: "2026/10/14",
+        text: "変更//Updated: LOGICALT (ズーム倍率変更・全画面表示・グリッドスナップ・GLOWスライダー追加)"
+    },
+    {
+        date: "2026/10/11",
+        text: "変更//Updated: LOGICALT (BUILD/PLAY/FILE UI・初回サンプル回路・リセット・矢印キー操作に対応)"
+    },
+    {
         date: "2026/10/11",
         text: "追加//Added: LOGICALT"
+    },
+    {
+        date: "2026/10/07",
+        text: "追加//Added: SOFTWARE"
+    },
+    {
+        date: "2026/09/29",
+        text: "変更//Updated: SITE-DESIGN (UIフォント変更・PRISMALTの左右パネルUI統一など)"
     },
     {
         date: "2026/09/08",
