@@ -28,6 +28,8 @@
     gap: 16px;
     padding: 8px 16px;
     min-height: 56px;
+    /* タイル（高さ 56）よりバーが高い分は、タイル最上段の空の色で埋める */
+    background-color: #6688CC;
     background-image: url('/images/tile.png');
     background-repeat: repeat-x;
     background-position: left bottom;
@@ -35,6 +37,11 @@
     border-bottom: 2px solid #A9D9D0;
     font-family: 'MaruMonica', 'PixelMplus12', monospace;
     line-height: 16px;   /* body の倍率指定（PROFILE / POLICY）を受け継がない */
+}
+
+/* ハロウィン限定のタイル（menu.js が 10/31 だけ付ける） */
+#sodenmir-topbar.sodenmir-halloween {
+    background-image: url('/images/tile_halloween.png');
 }
 
 #sodenmir-topbar * {

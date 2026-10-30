@@ -106,6 +106,10 @@ const SODENMIR_GROUPS = [
 
         const topbar = document.createElement('header');
         topbar.id = 'sodenmir-topbar';
+        // ハロウィン（見ている人のタイムゾーンで 10/31 の 00:00:00〜23:59:59）だけタイルを替える。
+        // 判定は読み込み時の1回だけ。日付が変わっても遷移かリロードまではそのまま
+        const now = new Date();
+        if (now.getMonth() === 9 && now.getDate() === 31) topbar.classList.add('sodenmir-halloween');
 
         const branding = document.createElement('a');
         branding.className = 'sodenmir-branding';
