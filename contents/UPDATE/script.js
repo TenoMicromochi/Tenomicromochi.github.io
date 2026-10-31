@@ -1,5 +1,9 @@
 const UPDATE_LOGS = [
     {
+        date: "2026/10/30",
+        text: "追加//Added: KONVERT"
+    },
+    {
         date: "2026/10/11",
         text: "追加//Added: LOGICALT"
     },

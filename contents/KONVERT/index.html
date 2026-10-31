@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<!-- KONVERT（サイト版）。正本は Sandbox/KONVERT、publish.py で写す。直接編集しない -->
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>送電世界 - KONVERT</title>
+<meta name="description" content="ネタバレを伏せたPNGを作り、元に戻す">
+<meta property="og:type" content="website">
+<meta property="og:title" content="送電世界 - KONVERT">
+<meta property="og:description" content="ネタバレを伏せたPNGを作り、元に戻す">
+<meta property="og:image" content="https://tenomicromochi.github.io/images/OGP.png">
+<meta property="og:url" content="https://tenomicromochi.github.io/contents/KONVERT/index.html">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="/theme.css">
+<link rel="stylesheet" href="/alt.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="/main.css">
+<script src="/menu.js" defer></script>
+</head>
+<body class="alt-app" data-tab="encode">
+
+<header class="site-header">
+  <div class="logo">KON<em>VERT</em></div>
+  <div class="tagline">hide spoilers in a png. reveal them here.</div>
+</header>
+
+<!-- 768px 未満：片方の列だけを出す -->
+<div class="col-tabs">
+  <div class="view-btn-group full" id="colTabs">
+    <button class="view-btn active" data-tab="encode" type="button">ENCODE</button>
+    <button class="view-btn" data-tab="decode" type="button">DECODE</button>
+  </div>
+</div>
+
+<input type="file" accept="image/png,image/jpeg,image/webp" id="fileInput" hidden>
+
+<div class="cols">
+
+  <!-- ══ ENCODE ═════════════════════════════════════ -->
+  <section class="col" id="colEncode" data-slot="encode">
+    <div class="col-head">
+      <h2 class="col-title">ENCODE</h2>
+      <div class="col-btns">
+        <button class="btn secondary small" id="encOpen" type="button" title="Open (Ctrl+O)">OPEN</button>
+        <button class="btn secondary small" id="encPaste" type="button">PASTE</button>
+      </div>
+    </div>
+
+    <div class="stage" id="encStage">
+      <div class="stage-empty" id="encEmpty">DROP PNG / JPEG / WEBP HERE<br>CLICK TO OPEN</div>
+      <canvas class="layer" id="encDisp" width="1" height="1" hidden></canvas>
+      <canvas class="layer" id="encMask" width="1" height="1" hidden></canvas>
+      <div class="ghost" id="ghost" hidden></div>
+      <div class="brush-cursor" id="brushCursor" hidden></div>
+    </div>
+
+    <div class="status">
+      <span class="chip name" id="encName">-</span>
+      <span class="chip">SIZE <strong id="encSize">-</strong></span>
+      <button class="chip chip-btn" id="encZoom" type="button" title="Back to FIT">ZOOM <strong>-</strong></button>
+      <span class="chip">MASK <strong id="encMaskN">-</strong></span>
+      <span class="chip working" id="encWorking" hidden>WORKING...</span>
+    </div>
+    <div class="level-hint msg-line" id="encMsg" hidden></div>
+
+    <div class="settings">
+      <div class="row">
+        <span class="lbl">PEN</span>
+        <div class="view-btn-group" id="penGroup">
+          <button class="view-btn active" data-tool="rect" type="button" title="RECT (R)">RECT</button>
+          <button class="view-btn" data-tool="square" type="button" title="SQUARE (B)">SQUARE</button>
+          <button class="view-btn" data-tool="round" type="button" title="ROUND (C)">ROUND</button>
+          <button class="view-btn" data-tool="erase" type="button" title="ERASE (E)">ERASE</button>
+        </div>
+        <div class="pair grow" id="rowSize" hidden>
+          <span class="lbl2">SIZE</span>
+          <input type="range" id="sizeR" min="1" max="128" value="8" title="SIZE ([ / ])">
+          <input type="number" id="sizeN" min="1" max="128" value="8">
+        </div>
+      </div>
+      <div class="row">
+        <span class="lbl"></span>
+        <button class="btn secondary small" id="undoBtn" type="button" disabled title="UNDO (Ctrl+Z)">UNDO</button>
+        <button class="btn secondary small" id="redoBtn" type="button" disabled title="REDO (Ctrl+Y)">REDO</button>
+        <button class="btn danger small" id="clearBtn" type="button">CLEAR</button>
+      </div>
+
+      <div class="row">
+        <span class="lbl">HIDE</span>
+        <div class="view-btn-group" id="styleGroup">
+          <button class="view-btn" data-style="fill" type="button">FILL</button>
+          <button class="view-btn active" data-style="mosaic" type="button">MOSAIC</button>
+          <button class="view-btn" data-style="blur" type="button">BLUR</button>
+        </div>
+        <div class="pair" id="rowFill" hidden>
+          <span class="lbl2">COLOR</span>
+          <input type="color" id="fillColor" value="#000000">
+        </div>
+        <div class="pair grow" id="rowMosaic">
+          <span class="lbl2">BLOCK</span>
+          <input type="range" id="blockR" min="2" max="128" value="16">
+          <input type="number" id="blockN" min="2" max="128" value="16">
+        </div>
+        <div class="pair grow" id="rowBlur" hidden>
+          <span class="lbl2">RADIUS</span>
+          <input type="range" id="radiusR" min="1" max="128" value="16">
+          <input type="number" id="radiusN" min="1" max="128" value="16">
+        </div>
+      </div>
+      <div class="level-hint indent" id="weakHint" hidden>Small values are easy to guess. Use FILL for text.</div>
+
+      <div class="row">
+        <span class="lbl">LOCK</span>
+        <input type="password" class="txt-input grow" id="pass1" placeholder="Passphrase (optional)" autocomplete="new-password">
+        <input type="password" class="txt-input grow" id="pass2" placeholder="Passphrase again" autocomplete="new-password">
+      </div>
+      <div class="level-hint indent">忘れると誰にも戻せません</div>
+
+      <div class="row">
+        <span class="lbl">HINT</span>
+        <input type="text" class="txt-input grow" id="hintInput" autocomplete="off" spellcheck="false">
+      </div>
+
+      <div class="row">
+        <span class="lbl">MORE</span>
+        <label class="check-row"><input type="checkbox" id="keepMeta"> KEEP METADATA (text, EXIF)</label>
+        <label class="check-row"><input type="checkbox" id="showPass"> SHOW PASSWORD</label>
+      </div>
+      <div class="row">
+        <span class="lbl">FORMAT</span>
+        <div class="view-btn-group" id="fmtGroup">
+          <button class="view-btn active" data-fmt="png" type="button">PNG</button>
+          <button class="view-btn" data-fmt="webp-lossless" type="button">WEBP LOSSLESS</button>
+          <button class="view-btn" data-fmt="webp-lossy" type="button">WEBP LOSSY</button>
+        </div>
+        <div class="pair grow" id="rowQuality" hidden>
+          <span class="lbl2">QUALITY</span>
+          <input type="range" id="qualR" min="1" max="100" value="80">
+          <input type="number" id="qualN" min="1" max="100" value="80">
+        </div>
+      </div>
+      <div class="level-hint indent" id="lossyHint" hidden>伏せた部分は元に戻りますが、ほかの部分は圧縮されたままです</div>
+
+      <div class="row bottom">
+        <div class="view-btn-group" id="viewGroup">
+          <button class="view-btn active" data-view="mask" type="button" title="MASK (P)">MASK</button>
+          <button class="view-btn" data-view="preview" type="button" title="PREVIEW (P)">PREVIEW</button>
+        </div>
+        <button class="btn grow" id="saveBtn" type="button" disabled title="SAVE (Ctrl+S)">SAVE</button>
+      </div>
+      <div class="level-hint">X など再エンコードするサイトに上げると復元データは消えます</div>
+    </div>
+  </section>
+
+  <!-- ══ DECODE ═════════════════════════════════════ -->
+  <section class="col" id="colDecode" data-slot="decode">
+    <div class="col-head">
+      <h2 class="col-title">DECODE</h2>
+      <div class="col-btns">
+        <button class="btn secondary small" id="decOpen" type="button" title="Open (Ctrl+O)">OPEN</button>
+        <button class="btn secondary small" id="decPaste" type="button">PASTE</button>
+      </div>
+    </div>
+
+    <div class="stage" id="decStage">
+      <div class="stage-empty" id="decEmpty">DROP SPOILER IMAGE HERE<br>CLICK TO OPEN</div>
+      <canvas class="layer" id="decDisp" width="1" height="1" hidden></canvas>
+    </div>
+
+    <div class="status">
+      <span class="chip name" id="decName">-</span>
+      <span class="chip">SIZE <strong id="decSize">-</strong></span>
+      <button class="chip chip-btn" id="decZoom" type="button" title="Back to FIT">ZOOM <strong>-</strong></button>
+      <span class="chip working" id="decWorking" hidden>WORKING...</span>
+    </div>
+
+    <div class="settings">
+      <div class="row">
+        <span class="verdict" id="decVerdict">-</span>
+        <span class="vnote" id="decVerdictNote"></span>
+        <button class="btn secondary small" id="sendBtn" type="button" hidden>SEND TO ENCODE</button>
+      </div>
+      <div class="row">
+        <span class="lbl">HINT</span>
+        <span class="hint-text" id="decHint">-</span>
+      </div>
+      <div class="row" id="decPassRow" hidden>
+        <span class="lbl">PASS</span>
+        <input type="password" class="txt-input grow" id="decPass" placeholder="Passphrase" autocomplete="off">
+        <label class="check-row"><input type="checkbox" id="decShow"> SHOW</label>
+      </div>
+      <div class="level-hint msg-line" id="decMsg" hidden></div>
+      <div class="level-hint" id="decNote" hidden></div>
+
+      <div class="row">
+        <span class="lbl">FORMAT</span>
+        <div class="view-btn-group" id="decFmtGroup">
+          <button class="view-btn active" data-fmt="png" type="button">PNG</button>
+          <button class="view-btn" data-fmt="webp-lossless" type="button">WEBP LOSSLESS</button>
+          <button class="view-btn" data-fmt="webp-lossy" type="button">WEBP LOSSY</button>
+        </div>
+        <div class="pair grow" id="decRowQuality" hidden>
+          <span class="lbl2">QUALITY</span>
+          <input type="range" id="decQualR" min="1" max="100" value="80">
+          <input type="number" id="decQualN" min="1" max="100" value="80">
+        </div>
+      </div>
+
+      <div class="row bottom">
+        <button class="btn grow" id="unlockBtn" type="button" disabled>UNLOCK</button>
+        <button class="btn secondary grow" id="decSave" type="button" disabled title="SAVE (Ctrl+S)">SAVE</button>
+        <button class="btn success grow" id="copyBtn" type="button" disabled>COPY</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="alt-toast ok" id="okToast"></div>
+
+<script type="module" src="main.js"></script>
+</body>
+</html>

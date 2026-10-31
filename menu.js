@@ -11,10 +11,11 @@ const SODENMIR_GROUPS = [
         items: [
             { label: "GLYPHALT", dir: "/contents/GLYPHALT/", path: "/contents/GLYPHALT/index.html", icon: "/images/icons/TOOLS.png" },
             { label: "TEXTALT", dir: "/contents/TEXTALT/", path: "/contents/TEXTALT/index.html", icon: "/images/icons/TOOLS.png" },
-            { label: "TENOMOJI", dir: "/contents/TENOMOJI/", path: "/contents/TENOMOJI/index.html", icon: "/images/icons/TOOLS.png" },
-            { label: "PALETALT", dir: "/contents/PALETALT/", path: "/contents/PALETALT/index.html", icon: "/images/icons/TOOLS.png" },
-            { label: "ANIMALT", dir: "/contents/ANIMALT/", path: "/contents/ANIMALT/index.html", icon: "/images/icons/TOOLS.png" },
-            { label: "PRISMALT", dir: "/contents/PRISMALT/", path: "/contents/PRISMALT/index.html", icon: "/images/icons/TOOLS.png" },
+            { label: "TENOMOJI", dir: "/contents/TENOMOJI/", path: "/contents/TENOMOJI/index.html", icon: "/images/icons/TENOMOJI.png" },
+            { label: "PALETALT", dir: "/contents/PALETALT/", path: "/contents/PALETALT/index.html", icon: "/images/icons/PALETALT.png" },
+            { label: "ANIMALT", dir: "/contents/ANIMALT/", path: "/contents/ANIMALT/index.html", icon: "/images/icons/ANIMALT.png" },
+            { label: "PRISMALT", dir: "/contents/PRISMALT/", path: "/contents/PRISMALT/index.html", icon: "/images/icons/PRISMALT.png" },
+            { label: "KONVERT", dir: "/contents/KONVERT/", path: "/contents/KONVERT/index.html", icon: "/images/icons/KONVERT.png" },
         ],
     },
     {

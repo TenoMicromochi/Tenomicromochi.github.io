@@ -1,0 +1,219 @@
+/* ============================================================
+   KONVERT — style.css（第6段：ENCODE と DECODE を 1 画面に）
+
+   色・ボタン・セグメント・スライダーは theme.css / alt.css の部品。ここは KONVERT の骨格だけ。
+   左右タブ（.workspace / .side-panel / .edge-tab）は使わない。
+   ============================================================ */
+
+/* hidden 属性を display に負けさせない */
+[hidden] { display: none !important; }
+
+/* ── 骨格：ヘッダの下を左右 2 列（ENCODE | DECODE） ── */
+.cols {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+.col {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+    min-height: 0;
+    padding: 8px 12px 10px;
+    overflow: hidden;
+}
+.col + .col { border-left: 2px solid var(--border); }
+
+.col-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.col-title {
+    font-family: var(--font-heading);
+    font-size: 16px; line-height: 16px;
+    font-weight: normal;
+    letter-spacing: 2px;
+    color: var(--accent);
+}
+.col-btns { display: flex; gap: 5px; }
+.btn.small { padding: 2px 10px; letter-spacing: 1px; }
+
+/* 狭い幅の ENCODE / DECODE タブ（768px 以上では出さない） */
+.col-tabs { display: none; padding: 6px 12px 0; flex-shrink: 0; }
+
+/* ── 画像の枠。残りの高さを全部使う。表示は main.js が位置と倍率を決める（スクロールバーは使わない） ── */
+.stage {
+    flex: 1 1 0;
+    min-height: 140px;
+    position: relative;
+    overflow: hidden;
+    background: var(--canvas-bg);
+    border: 1px solid var(--border);
+    /* 指のドラッグは自前で処理する（ブラウザのスクロール・ズームに任せない） */
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+.stage.has-image { cursor: default; }
+.stage.pen { cursor: crosshair; }
+.stage.panning { cursor: grabbing; }
+.stage-empty {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    text-align: center;
+    font-family: var(--font-body);
+    font-size: 12px; line-height: 16px; letter-spacing: 1px;
+    color: var(--sub);
+    border: 1px dashed var(--border);
+    cursor: pointer;
+}
+.stage-empty:hover, .stage.drag .stage-empty { border-color: var(--accent); color: var(--accent); background: rgba(255,255,255,.06); }
+.stage.has-image .stage-empty { display: none; }
+body.dragging .stage { outline: 1px dashed var(--accent); outline-offset: -3px; }
+
+/* canvas は表示用。位置と大きさは main.js が transform / width / height で決める。
+   x1 以上は補間なし。x1 未満の縮小だけ滑らか（.smooth） */
+.layer {
+    position: absolute; left: 0; top: 0;
+    transform-origin: 0 0;
+    display: block;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    image-rendering: pixelated;
+    touch-action: none;
+}
+.layer.smooth { image-rendering: auto; }
+.layer + .layer { pointer-events: none; }
+
+/* 範囲指定の枠とブラシカーソル（座標は stage 基準。ポインタには反応しない） */
+.ghost, .brush-cursor {
+    position: absolute; left: 0; top: 0;
+    pointer-events: none;
+    border: 1px solid var(--accent);
+    box-sizing: border-box;
+    outline: 1px solid var(--bg);
+    outline-offset: -2px;
+    z-index: 2;
+}
+.brush-cursor.round { border-radius: 50%; }
+.ghost.erase, .brush-cursor.erase { border-color: var(--danger); }
+
+/* ── 枠の下の 1 行 ── */
+.status { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.chip {
+    font-family: var(--font-body);
+    font-size: 12px; line-height: 16px; letter-spacing: 1px;
+    color: var(--sub);
+    padding: 1px 6px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+.chip strong { color: var(--accent); font-weight: normal; }
+.chip.name { max-width: 14em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--accent); }
+.chip-btn { cursor: pointer; }
+.chip-btn:hover { background: var(--hover); }
+.chip.working { color: var(--accent); }
+
+/* ── 設定 ── */
+.settings {
+    flex: 0 1 auto;
+    min-height: 0;
+    display: flex; flex-direction: column; gap: 4px;
+    overflow-y: auto;
+    padding-top: 6px;
+    border-top: 1px solid var(--border2);
+}
+.row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; min-height: 24px; }
+.row.bottom { margin-top: 2px; flex-wrap: nowrap; }
+.lbl {
+    width: 58px; flex: none;
+    font-family: var(--font-heading);
+    font-size: 8px; line-height: 8px; letter-spacing: 1px;
+    color: var(--accent);
+}
+.lbl2 { font-family: var(--font-body); font-size: 12px; line-height: 16px; letter-spacing: 1px; color: var(--sub); }
+.grow { flex: 1 1 100px; min-width: 0; }
+.indent { padding-left: 64px; }
+.row .btn { width: auto; }
+.row.bottom .btn.grow { flex: 1 1 0; }
+
+.pair { display: flex; align-items: center; gap: 4px; }
+.pair.grow input[type=range] { flex: 1 1 60px; width: auto; min-width: 40px; margin: 4px 0; }
+.pair input[type=number] {
+    width: 52px; flex: none;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0 3px;
+    font-family: var(--font-body);
+    font-size: 12px; line-height: 16px; letter-spacing: 1px;
+    color: var(--text);
+    outline: none;
+}
+.pair input[type=number]:focus { border-color: var(--accent); }
+
+input[type=color] {
+    width: 52px; height: 24px;
+    padding: 0;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+}
+.txt-input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1px 4px;
+    font-family: var(--font-body);
+    font-size: 12px; line-height: 16px; letter-spacing: 1px;
+    color: var(--text);
+    outline: none;
+    min-width: 0;
+}
+.txt-input:focus { border-color: var(--accent); }
+.txt-input.bad { border-color: var(--danger); color: var(--danger); }
+
+.view-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.view-btn:disabled:hover { background: var(--bg); color: var(--sub); }
+.view-btn-group { flex: none; }
+
+.msg-line { color: var(--danger); word-break: break-word; }
+.msg-line.ok { color: var(--accent); }
+
+/* ── DECODE の判定と hint ── */
+.verdict {
+    font-family: var(--font-heading);
+    font-size: 16px; line-height: 16px; letter-spacing: 1px;
+    color: var(--accent);
+    flex: none;
+}
+.verdict.bad { color: var(--danger); }
+.verdict.dim { color: var(--sub); }
+.vnote { font-family: var(--font-body); font-size: 12px; line-height: 16px; letter-spacing: 1px; color: var(--sub); flex: 1 1 100px; }
+.hint-text { font-family: var(--font-body); font-size: 12px; line-height: 16px; letter-spacing: 1px; color: var(--text); word-break: break-all; white-space: pre-wrap; flex: 1 1 0; min-width: 0; }
+.hint-text.dim { color: var(--sub); }
+
+/* ── 狭い幅：ENCODE / DECODE のタブで片方だけ出す ── */
+@media (max-width: 767px) {
+    .col-tabs { display: block; }
+    .cols { grid-template-columns: minmax(0, 1fr); }
+    body[data-tab="encode"] #colDecode { display: none; }
+    body[data-tab="decode"] #colEncode { display: none; }
+    /* 設定が長くなるので列ごと縦にスクロールする。枠は固定の高さ */
+    .col { overflow-y: auto; border-left: none !important; }
+    .stage { flex: none; height: 46dvh; min-height: 200px; }
+    .settings { overflow: visible; flex: none; }
+}
+
+/* 押せない状態は、どのボタンも同じ見た目（alt.css の .btn.success が .btn:disabled に勝って文字が読めなくなるのを直す） */
+.btn.success:disabled, .btn.danger:disabled {
+    background: var(--border);
+    border-color: var(--border);
+    color: var(--sub);
+    cursor: not-allowed;
+    filter: none;
+}
+.btn.success:disabled:hover, .btn.danger:disabled:hover { background: var(--border); filter: none; }
+
+.row .check-row { flex: none; white-space: nowrap; }

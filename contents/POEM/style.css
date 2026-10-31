@@ -103,7 +103,7 @@ body.poem-app .page-content.wide {
 .cat-en  { font-family: var(--font-mono); font-size: 12px; line-height: 16px; letter-spacing: 1px; color: var(--sub); }
 .cat-count { font-family: var(--font-mono); font-size: 12px; line-height: 16px; color: var(--sub); margin-left: auto; }
 
-/* 開閉の目印。FOLDER.png は 32x32（16x16 の2倍）なので、ちょうど 1/2 の
+/* 開閉の目印。FOLDER.png は 16x16 の等倍ドット絵なので、そのまま 1 倍の
    16px で出す。回転させるとドットが崩れるので、閉じている側を薄くして示す。 */
 .cat-folder {
     width: 16px;
