@@ -3,6 +3,31 @@
 body {
     font-family: var(--font-body);
 }
+/* 背景：3D の柱の広間。ドット絵ではないので画面いっぱいに拡大し、ぼかして白で薄める。
+   iOS Safari は background-attachment: fixed を無視するので、固定した疑似要素に敷く。
+   ぼかすと縁が透けるので、inset を負にして画面より少し大きく敷く */
+body::before {
+    content: '';
+    position: fixed;
+    inset: -24px;
+    z-index: -2;
+    background: url('/images/home_bg_hall.webp') center / cover no-repeat;
+    filter: blur(4px) saturate(0.8);
+    pointer-events: none;
+}
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    /* 上下は白、真ん中は白 60% で壁紙が透ける */
+    background: linear-gradient(to bottom,
+        #ffffff 0%,
+        rgba(255, 255, 255, 0.6) 30%,
+        rgba(255, 255, 255, 0.6) 70%,
+        #ffffff 100%);
+    pointer-events: none;
+}
 
 @font-face {
     font-family: 'TenoText 3x6';
