@@ -1,7 +1,7 @@
 
 // トップレベル項目（フォルダ分けしない単独ページ）
 const SODENMIR_TOP_ITEMS = [
-    { label: "PROFILE", dir: "/contents/PROFILE/", path: "/contents/PROFILE/index.html", icon: "/images/TENOKUN_ICON.gif" },
+    { label: "PROFILE", dir: "/contents/PROFILE/", path: "/contents/PROFILE/index.html", icon: "/images/icons/PROFILE.png" },
 ];
 
 // フォルダ分けされたグループ項目
