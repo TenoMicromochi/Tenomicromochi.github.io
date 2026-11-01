@@ -208,6 +208,26 @@
     color: #ffffff;
 }
 
+/* BGM 再生ボタン：画像そのものがボタン（枠・背景・余白なし、16px 等倍） */
+#sodenmir-bgm {
+    flex-shrink: 0;
+    display: block;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    font-size: 0;
+    line-height: 0;
+}
+#sodenmir-bgm img {
+    display: block;
+    width: 16px;
+    height: 16px;
+    image-rendering: pixelated;
+}
+#sodenmir-topbar > #sodenmir-bgm { margin-left: auto; margin-right: 0; }
+
 #sodenmir-mobile-nav {
     display: none;
     flex-direction: column;

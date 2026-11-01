@@ -132,6 +132,46 @@ const SODENMIR_GROUPS = [
         mobileToggle.textContent = 'MENU';
         topbar.appendChild(mobileToggle);
 
+        // BGM の再生ボタン（1つだけ。デスクトップは nav の先頭＝PROFILE の左、モバイルは MENU の左へ動かす）。
+        // 音声は最初に押されたときに初めて作る（開いただけでは読み込まない）
+        const bgmButton = document.createElement('button');
+        bgmButton.id = 'sodenmir-bgm';
+        bgmButton.type = 'button';
+        const bgmImg = document.createElement('img');
+        bgmImg.width = 16;
+        bgmImg.height = 16;
+        bgmImg.alt = '';
+        bgmButton.appendChild(bgmImg);
+        let bgmAudio = null;
+        const setBgm = (playing) => {
+            bgmImg.src = playing ? '/images/buttons/button_stop.png' : '/images/buttons/button_play.png';
+            const label = playing ? 'Stop' : 'Play';
+            bgmButton.setAttribute('aria-label', label);
+            bgmButton.title = label;
+        };
+        setBgm(false);
+        bgmButton.addEventListener('click', () => {
+            if (!bgmAudio) {
+                bgmAudio = new Audio('/sounds/good_morning_humankind.mp3');
+                bgmAudio.addEventListener('ended', () => setBgm(false));
+            }
+            if (!bgmAudio.paused) {
+                bgmAudio.pause();
+                bgmAudio.currentTime = 0;
+                setBgm(false);
+                return;
+            }
+            setBgm(true);
+            const p = bgmAudio.play();
+            if (p && p.catch) p.catch(() => setBgm(false));
+        });
+        const placeBgm = () => {
+            if (matchMedia('(max-width: 720px)').matches) topbar.insertBefore(bgmButton, mobileToggle);
+            else nav.insertBefore(bgmButton, nav.firstChild);
+        };
+        placeBgm();
+        matchMedia('(max-width: 720px)').addEventListener('change', placeBgm);
+
         document.body.insertBefore(topbar, document.body.firstChild);
         document.body.classList.add('sodenmir-has-topbar');
 
