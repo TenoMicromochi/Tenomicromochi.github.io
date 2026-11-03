@@ -31,6 +31,35 @@ const SOFTWARE = [
     ]
   },
   {
+    "id": "tlvv",
+    "name": "TLVV",
+    "version": "1.0.0",
+    "icon": "images/tlvv.png",
+    "platform": "Windows 10 / 11 (x64)",
+    "license": "MIT",
+    "repo": "https://github.com/TenoMicromochi/TLVV",
+    "tagline_jp": "軽量動画ビュワー。最低限の機能だけです。",
+    "tagline_en": "A light video viewer with only the bare essentials.",
+    "about_jp": "ダブルクリックですぐ開く、動画を見るためだけの小さなソフトです。Windows 標準のアプリが使いにくいので作りました。シークバーで好きな位置へ飛べて、← → キーで同じフォルダの前後の動画へすぐ移れます。音量とミュートは次に開いたときも引き継ぐので、急に大きな音が鳴りません。",
+    "about_en": "A small program that only plays videos, and opens instantly. I made it because the app that comes with Windows was awkward to use. Jump anywhere with the seek bar, and press Left / Right to move to the previous or next video in the same folder. Volume and mute carry over to the next time you open it, so nothing suddenly plays loud.",
+    "features_jp": [
+      "← → で同じフォルダの前後の動画へ（端でループ）",
+      "コマ送り・コマ戻し、再生速度 x0.25〜x4",
+      "等倍 / 窓に合わせる の切り替え、全画面",
+      "終わったら：停止 / ループ / 次の動画",
+      "MP4 / MOV / MKV / WebM / AVI / WMV（再生できるかは Windows のコーデックに依存します）",
+      "英語 / 日本語 / 简体中文 / 繁體中文"
+    ],
+    "features_en": [
+      "Left / Right for the previous / next video in the folder (loops at the ends)",
+      "Frame back / forward, speed x0.25 to x4",
+      "Fit to window or 1x, fullscreen",
+      "At end: stop / loop / next video",
+      "MP4 / MOV / MKV / WebM / AVI / WMV (depends on the codecs in your Windows)",
+      "English / 日本語 / 简体中文 / 繁體中文"
+    ]
+  },
+  {
     "id": "ttui",
     "name": "TTUI",
     "version": "0.2.1",
