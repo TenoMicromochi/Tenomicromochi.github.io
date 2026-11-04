@@ -26,6 +26,11 @@ const SODENMIR_GROUPS = [
         ],
     },
     {
+        // 試作置き場。中身はこれから足す
+        label: "SANDBOX", icon: "/images/icons/SANDBOX.png",
+        items: [],
+    },
+    {
         label: "WORKS", icon: "/images/icons/FOLDER.png",
         items: [
             { label: "GALLERY", dir: "/contents/GALLERY/", path: "/contents/GALLERY/index.html", icon: "/images/icons/GALLARY.png" },
