@@ -44,6 +44,11 @@
     background-image: url('/images/tile_halloween.png');
 }
 
+/* SANDBOX 以下のページ専用タイル（menu.js が付ける） */
+#sodenmir-topbar.sodenmir-sandbox {
+    background-image: url('/images/tile_sandbox.png');
+}
+
 #sodenmir-topbar * {
     box-sizing: border-box;
 }

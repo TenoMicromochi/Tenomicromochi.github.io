@@ -28,7 +28,10 @@ const SODENMIR_GROUPS = [
     {
         // 試作置き場。中身はこれから足す
         label: "SANDBOX", icon: "/images/icons/SANDBOX.png",
-        items: [],
+        items: [
+            // exact: true は /contents/SANDBOX/ と index.html でだけ選択中（試作ページ側では光らせない）
+            { label: "SANDBOX_HOME", dir: "/contents/SANDBOX/", path: "/contents/SANDBOX/index.html", icon: "/images/icons/SANDBOX.png", exact: true },
+        ],
     },
     {
         label: "WORKS", icon: "/images/icons/FOLDER.png",
@@ -53,8 +56,11 @@ const SODENMIR_GROUPS = [
     function init() {
         // ディレクトリ単位でアクティブ判定（大文字/小文字ゆれにも強い）
         const currentPath = location.pathname.toLowerCase();
-        const isActive = (item) => currentPath.startsWith(item.dir.toLowerCase());
-        const groupIsActive = (group) => group.items.some(isActive);
+        const isActive = (item) => item.exact
+            ? (currentPath === item.dir.toLowerCase() || currentPath === item.path.toLowerCase())
+            : currentPath.startsWith(item.dir.toLowerCase());
+        const inSandbox = currentPath.startsWith('/contents/sandbox/');
+        const groupIsActive = (group) => group.items.some(isActive) || (group.label === 'SANDBOX' && inSandbox);
 
         function makeLink(item, { row } = {}) {
             const link = document.createElement('a');
@@ -115,7 +121,9 @@ const SODENMIR_GROUPS = [
         // ハロウィン（見ている人のタイムゾーンで 10/31 の 00:00:00〜23:59:59）だけタイルを替える。
         // 判定は読み込み時の1回だけ。日付が変わっても遷移かリロードまではそのまま
         const now = new Date();
-        if (now.getMonth() === 9 && now.getDate() === 31) topbar.classList.add('sodenmir-halloween');
+        // SANDBOX 以下は専用タイルで、季節タイルは付けない
+        if (inSandbox) topbar.classList.add('sodenmir-sandbox');
+        else if (now.getMonth() === 9 && now.getDate() === 31) topbar.classList.add('sodenmir-halloween');
 
         const branding = document.createElement('a');
         branding.className = 'sodenmir-branding';
