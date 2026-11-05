@@ -299,23 +299,16 @@ function wavName(){
   const d = new Date(), p = x => String(x).padStart(2, '0');
   return `sonic_ascii_${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}.wav`;
 }
-$('saveWav').onclick = async () => {
+$('saveWav').onclick = () => {
   const { toneMs, gapMs } = getTiming();
   const w = makeWav($('txt').value, toneMs, gapMs, +$('vol').value);
   const name = wavName();
-  const file = new File([w.bytes], name, { type: 'audio/wav' });
-  try {
-    // 共有シートが使える端末（iOS Safari など）ではまず共有。キャンセル以外の失敗は <a download> に落とす
-    if (navigator.canShare && navigator.canShare({ files: [file] })){
-      try { await navigator.share({ files: [file] }); }
-      catch (err){ if (err && err.name === 'AbortError') return; throw err; }
-    } else throw new Error('no share');
-  } catch (err){
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(file); a.download = name;
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 10000);
-  }
+  // 共有シートは出さず、素直にダウンロードする（Kaname の指定）
+  const blob = new Blob([w.bytes], { type: 'audio/wav' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 10000);
   $('sendStatus').innerHTML = `Saved WAV (${w.fr.bodyLen} chars, ${w.sec.toFixed(1)}s)` + (w.fr.replaced ? ` <span class="warn">Non-ASCII chars replaced with ?: ${w.fr.replaced}</span>` : '');
 };
 
