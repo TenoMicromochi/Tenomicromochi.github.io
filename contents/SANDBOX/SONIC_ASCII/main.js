@@ -280,6 +280,45 @@ $('send').onclick = () => {
 };
 $('stop').onclick = () => { if (srcNode) srcNode.stop(); };
 
+// WAV 書き出し（第2段）。SEND と同じ buildFrame → synth を 48000 Hz 固定で呼び、16bit PCM モノラルにする
+const WAV_SR = 48000;
+function makeWav(text, toneMs, gapMs, vol){
+  const fr = buildFrame(text);
+  const data = synth(fr.bytes, WAV_SR, toneMs, gapMs, vol);
+  const n = data.length, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+  const wstr = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  wstr(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); wstr(8, 'WAVE');
+  wstr(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, WAV_SR, true); v.setUint32(28, WAV_SR * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  wstr(36, 'data'); v.setUint32(40, n * 2, true);
+  for (let i = 0; i < n; i++) v.setInt16(44 + i * 2, Math.round(Math.max(-1, Math.min(1, data[i])) * 32767), true);
+  return { bytes: new Uint8Array(buf), fr, sec: n / WAV_SR };
+}
+window.__makeWav = makeWav;
+function wavName(){
+  const d = new Date(), p = x => String(x).padStart(2, '0');
+  return `sonic_ascii_${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}.wav`;
+}
+$('saveWav').onclick = async () => {
+  const { toneMs, gapMs } = getTiming();
+  const w = makeWav($('txt').value, toneMs, gapMs, +$('vol').value);
+  const name = wavName();
+  const file = new File([w.bytes], name, { type: 'audio/wav' });
+  try {
+    // 共有シートが使える端末（iOS Safari など）ではまず共有。キャンセル以外の失敗は <a download> に落とす
+    if (navigator.canShare && navigator.canShare({ files: [file] })){
+      try { await navigator.share({ files: [file] }); }
+      catch (err){ if (err && err.name === 'AbortError') return; throw err; }
+    } else throw new Error('no share');
+  } catch (err){
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(file); a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+  }
+  $('sendStatus').innerHTML = `Saved WAV (${w.fr.bodyLen} chars, ${w.sec.toFixed(1)}s)` + (w.fr.replaced ? ` <span class="warn">Non-ASCII chars replaced with ?: ${w.fr.replaced}</span>` : '');
+};
+
 // 受信（マイク）
 let micStream = null, proc = null, micDec = null, reader = null, tickTimer = null, rafId = null;
 function startBars(dec){
