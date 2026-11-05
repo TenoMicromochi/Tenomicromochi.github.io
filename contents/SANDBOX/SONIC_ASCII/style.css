@@ -101,3 +101,8 @@
 .sx-spec .tone { display: inline-block; margin-right: 8px; }
 .sx-spec .tone.pilot { color: var(--accent); }
 
+
+/* 押せないボタン（label の LOAD FILE にも使う。button の :disabled と同じ見た目） */
+.btn.is-off { background: var(--muted); border-color: var(--muted); color: var(--sub); cursor: not-allowed; }
+label.btn.is-off { pointer-events: none; }
+label.btn.is-off:hover { background: var(--muted); }

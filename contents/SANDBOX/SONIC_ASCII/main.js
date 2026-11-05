@@ -213,11 +213,14 @@ const BAR_W = 224, BAR_H = 40, BAR_PITCH = 28, BAR_BODY = 20;
 const barsCv = $('bars'), barsCtx = barsCv.getContext('2d');
 const cssVar = name => getComputedStyle(document.body).getPropertyValue(name).trim();
 const barVals = new Array(8).fill(0);   // 0..1
+// 色は最初に1回だけ読む（毎フレーム getComputedStyle を呼ぶと、再生中の受信処理を邪魔する）
+let barColors = null;
 function drawBars(){
-  barsCtx.fillStyle = cssVar('--sb-screen-bg');
+  if (!barColors) barColors = { bg: cssVar('--sb-screen-bg'), bar: cssVar('--accent'), pilot: cssVar('--sb-yellow') };
+  barsCtx.fillStyle = barColors.bg;
   barsCtx.fillRect(0, 0, BAR_W, BAR_H);
   for (let k = 0; k < 8; k++){
-    barsCtx.fillStyle = cssVar(k === PILOT ? '--sb-yellow' : '--accent');
+    barsCtx.fillStyle = k === PILOT ? barColors.pilot : barColors.bar;
     const h = Math.round(barVals[k] * BAR_H);
     barsCtx.fillRect(k * BAR_PITCH + (BAR_PITCH - BAR_BODY) / 2, BAR_H - h, BAR_BODY, h);
   }
@@ -340,18 +343,20 @@ $('mic').onclick = async () => {
     src.connect(proc); proc.connect(mute); mute.connect(c.destination);
     tickTimer = setInterval(() => reader.tick(toneMs + gapMs), 200);
     startBars(micDec);
-    $('mic').textContent = 'MIC STOP';
+    $('mic').textContent = 'MIC STOP'; micLock(true);
     ui.status(`Listening (${c.sampleRate} Hz). Waiting for signal`, 'meta');
   } catch (err){
     micStream = null;
     ui.status('Mic unavailable: ' + err.message, 'ng');
   }
 };
+// MIC 受信中は TEST / LOAD FILE を押せない
+function micLock(on){ $('loop').disabled = on; $('loop').classList.toggle('is-off', on); $('fileBtn').classList.toggle('is-off', on); }
 function stopMic(){
   micStream.getTracks().forEach(t => t.stop()); micStream = null;
   if (proc) proc.disconnect(); proc = null;
   clearInterval(tickTimer); cancelAnimationFrame(rafId);
-  $('mic').textContent = 'MIC START';
+  $('mic').textContent = 'MIC START'; micLock(false);
   ui.status('Stopped', 'meta');
 }
 
@@ -389,18 +394,92 @@ function loopbackTest(text, snrDb = 10, drive = 1.5, sr = 48000){
   return decodeOffline(y, sr, toneMs, gapMs);
 }
 window.__loopbackTest = loopbackTest;
+// ===== 鳴らしながら受信（第3段）=====
+// 鳴らすのは BufferSource → destination だけ。デコーダーへは手元の同じサンプル配列を、再生位置（ctx.currentTime）に
+// 合わせて 20ms ごとに前回の続きから feed する（サンプルを落とさず順番通り。ScriptProcessor は使わない）。
+// Decoder / FrameReader / startBars は MIC 受信と同じものを使う。__loopbackTest（decodeOffline）は一瞬で返すまま
+let live = null;   // { src, proc, owner: 'loop' | 'file' } 再生中だけ入る
+const fileTxt = $('fileTxt');
+function setBusy(owner){
+  // owner: 再生中のボタン（STOP 表示になり押せる）。それ以外の2つは押せない
+  const off = (el, v) => { if (el.tagName === 'BUTTON') el.disabled = v; el.classList.toggle('is-off', v); };
+  off($('mic'), !!owner);
+  off($('loop'), owner === 'file');
+  off($('fileBtn'), owner === 'loop');
+  $('loop').textContent = owner === 'loop' ? 'STOP' : 'TEST (NO MIC)';
+  fileTxt.textContent = owner === 'file' ? 'STOP' : 'LOAD FILE';
+  if (owner === 'loop') $('loop').classList.remove('is-off');
+  if (owner === 'file') $('fileBtn').classList.remove('is-off');
+}
+function playLive(x, sr, owner, onResult){
+  const c = getCtx();
+  const { toneMs, gapMs } = getTiming();
+  hexBuf = []; ui.setText(''); $('rxHex').textContent = '';
+  const r = new FrameReader(ui);
+  let result = null; ui.done = (ok, text) => { result = { ok, text }; };
+  const dec = new Decoder(sr, toneMs, gapMs, (b) => r.symbol(b));
+  const ab = c.createBuffer(1, x.length, sr); ab.copyToChannel(x, 0);
+  const src = c.createBufferSource(); src.buffer = ab; src.connect(c.destination);
+  const t0 = c.currentTime + 0.1;   // 再生開始時刻。feed の位置はここからの経過で決める
+  let fed = 0, timer = null;
+  live = { src, owner, stopped: false, stopTimer: () => clearInterval(timer) };
+  const me = live;
+  const cleanup = () => {
+    clearInterval(timer); me.src.disconnect();
+    cancelAnimationFrame(rafId); ui.done = null;
+    if (live === me) live = null;
+    setBusy(null);
+  };
+  timer = setInterval(() => {
+    if (me.stopped) return;
+    const upto = Math.min(x.length, Math.floor((c.currentTime - t0) * sr));
+    if (upto > fed){ dec.feed(x.subarray(fed, upto)); fed = upto; }
+    if (fed >= x.length){
+      // 全サンプルを feed し終えたら、0.3 秒の無音を流して締める（decodeOffline の pad と同じ）
+      dec.feed(new Float32Array(Math.round(sr * 0.3)));
+      if (!result && r.state !== 'IDLE') ui.status('Incomplete (no ETX or checksum)', 'ng');
+      if (!result && r.state === 'IDLE' && !hexBuf.length) ui.status('No signal found', 'ng');
+      cleanup();
+      if (onResult) onResult(result);
+    }
+  }, 20);
+  startBars(dec);
+  setBusy(owner);
+  src.start(t0);
+}
+function stopLive(){
+  if (!live) return;
+  live.stopped = true; live.stopTimer();
+  try { live.src.stop(); } catch (e) {}
+  live.src.disconnect();
+  cancelAnimationFrame(rafId); ui.done = null;
+  live = null; setBusy(null);
+  ui.status('Stopped', 'meta');
+}
 $('loop').onclick = () => {
-  const r = loopbackTest($('txt').value);
-  if (r) ui.status((r.ok ? 'Test OK' : 'Test: checksum mismatch') + ' (SNR 10 dB, reverb, distortion)', r.ok ? 'ok' : 'ng');
+  if (live) { if (live.owner === 'loop') stopLive(); return; }
+  if (micStream) return;
+  const c = getCtx();
+  const sr = c.sampleRate;
+  const { toneMs, gapMs } = getTiming();
+  const fr = buildFrame($('txt').value);
+  const x = synth(fr.bytes, sr, toneMs, gapMs, 0.5);
+  const y = channelModel(x, sr, 10, 1.5);
+  playLive(y, sr, 'loop', r => {
+    if (r) ui.status((r.ok ? 'Test OK' : 'Test: checksum mismatch') + ' (SNR 10 dB, reverb, distortion)', r.ok ? 'ok' : 'ng');
+  });
 };
+// 再生中の LOAD FILE（STOP 表示）はファイル選択を開かず、止める。MIC 受信中・TEST 再生中は押せない
+$('fileBtn').addEventListener('click', e => {
+  if (live && live.owner === 'file') { e.preventDefault(); stopLive(); }
+  else if (live || micStream) e.preventDefault();
+});
 $('file').onchange = async e => {
   const f = e.target.files[0]; if (!f) return;
   try {
     const c = getCtx();
     const ab = await c.decodeAudioData(await f.arrayBuffer());
-    const { toneMs, gapMs } = getTiming();
-    hexBuf = []; ui.setText('');
-    const r = decodeOffline(ab.getChannelData(0), ab.sampleRate, toneMs, gapMs);
+    playLive(ab.getChannelData(0), ab.sampleRate, 'file', null);
   } catch (err){ ui.status('Could not read file: ' + err.message, 'ng'); }
   e.target.value = '';
 };
