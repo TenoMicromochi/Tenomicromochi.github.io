@@ -207,10 +207,23 @@ const SODENMIR_GROUPS = [
             mobileToggle.classList.toggle('open', open);
         });
 
-        if (!document.querySelector('link[rel="icon"]')) {
+        // ファビコン：開いているページの項目のアイコン（16x16）を使う。ツール単体でブクマしたときに見分けられるように。
+        // 当てはまる項目が無いページ（HOME など）は favicon.ico のまま
+        const allItems = SODENMIR_TOP_ITEMS.concat(...SODENMIR_GROUPS.map((g) => g.items));
+        const currentItem = allItems.find(isActive);
+        if (currentItem) {
+            document.querySelectorAll('link[rel~="icon"]').forEach((l) => l.remove());
+        }
+        if (!document.querySelector('link[rel~="icon"]')) {
             const favicon = document.createElement('link');
             favicon.rel = 'icon';
-            favicon.href = '/favicon.ico';
+            if (currentItem) {
+                favicon.type = 'image/png';
+                favicon.sizes = '16x16';
+                favicon.href = currentItem.icon;
+            } else {
+                favicon.href = '/favicon.ico';
+            }
             document.head.appendChild(favicon);
         }
     }
