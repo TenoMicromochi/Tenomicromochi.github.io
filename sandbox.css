@@ -1,0 +1,282 @@
+/* ============================================================
+   SANDBOX 標準UI — 共通スタイル（オレンジ・黄・白の1画面）
+   読み込み順：theme.css → sandbox.css → style.css → main.css
+   （alt.css / alt-panels.js は読み込まない。左右タブは使わない）
+
+   ・色はこのファイルの body.sandbox-app にあるトークンだけ。
+     ほかのファイル（style.css / main.js）に色を直書きしない。
+     見た目を変えたいときはトークン1か所を変える。
+   ・theme.css のトークンは body.sandbox-app の中でだけ上書きする
+     （theme.css 自体は触らない）。
+   ・線・角丸・影は整数 px。フォントは等倍（UI本文 12px / 見出し 8 の倍数）。
+   ============================================================ */
+
+/* ── 色トークン ── */
+body.sandbox-app {
+    --bg:      #ffffff;   /* 地 */
+    --panel:   #fff8ec;   /* 下の欄の地 */
+    --panel2:  #ffefcf;   /* 入力欄・非選択タブ */
+    --border:  #e0a04a;   /* 枠線 */
+    --border2: #f5d9a6;   /* 薄い枠線 */
+    --text:    #4a2c10;   /* 文字 */
+    --sub:     #8a6030;   /* 補足文字 */
+    --accent:  #b85a0e;   /* ボタン・強調（白文字が読めるオレンジ） */
+    --accent2: #8a4008;   /* 押下・hover */
+    --hover:   #fff3dd;   /* hover の地 */
+    --muted:   #e8c898;   /* 無効 */
+
+    --sb-yellow:    #ffc83d;   /* 選択中タブの地（文字は --text）・タイトル帯の差し色 */
+    --sb-on-accent: #ffffff;   /* --accent の上に乗せる文字 */
+    --sb-screen-bg: #2a1808;   /* メイン画面（canvas）の下地 */
+    --sb-dock-h: 182px;        /* 下の欄の最小高さ（整数 px）。PC 幅の自然な高さ 91px の2倍 */
+
+    /* DEMO 用（モックの色選択）。試作では要らなければ消してよい */
+    --sb-demo-1: #ff8a1f;
+    --sb-demo-2: #ffe14d;
+    --sb-demo-3: #ffffff;
+}
+
+/* 狭い幅は部品が折り返して自然な高さが 118px。その2倍 */
+@media (max-width: 720px) {
+    body.sandbox-app { --sb-dock-h: 236px; }
+}
+
+/* ── 1画面の骨組み：ページ全体はスクロールしない ── */
+html:has(body.sandbox-app) { overflow: hidden; }
+
+body.sandbox-app {
+    height: 100vh;     /* dvh 非対応ブラウザ用 */
+    height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+/* topbar（menu.js が body 先頭へ入れる）は縮めない */
+body.sandbox-app > #sodenmir-topbar { flex: none; }
+
+/* ── タイトル帯 ── */
+header.sb-title {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 4px 16px;
+    padding: 8px 12px;
+    background: var(--panel);
+    border-bottom: 2px solid var(--sb-yellow);
+}
+.sb-title .sb-name {
+    flex: none;
+    font-family: var(--font-heading);
+    font-size: 16px;      /* 見出しは 8 の倍数 */
+    line-height: 16px;
+    font-weight: normal;
+    letter-spacing: 2px;
+    color: var(--accent);
+}
+.sb-title .sb-desc {
+    flex: 1;
+    min-width: 0;
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: 1px;
+    color: var(--sub);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.sb-title .sb-badge {
+    flex: none;
+    font-family: var(--font-heading);
+    font-size: 8px;
+    line-height: 8px;
+    letter-spacing: 2px;
+    padding: 4px 6px;
+    background: var(--sb-yellow);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+/* ── メイン画面の置き場 ── */
+main.sb-stage {
+    flex: 1 1 0;
+    min-height: 0;        /* 下の欄が決めた残りの高さ。中身で伸びない */
+    position: relative;
+    display: flex;
+    align-items: flex-start;   /* 中央寄せは sandbox-ui.js が整数 px の margin で行う */
+    justify-content: flex-start;
+    padding: 8px;         /* 整数倍フィットはこの内側で計算する（sandbox-ui.js） */
+    overflow: hidden;
+    background: var(--bg);
+}
+.sb-screen {
+    flex: none;
+    display: block;
+    background: var(--sb-screen-bg);
+    image-rendering: pixelated;      /* 補間なし */
+    /* 枠は box-shadow で外へ。border だと CSS 寸法が論理サイズ × 倍率からずれる */
+    box-shadow: 0 0 0 2px var(--border);
+}
+/* 倍率表示（stage の右下） */
+.sb-scale {
+    position: absolute;
+    right: 8px;
+    bottom: 4px;
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: 1px;
+    color: var(--sub);
+    pointer-events: none;
+}
+
+/* ── 下の欄（固定・タブ付き） ──
+   sb-tab は全部同じマスに重ねる → 高さは一番背の高いタブに自動で揃う。
+   非選択は visibility: hidden（場所は取ったまま）。切り替えてもメイン画面は動かない */
+footer.sb-dock {
+    flex: none;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    background: var(--panel);
+    border-top: 2px solid var(--border);
+    padding: 8px 12px 12px;
+    gap: 8px;
+    min-height: var(--sb-dock-h);   /* 中身がこれより高ければ一番背の高いタブに合わせて伸びる */
+    align-content: start;           /* 増えた分は下の空き。中身は上詰め */
+}
+.sb-tabs {
+    grid-row: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    margin: -8px -12px 0;     /* 欄の上端に貼り付ける */
+    padding: 0;
+    border-bottom: 1px solid var(--border);
+}
+.sb-tabs button {
+    padding: 4px 14px;
+    font-family: var(--font-body);
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: 2px;
+    color: var(--sub);
+    background: var(--panel2);
+    border: 0;
+    border-right: 1px solid var(--border);
+    border-radius: 0;
+    cursor: pointer;
+}
+.sb-tabs button:hover { background: var(--hover); color: var(--accent); }
+.sb-tabs button.is-active { background: var(--sb-yellow); color: var(--text); }
+
+.sb-tab {
+    align-self: start;   /* 背の高いタブにつられて中身が下へ寄らないように */
+    grid-row: 2;
+    grid-column: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 8px 16px;
+    visibility: hidden;
+}
+.sb-tab.is-active { visibility: visible; }
+/* タブが1枚のとき（nav 無し）は上の余白を詰める */
+.sb-dock.no-tabs .sb-tab { grid-row: 1; }
+
+/* ── 部品 ── */
+.sandbox-app .btn { color: var(--sb-on-accent); }
+.sandbox-app .btn:hover { background: var(--accent2); }
+.sandbox-app .btn.secondary { color: var(--accent); }
+.sandbox-app .btn.secondary:hover { background: var(--hover); }
+.sandbox-app .btn:disabled { background: var(--muted); border-color: var(--muted); cursor: not-allowed; }
+
+/* スライダー＋数値入力の組。数値はラベル行の右端、スライダーはその下 */
+.sb-ctrl {
+    width: 200px;
+    max-width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0 4px;
+}
+.sb-ctrl > label {
+    grid-column: 1; grid-row: 1;
+    font-size: 12px; line-height: 16px; letter-spacing: 1px; color: var(--sub);
+}
+.sb-ctrl > input[type=number] {
+    grid-column: 2; grid-row: 1;
+    width: 52px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0 3px;
+    font-family: var(--font-body);
+    font-size: 12px; line-height: 16px; letter-spacing: 1px;
+    color: var(--text);
+    outline: none;
+    appearance: textfield;
+    -moz-appearance: textfield;
+}
+.sb-ctrl > input[type=number]::-webkit-inner-spin-button,
+.sb-ctrl > input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.sb-ctrl > input[type=number]:focus { border-color: var(--accent); }
+.sb-ctrl > input[type=range] {
+    grid-column: 1 / -1; grid-row: 2;
+    margin: 4px 0;
+    width: 100%;
+    height: 3px;
+    -webkit-appearance: none;
+    appearance: none;
+    /* --pct は sandbox-ui.js が現在値の割合を入れる */
+    background: linear-gradient(90deg, var(--accent) var(--pct, 50%), var(--border) var(--pct, 50%));
+    border-radius: 0;
+    outline: none;
+    cursor: pointer;
+}
+.sb-ctrl > input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 11px; height: 11px;
+    background: var(--accent);
+    border: 2px solid var(--bg);
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px var(--accent);
+    cursor: pointer;
+}
+.sb-ctrl > input[type=range]::-moz-range-thumb {
+    width: 11px; height: 11px;
+    background: var(--accent);
+    border: 2px solid var(--bg);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+/* セグメントボタン（選択肢が少ないとき） */
+.sb-seg { display: flex; }
+.sb-seg button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    font-family: var(--font-body);
+    font-size: 12px; line-height: 16px; letter-spacing: 1px;
+    color: var(--sub);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 0;
+    cursor: pointer;
+}
+.sb-seg button:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+.sb-seg button:last-child  { border-radius: 0 var(--radius) var(--radius) 0; }
+.sb-seg button:not(:first-child) { border-left: none; }
+.sb-seg button:hover:not(.is-active) { background: var(--hover); color: var(--accent); }
+.sb-seg button.is-active { background: var(--accent); color: var(--sb-on-accent); border-color: var(--accent2); }
+
+.sb-check {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; line-height: 16px; letter-spacing: 1px; color: var(--sub);
+    cursor: pointer;
+}
+.sb-check input { accent-color: var(--accent); cursor: pointer; }
+
+/* 部品のラベル付き行（セグメントなどに見出しを付けるとき） */
+.sb-field { display: flex; flex-direction: column; gap: 2px; }
+.sb-field > .sb-label { font-size: 12px; line-height: 16px; letter-spacing: 1px; color: var(--sub); }

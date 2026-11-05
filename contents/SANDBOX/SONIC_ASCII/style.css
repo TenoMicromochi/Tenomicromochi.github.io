@@ -1,0 +1,103 @@
+/* ============================================================
+   SONIC_ASCII 固有のスタイル。共通は /sandbox.css。
+   色は直書きしない（/sandbox.css のトークンを var() で使う）。
+   ============================================================ */
+
+/* ── stage：バー → ステータス → 受信テキスト／16進ログ ── */
+.sx-wrap {
+    flex: 1;
+    min-width: 0;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    overflow: hidden;
+}
+.sx-meter { flex: none; align-self: center; }
+.sx-meter canvas {
+    display: block;
+    background: var(--sb-screen-bg);
+    image-rendering: pixelated;
+    box-shadow: 0 0 0 2px var(--border);
+}
+/* バーの下のラベル。列数 8 は canvas と同じ幅（main.js が整数倍で揃える） */
+.sx-labels { display: grid; grid-template-columns: repeat(8, 1fr); margin-top: 6px; }
+.sx-labels div {
+    text-align: center;
+    font-size: 12px; line-height: 16px;
+    color: var(--sub);
+}
+.sx-labels div.pilot { color: var(--accent); }
+
+/* 受信ステータス（OK=success / NG=danger / 途中=accent / 待機=sub） */
+.sx-status {
+    flex: none;
+    min-height: 16px;
+    font-size: 12px; line-height: 16px; letter-spacing: 1px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sx-status .meta { color: var(--sub); }
+.sx-status .warn { color: var(--accent); }
+.sx-status .ok   { color: var(--success); }
+.sx-status .ng   { color: var(--danger); }
+
+/* 受信テキスト（主役）と16進ログ。入りきらなければこの枠の中だけスクロール */
+.sx-io {
+    flex: 1 1 0;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 8px;
+}
+.sx-text, .sx-hex {
+    min-width: 0; min-height: 0;
+    overflow: auto;
+    padding: 6px 8px;
+    background: var(--sb-screen-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: var(--font-mono);
+    font-size: 12px; line-height: 16px;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+.sx-text { color: var(--border2); }
+.sx-hex  { color: var(--muted); }
+@media (max-width: 720px) {
+    .sx-io { grid-template-columns: 1fr; grid-template-rows: 2fr 1fr; }
+}
+
+/* ── 下の欄 ── */
+.sx-ta {
+    width: 320px; max-width: 100%;
+    height: 56px;                 /* 固定（3行ぶん） */
+    resize: none;
+    padding: 4px 6px;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: var(--font-mono);
+    font-size: 12px; line-height: 16px;
+    outline: none;
+}
+.sx-ta:focus { border-color: var(--accent); }
+.sx-line { flex: 1 1 100%; min-height: 16px; font-size: 12px; line-height: 16px; letter-spacing: 1px; color: var(--sub); }
+.sx-line .warn { color: var(--accent); }
+.sx-sub { color: var(--sub); }
+.sb-seg button.is-active .sx-sub { color: var(--sb-yellow); }
+#fileBtn { cursor: pointer; }
+
+.sx-spec {
+    flex: 1 1 100%;
+    height: calc(var(--sb-dock-h) - 66px);   /* 欄の高さに収め、あふれたらここだけスクロール */
+    overflow: auto;
+    font-size: 12px; line-height: 16px;
+    color: var(--text);
+}
+.sx-spec p { margin-bottom: 6px; }
+.sx-spec b { color: var(--accent); font-weight: normal; letter-spacing: 1px; }
+.sx-spec code { font-family: var(--font-mono); background: var(--panel2); padding: 0 4px; border-radius: var(--radius); }
+.sx-spec .tone { display: inline-block; margin-right: 8px; }
+.sx-spec .tone.pilot { color: var(--accent); }
+

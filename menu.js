@@ -31,6 +31,7 @@ const SODENMIR_GROUPS = [
         items: [
             // exact: true は /contents/SANDBOX/ と index.html でだけ選択中（試作ページ側では光らせない）
             { label: "SANDBOX_HOME", dir: "/contents/SANDBOX/", path: "/contents/SANDBOX/index.html", icon: "/images/icons/SANDBOX.png", exact: true },
+            { label: "SONIC_ASCII", dir: "/contents/SANDBOX/SONIC_ASCII/", path: "/contents/SANDBOX/SONIC_ASCII/index.html", icon: "/images/icons/SANDBOX.png", desc: "Send ASCII text by sound" },
         ],
     },
     {

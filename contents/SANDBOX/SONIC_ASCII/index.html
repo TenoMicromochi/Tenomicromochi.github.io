@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<!-- ============================================================
+     SONIC_ASCII — SANDBOX 標準UI の試作第1号
+     _standard/sandbox-ui/ の3ファイルを複製して作った。
+     ロジックは Sandbox/Sonic_ASCII/original.html のまま（main.js）。
+     共通部分は /sandbox.css と /sandbox-ui.js。
+     メイン画面（stage）は、バーの canvas（整数倍）＋受信ステータス＋受信テキスト＋16進ログ。
+     ============================================================ -->
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>送電世界 - SONIC_ASCII</title>
+<meta name="description" content="音で ASCII テキストを送る8トーンの音響モデム">
+<meta property="og:type" content="website">
+<meta property="og:title" content="送電世界 - SONIC_ASCII">
+<meta property="og:description" content="音で ASCII テキストを送る8トーンの音響モデム">
+<meta property="og:image" content="https://tenomicromochi.github.io/images/OGP.png">
+<meta property="og:url" content="https://tenomicromochi.github.io/contents/SANDBOX/SONIC_ASCII/index.html">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="/theme.css">
+<link rel="stylesheet" href="/sandbox.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="/main.css">
+<script src="/menu.js" defer></script>
+<script src="/sandbox-ui.js" defer></script>
+<script src="main.js" defer></script>
+</head>
+<body class="sandbox-app">
+
+<header class="sb-title">
+  <div class="sb-name">SONIC_ASCII</div>
+  <div class="sb-desc">8-tone acoustic modem for ASCII text</div>
+  <div class="sb-badge">SANDBOX</div>
+</header>
+
+<main class="sb-stage">
+  <div class="sx-wrap">
+    <!-- 8トーンのレベルバー。論理 224x40（1本 28px 幅）。整数倍は main.js が決める -->
+    <div class="sx-meter" id="meter">
+      <canvas id="bars" width="224" height="40"></canvas>
+      <div class="sx-labels" id="barLabels"></div>
+    </div>
+    <div class="sx-status" id="rxStatus"><span class="meta">Idle</span></div>
+    <div class="sx-io">
+      <div class="sx-text" id="rxText"></div>
+      <div class="sx-hex" id="rxHex"></div>
+    </div>
+  </div>
+</main>
+
+<footer class="sb-dock">
+
+  <section class="sb-tab" data-tab="SEND">
+    <textarea id="txt" class="sx-ta" spellcheck="false">Hello, World!
+This is sonic ASCII.</textarea>
+    <button class="btn" id="send" type="button">SEND</button>
+    <button class="btn secondary" id="stop" type="button" disabled>STOP</button>
+    <div class="sb-ctrl">
+      <label for="vol">VOLUME</label>
+      <input type="range" id="vol" min="0.05" max="1" step="0.05" value="0.5">
+      <input type="number" id="volN" min="0.05" max="1" step="0.05" value="0.5">
+    </div>
+    <div class="sb-field">
+      <div class="sb-label">SPEED</div>
+      <div class="sb-seg sx-speed">
+        <button type="button" data-speed="50,15">FAST <span class="sx-sub">50+15ms</span></button>
+        <button type="button" data-speed="80,20" class="is-active">NORMAL <span class="sx-sub">80+20ms</span></button>
+        <button type="button" data-speed="100,40">STABLE <span class="sx-sub">100+40ms</span></button>
+      </div>
+    </div>
+    <div class="sx-line" id="sendStatus"></div>
+  </section>
+
+  <section class="sb-tab" data-tab="RECEIVE">
+    <button class="btn" id="mic" type="button">MIC START</button>
+    <button class="btn secondary" id="loop" type="button" title="Decode the send tone directly, with noise, reverb and distortion added">TEST (NO MIC)</button>
+    <label class="btn secondary" id="fileBtn">LOAD FILE<input id="file" type="file" accept="audio/*" hidden></label>
+    <div class="sb-field">
+      <div class="sb-label">SPEED (same on both sides)</div>
+      <div class="sb-seg sx-speed">
+        <button type="button" data-speed="50,15">FAST <span class="sx-sub">50+15ms</span></button>
+        <button type="button" data-speed="80,20" class="is-active">NORMAL <span class="sx-sub">80+20ms</span></button>
+        <button type="button" data-speed="100,40">STABLE <span class="sx-sub">100+40ms</span></button>
+      </div>
+    </div>
+  </section>
+
+  <section class="sb-tab" data-tab="SPEC">
+    <div class="sx-spec">
+      <p><b>TONES</b> <span id="specTable"></span></p>
+      <p>All 8 tones sit within 1884-3445 Hz (one octave), so no harmonic hits another tone. Intermod products stay 29 Hz or more from every tone.</p>
+      <p><b>SYMBOL</b> 1 symbol = 1 byte (ASCII | 0x80). Tones for 1-bits sound together. bit7 is the pilot, always on: it marks symbol timing, even for NUL. 5 ms fade, silent gap between symbols.</p>
+      <p><b>FRAME</b> <code>DEL DEL STX body ETX sum</code></p>
+      <p>DEL (0x7F) sounds every tone: the receiver calibrates per-tone response from it. Body is plain ASCII (LF and TAB ok, other chars sent as ?). sum = body bytes mod 128.</p>
+      <p><b>RECEIVE</b> Pilot onset finds each symbol, then Hann window + Goertzel measures 8 tones mid-symbol. A tone is 1 when about -3.5 dB or more against the pilot (after DEL calibration).</p>
+    </div>
+  </section>
+
+</footer>
+
+</body>
+</html>
