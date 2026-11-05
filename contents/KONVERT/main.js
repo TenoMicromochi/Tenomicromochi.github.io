@@ -508,6 +508,15 @@ $('clearBtn').addEventListener('click', () => {
   maskChanged();
 });
 
+// ALL：その場で働くボタン。マスクを全画素にする（選択中のツールは変えない）
+function maskAll() {
+  if (!E.image || E.mask.every((v) => v === 1)) return;
+  pushUndo(E.mask.slice());
+  E.mask.fill(1);
+  maskChanged();
+}
+$('allBtn').addEventListener('click', maskAll);
+
 const rectOf = (a, b) => [Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.abs(a[0] - b[0]) + 1, Math.abs(a[1] - b[1]) + 1];
 
 // 枠（ghost / ブラシカーソル）を、画像の画素 [x0,y0,x1,y1) の位置に置く。画像の外は切る
@@ -1000,6 +1009,7 @@ $('copyBtn').addEventListener('click', async () => {
 function updateButtons() {
   const busy = S.busy > 0;
   $('saveBtn').disabled = busy || !E.image || hintTooLong() || !passMatch();
+  $('allBtn').disabled = !E.image;
   $('undoBtn').disabled = !E.undo.length;
   $('redoBtn').disabled = !E.redo.length;
   const unlock = $('unlockBtn');
@@ -1042,6 +1052,7 @@ addEventListener('keydown', (e) => {
   else if (k === 'b') setTool('square');
   else if (k === 'c') setTool('round');
   else if (k === 'e') setTool('erase');
+  else if (k === 'a') maskAll();
   else if (k === '[') setBrush(S.brush - 1);
   else if (k === ']') setBrush(S.brush + 1);
   else if (k === 'p' && E.image) setView(E.view === 'mask' ? 'preview' : 'mask');
