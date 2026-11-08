@@ -1,5 +1,5 @@
 // 1本 = 1オブジェクト。増えたらここに足すだけ。icon は 16x16 の実寸
-// features_* の文面は仮（Kaname が後で書き直す）
+// 文面のルールは Software/WRITING_RULES.md。languages は spec 行に出す（無ければ出さない）
 const SOFTWARE = [
   {
     "id": "tliv",
@@ -8,26 +8,25 @@ const SOFTWARE = [
     "icon": "images/tliv.png",
     "platform": "Windows 10 / 11 (x64)",
     "license": "MIT",
+    "languages": "EN, JA, ZH-CN, ZH-TW",
     "repo": "https://github.com/TenoMicromochi/TLIV",
-    "tagline_jp": "軽量画像ビュワー。画像の細かなメタデータも覗けます。",
-    "tagline_en": "A light image viewer that also lets you peek at detailed image metadata.",
-    "about_jp": "ダブルクリックですぐ開く、画像を見るためだけの小さなソフトです。ドット絵をぼかさずに拡大でき、カーソルの下の座標と色もその場で分かります。I キーで情報パネルを開くと、画像の大きさ・色数・EXIF・PNG に埋め込まれた文字なども読めます。",
-    "about_en": "A small program that only shows images, and opens instantly. Pixel art zooms in without blurring, and you can see the position and colour under the cursor. Press I to open the info panel: size, colour count, EXIF and text embedded in PNGs.",
+    "tagline_jp": "軽量画像ビュワー",
+    "tagline_en": "A light image viewer",
+    "about_jp": "Windows 標準が最低なので作りました。これだけできれば十分、がコンセプトです。",
+    "about_en": "The Windows default is the worst, so I made this. The concept: this much is enough.",
     "features_jp": [
       "ドット絵モード：補間なし・整数倍ズーム・座標と HEX 色の表示",
       "情報パネルで EXIF・PNG の埋め込みテキストなどを表示",
       "GIF / APNG / WebP のアニメ再生とコマ送り",
       "範囲選択して透過を保ったままコピー",
-      "背景切替（市松・黒・白・任意色）",
-      "英語 / 日本語 / 简体中文 / 繁體中文"
+      "背景切替（市松・黒・白・任意色）"
     ],
     "features_en": [
       "Pixel mode: no smoothing, whole-number zoom, x / y and HEX colour",
       "Info panel: EXIF, text embedded in PNGs and more",
       "Plays GIF / APNG / WebP animation, frame by frame too",
       "Select an area and copy it with transparency",
-      "Background: checker / black / white / custom",
-      "English / 日本語 / 简体中文 / 繁體中文"
+      "Background: checker / black / white / custom"
     ]
   },
   {
@@ -37,26 +36,25 @@ const SOFTWARE = [
     "icon": "images/tlvv.png",
     "platform": "Windows 10 / 11 (x64)",
     "license": "MIT",
+    "languages": "EN, JA, ZH-CN, ZH-TW",
     "repo": "https://github.com/TenoMicromochi/TLVV",
-    "tagline_jp": "軽量動画ビュワー。最低限の機能だけです。",
-    "tagline_en": "A light video viewer with only the bare essentials.",
-    "about_jp": "ダブルクリックですぐ開く、動画を見るためだけの小さなソフトです。Windows 標準のアプリが使いにくいので作りました。シークバーで好きな位置へ飛べて、← → キーで同じフォルダの前後の動画へすぐ移れます。音量とミュートは次に開いたときも引き継ぐので、急に大きな音が鳴りません。",
-    "about_en": "A small program that only plays videos, and opens instantly. I made it because the app that comes with Windows was awkward to use. Jump anywhere with the seek bar, and press Left / Right to move to the previous or next video in the same folder. Volume and mute carry over to the next time you open it, so nothing suddenly plays loud.",
+    "tagline_jp": "軽量動画ビュワー",
+    "tagline_en": "A light video viewer",
+    "about_jp": "Windows 標準が最低なので作りました。これだけできれば十分、がコンセプトです。",
+    "about_en": "The Windows default is the worst, so I made this. The concept: this much is enough.",
     "features_jp": [
       "← → で同じフォルダの前後の動画へ（端でループ）",
       "コマ送り・コマ戻し、再生速度 x0.25〜x4",
       "等倍 / 窓に合わせる の切り替え、全画面",
       "終わったら：停止 / ループ / 次の動画",
-      "MP4 / MOV / MKV / WebM / AVI / WMV（再生できるかは Windows のコーデックに依存します）",
-      "英語 / 日本語 / 简体中文 / 繁體中文"
+      "MP4 / MOV / MKV / WebM / AVI / WMV（再生できるかは Windows のコーデックに依存します）"
     ],
     "features_en": [
       "Left / Right for the previous / next video in the folder (loops at the ends)",
       "Frame back / forward, speed x0.25 to x4",
       "Fit to window or 1x, fullscreen",
       "At end: stop / loop / next video",
-      "MP4 / MOV / MKV / WebM / AVI / WMV (depends on the codecs in your Windows)",
-      "English / 日本語 / 简体中文 / 繁體中文"
+      "MP4 / MOV / MKV / WebM / AVI / WMV (depends on the codecs in your Windows)"
     ]
   },
   {
@@ -66,26 +64,25 @@ const SOFTWARE = [
     "icon": "images/tlap.png",
     "platform": "Windows 10 / 11 (x64)",
     "license": "MIT",
+    "languages": "EN, JA, ZH-CN, ZH-TW",
     "repo": "https://github.com/TenoMicromochi/TLAP",
-    "tagline_jp": "軽量音楽プレーヤー。今のフォルダだけ鳴らします。",
-    "tagline_en": "A light music player that plays the folder you are in.",
-    "about_jp": "曲を開くと、同じフォルダの曲が並んでそこから鳴る、それだけの小さなソフトです。ライブラリもプレイリストも作りません。曲間なしで続けて鳴り、「この1曲だけ鳴らして止まる」リピートもあるので、効果音の確認にも使えます。起動したときは前回のフォルダを開くだけで、勝手に鳴りません。",
-    "about_en": "A small program that plays the songs in the folder you open, and nothing more. No library, no playlists. Songs play back to back with no gap, and a \"stop after this track\" repeat makes it handy for checking sound effects too. On startup it opens the last folder but never starts playing on its own.",
+    "tagline_jp": "軽量音楽プレーヤー",
+    "tagline_en": "A light music player",
+    "about_jp": "Windows 標準が最低なので作りました。これだけできれば十分、がコンセプトです。",
+    "about_en": "The Windows default is the worst, so I made this. The concept: this much is enough.",
     "features_jp": [
       "曲間なしの再生、リピート4種（1曲 / フォルダ / フォルダの最後で停止 / 1曲で停止）",
       "列を選べる曲の一覧、並べ替えた順に再生",
       "ジャケット、小さなエクスプローラ、情報パネル、ミニ窓",
       "10バンド EQ、HLSL シェーダーのビジュアライザ（自作を足せる）",
-      "MP3 / M4A / FLAC / WAV / WMA / Ogg Vorbis / Opus",
-      "英語 / 日本語 / 简体中文 / 繁體中文"
+      "MP3 / M4A / FLAC / WAV / WMA / Ogg Vorbis / Opus"
     ],
     "features_en": [
       "Gapless playback, 4 repeat modes (one / folder / stop at folder end / stop after track)",
       "Song list with selectable columns; sorting sets the play order",
       "Cover, small folder explorer, info panel, mini window",
       "10-band EQ and HLSL shader visualizers (add your own)",
-      "MP3 / M4A / FLAC / WAV / WMA / Ogg Vorbis / Opus",
-      "English / 日本語 / 简体中文 / 繁體中文"
+      "MP3 / M4A / FLAC / WAV / WMA / Ogg Vorbis / Opus"
     ]
   },
   {
@@ -96,10 +93,10 @@ const SOFTWARE = [
     "platform": "Windows 10 / 11 (x64)",
     "license": "MIT",
     "repo": "https://github.com/TenoMicromochi/Tenokun-s_TUI_Visualizer",
-    "tagline_jp": "音声を TUI ＋ブラウン管風の動画にするソフトウェア。",
-    "tagline_en": "Turns your audio into a TUI-style video on an old CRT screen.",
-    "about_jp": "曲のファイルを入れると、昔のパソコンの文字だけの画面（TUI）がブラウン管に映っているような映像で、音に合わせてメーターやスペクトラムが動きます。歌詞や曲の情報も画面に流せて、そのまま YouTube や X に上げられる 1920x1080 の MP4 として書き出せます。",
-    "about_en": "Drop in a song and it plays as a text-only computer screen (a TUI) on an old CRT, with meters and a spectrum moving to the sound. You can show lyrics and song info on screen too, and save it as a 1920x1080 MP4 ready for YouTube or X.",
+    "tagline_jp": "音声をブラウン管風の TUI 動画にするソフト",
+    "tagline_en": "Turns audio into a CRT-style TUI video",
+    "about_jp": "曲のファイルを入れると、昔のパソコンの文字だけの画面がブラウン管に映ったような映像になり、音に合わせて動きます。書き出した MP4 はそのまま YouTube や X に上げられます。",
+    "about_en": "Drop in a song and it becomes a text-only computer screen on an old CRT, moving to the sound. The MP4 it writes is ready for YouTube or X.",
     "features_jp": [
       "スペクトラム・メーター・ラウドネスを文字の格子で描き、ブラウン管効果をかける",
       "台本ファイルで曲情報・歌詞・AA・演出を LOG に流す（秒 / 小節指定）",
@@ -123,10 +120,10 @@ const SOFTWARE = [
     "platform": "Windows 10 / 11 (x64)",
     "license": "MIT",
     "repo": "https://github.com/TenoMicromochi/EdgThumb",
-    "tagline_jp": "Windows エクスプローラーで EDGE2 の *.edg をサムネイル表示させるパッチ。",
-    "tagline_en": "A patch that makes Windows Explorer show thumbnails of EDGE2 *.edg files.",
-    "about_jp": "ドット絵ソフト EDGE2 で保存した .edg ファイルは、ふつうエクスプローラーでは中身が見えず、同じアイコンが並ぶだけです。これを入れると、PNG などと同じようにフォルダの中で絵が小さく表示され、ファイルを開かなくてもどれが何の絵か分かります。（非公式ツールです）",
-    "about_en": "Files saved by the pixel art editor EDGE2 (.edg) normally all look the same in Explorer. Install this and they show a small picture of what is inside, like PNGs do, so you can find a drawing without opening it. (Unofficial tool.)",
+    "tagline_jp": "EDGE2 の .edg をエクスプローラーでサムネイル表示するパッチ",
+    "tagline_en": "A patch that shows EDGE2 .edg thumbnails in Windows Explorer",
+    "about_jp": "Windows のエクスプローラーで .edg ファイルの中身が見えないのが不便なので作りました。非公式ツールです。",
+    "about_en": "Windows Explorer doesn't show what's inside .edg files. That was annoying, so I made this. Unofficial tool.",
     "features_jp": [
       "EDGE2 で開いているページを、EDGE2 上と同じ見え方で合成",
       "1 / 4 / 8 / 15 / 16 / 24bit に対応（EDGE1 形式は非対応）",
@@ -171,7 +168,7 @@ function render() {
                 <p class="about">${esc(sw['about_' + lang])}</p>
                 <ul class="features">${sw['features_' + lang].map((f) => `<li>${esc(f)}</li>`).join('')}</ul>
                 <div class="card-foot">
-                    <span class="spec-line">${esc(sw.platform)} / ${esc(sw.license)}</span>
+                    <span class="spec-line">${esc(sw.platform)} / ${esc(sw.license)}${sw.languages ? ' / ' + esc(sw.languages) : ''}</span>
                     <div class="dl-buttons">
                         <a class="btn" href="${esc(sw.repo)}/releases/latest" target="_blank" rel="noopener">RELEASES &gt;</a>
                         <a class="btn secondary" href="${esc(sw.repo)}" target="_blank" rel="noopener">GITHUB</a>
