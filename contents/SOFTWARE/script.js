@@ -60,6 +60,35 @@ const SOFTWARE = [
     ]
   },
   {
+    "id": "tlap",
+    "name": "TLAP",
+    "version": "1.0.0",
+    "icon": "images/tlap.png",
+    "platform": "Windows 10 / 11 (x64)",
+    "license": "MIT",
+    "repo": "https://github.com/TenoMicromochi/TLAP",
+    "tagline_jp": "軽量音楽プレーヤー。今のフォルダだけ鳴らします。",
+    "tagline_en": "A light music player that plays the folder you are in.",
+    "about_jp": "曲を開くと、同じフォルダの曲が並んでそこから鳴る、それだけの小さなソフトです。ライブラリもプレイリストも作りません。曲間なしで続けて鳴り、「この1曲だけ鳴らして止まる」リピートもあるので、効果音の確認にも使えます。起動したときは前回のフォルダを開くだけで、勝手に鳴りません。",
+    "about_en": "A small program that plays the songs in the folder you open, and nothing more. No library, no playlists. Songs play back to back with no gap, and a \"stop after this track\" repeat makes it handy for checking sound effects too. On startup it opens the last folder but never starts playing on its own.",
+    "features_jp": [
+      "曲間なしの再生、リピート4種（1曲 / フォルダ / フォルダの最後で停止 / 1曲で停止）",
+      "列を選べる曲の一覧、並べ替えた順に再生",
+      "ジャケット、小さなエクスプローラ、情報パネル、ミニ窓",
+      "10バンド EQ、HLSL シェーダーのビジュアライザ（自作を足せる）",
+      "MP3 / M4A / FLAC / WAV / WMA / Ogg Vorbis / Opus",
+      "英語 / 日本語 / 简体中文 / 繁體中文"
+    ],
+    "features_en": [
+      "Gapless playback, 4 repeat modes (one / folder / stop at folder end / stop after track)",
+      "Song list with selectable columns; sorting sets the play order",
+      "Cover, small folder explorer, info panel, mini window",
+      "10-band EQ and HLSL shader visualizers (add your own)",
+      "MP3 / M4A / FLAC / WAV / WMA / Ogg Vorbis / Opus",
+      "English / 日本語 / 简体中文 / 繁體中文"
+    ]
+  },
+  {
     "id": "ttui",
     "name": "TTUI",
     "version": "0.2.1",
