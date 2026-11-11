@@ -60,7 +60,7 @@ const SOFTWARE = [
   {
     "id": "tlap",
     "name": "TLAP",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "icon": "images/tlap.png",
     "platform": "Windows 10 / 11 (x64)",
     "license": "MIT",
