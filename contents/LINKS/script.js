@@ -1,17 +1,24 @@
 const LINK_DATA = [
     {
-        title: "Twitter/X",
-        url: "https://x.com/_Tenokun_",
+        title: "X/SFW",
+        url: "https://x.com/_Tenokun_sfw",
         image: "/images/icons/X.png",
         buttonText: "←VISIT！",
-        description: "僕のTwitterメインアカウントです\n色々呟いてるよ"
+        description: "僕のメインアカウントです\n色々つぶやいてるよ"
     },
     {
-        title: "DISCORD - あーく・そどむ",
-        url: "https://discord.gg/NHBpwWvfAq",
-        image: "/images/icons/DISCORD.png",
+        title: "X/NSFW",
+        url: "https://x.com/_Tenokun_nsfw",
+        image: "/images/icons/X.png",
         buttonText: "←VISIT！",
-        description: "僕が管理者のDiscordサーバーです\nもしよければ覗いていってね"
+        description: "僕のNSFWアカウントです\n未成年はブロックします"
+    },
+    {
+        title: "Fluxer - あーく・ごもら",
+        url: "https://fluxer.gg/zjfx6Q2m",
+        image: "/images/icons/FLUXER.png",
+        buttonText: "←VISIT！",
+        description: "僕が管理者のFluxerサーバーです\nDISCORDは捨てました"
     },
     {
         title: "PIXIV",
