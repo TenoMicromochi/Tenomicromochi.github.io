@@ -80,7 +80,7 @@ function buildIndex(categories, list) {
         // \u958B\u9589\u306E\u76EE\u5370\u306F\u30C9\u30C3\u30C8\u7D75\u306E\u30D5\u30A9\u30EB\u30C0\u30A2\u30A4\u30B3\u30F3\u3002\u56DE\u3059\u3068\u30C9\u30C3\u30C8\u304C\u5D29\u308C\u308B\u306E\u3067
         // \u56DE\u8EE2\u306F\u3055\u305B\u305A\u3001\u9589\u3058\u3066\u3044\u308B\u5074\u3092 CSS \u3067\u6C88\u3081\u3066\u72B6\u614B\u3092\u793A\u3059\u3002
         summary.innerHTML =
-            '<img class="cat-folder" src="/images/icons/FOLDER.png" alt="">' +
+            '<img class="cat-folder" src="/images/icons/folder.png" alt="">' +
             '<span class="cat-ja"></span>' +
             '<span class="cat-en"></span>' +
             '<span class="cat-count"></span>';

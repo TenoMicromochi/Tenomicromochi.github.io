@@ -4,12 +4,12 @@
 const IMG_BASE = '/images/';
 const BTN_BASE = IMG_BASE + 'buttons/';
 // アイコン類は images/icons/ 配下。images/ 直下ではない
-const FOLDER_ICON = IMG_BASE + 'icons/FOLDER.png';
+const FOLDER_ICON = IMG_BASE + 'icons/folder.png';
 const EXT_BADGE = { PNG: BTN_BASE + 'button_extension_png.png', GIF: BTN_BASE + 'button_extension_gif.png' };
 
 // asset名(例: "x2")→ ON/OFF画像の切り替え。ボタン系アイコンは全て images/buttons/ 配下。
 function buttonAssetSrc(asset, isActive) {
-    return BTN_BASE + 'button_' + asset + (isActive ? '_ON.png' : '_OFF.png');
+    return BTN_BASE + 'button_' + asset + (isActive ? '_on.png' : '_off.png');
 }
 
 // パスの各セグメントをURLエンコード（日本語・絵文字・空白・括弧などを含むファイル名対応）。

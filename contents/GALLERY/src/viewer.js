@@ -73,7 +73,7 @@ function applyScale() {
     metaDisplay.textContent = 'display: ' + w + '×' + h + ' (' + currentScale + '×)';
 }
 
-// button_original(x1)_ON/OFF.png, button_x2/x3/x4_ON/OFF.png を差し替えて
+// button_original_x1_on/off.png, button_x2/x3/x4_on/off.png を差し替えて
 // トグル状態を表現する（ON=選択中）。
 function setActiveScaleButton(scale) {
     scaleGroup.querySelectorAll('.scale-btn').forEach(btn => {

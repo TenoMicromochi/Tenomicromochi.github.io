@@ -1,54 +1,54 @@
 
 // トップレベル項目（フォルダ分けしない単独ページ）
 const SODENMIR_TOP_ITEMS = [
-    { label: "PROFILE", dir: "/contents/PROFILE/", path: "/contents/PROFILE/index.html", icon: "/images/icons/PROFILE.png" },
+    { label: "PROFILE", dir: "/contents/PROFILE/", path: "/contents/PROFILE/index.html", icon: "/images/icons/profile.png" },
 ];
 
 // フォルダ分けされたグループ項目
 const SODENMIR_GROUPS = [
     {
-        label: "TOOLS", icon: "/images/icons/TOOLS.png",
+        label: "TOOLS", icon: "/images/icons/tools.png",
         items: [
-            { label: "GLYPHALT", dir: "/contents/GLYPHALT/", path: "/contents/GLYPHALT/index.html", icon: "/images/icons/TOOLS.png" },
-            { label: "TEXTALT", dir: "/contents/TEXTALT/", path: "/contents/TEXTALT/index.html", icon: "/images/icons/TOOLS.png" },
-            { label: "TENOMOJI", dir: "/contents/TENOMOJI/", path: "/contents/TENOMOJI/index.html", icon: "/images/icons/TENOMOJI.png" },
-            { label: "PALETALT", dir: "/contents/PALETALT/", path: "/contents/PALETALT/index.html", icon: "/images/icons/PALETALT.png" },
-            { label: "ANIMALT", dir: "/contents/ANIMALT/", path: "/contents/ANIMALT/index.html", icon: "/images/icons/ANIMALT.png" },
-            { label: "PRISMALT", dir: "/contents/PRISMALT/", path: "/contents/PRISMALT/index.html", icon: "/images/icons/PRISMALT.png" },
-            { label: "KONVERT", dir: "/contents/KONVERT/", path: "/contents/KONVERT/index.html", icon: "/images/icons/KONVERT.png" },
+            { label: "GLYPHALT", dir: "/contents/GLYPHALT/", path: "/contents/GLYPHALT/index.html", icon: "/images/icons/tools.png" },
+            { label: "TEXTALT", dir: "/contents/TEXTALT/", path: "/contents/TEXTALT/index.html", icon: "/images/icons/tools.png" },
+            { label: "TENOMOJI", dir: "/contents/TENOMOJI/", path: "/contents/TENOMOJI/index.html", icon: "/images/icons/tenomoji.png" },
+            { label: "PALETALT", dir: "/contents/PALETALT/", path: "/contents/PALETALT/index.html", icon: "/images/icons/paletalt.png" },
+            { label: "ANIMALT", dir: "/contents/ANIMALT/", path: "/contents/ANIMALT/index.html", icon: "/images/icons/animalt.png" },
+            { label: "PRISMALT", dir: "/contents/PRISMALT/", path: "/contents/PRISMALT/index.html", icon: "/images/icons/prismalt.png" },
+            { label: "KONVERT", dir: "/contents/KONVERT/", path: "/contents/KONVERT/index.html", icon: "/images/icons/konvert.png" },
         ],
     },
     {
-        label: "GAMES", icon: "/images/icons/GAMES.png",
+        label: "GAMES", icon: "/images/icons/games.png",
         items: [
-            { label: "FLAKALT", dir: "/contents/FLAKALT/", path: "/contents/FLAKALT/index.html", icon: "/images/icons/FLIGHT.png" },
-            { label: "LOGICALT", dir: "/contents/LOGICALT/", path: "/contents/LOGICALT/index.html", icon: "/images/icons/LOGIC.png" },
+            { label: "FLAKALT", dir: "/contents/FLAKALT/", path: "/contents/FLAKALT/index.html", icon: "/images/icons/flight.png" },
+            { label: "LOGICALT", dir: "/contents/LOGICALT/", path: "/contents/LOGICALT/index.html", icon: "/images/icons/logic.png" },
         ],
     },
     {
         // 試作置き場。中身はこれから足す
-        label: "SANDBOX", icon: "/images/icons/SANDBOX.png",
+        label: "SANDBOX", icon: "/images/icons/sandbox.png",
         items: [
             // exact: true は /contents/SANDBOX/ と index.html でだけ選択中（試作ページ側では光らせない）
-            { label: "SANDBOX_HOME", dir: "/contents/SANDBOX/", path: "/contents/SANDBOX/index.html", icon: "/images/icons/SANDBOX.png", exact: true },
-            { label: "SONIC_ASCII", dir: "/contents/SANDBOX/SONIC_ASCII/", path: "/contents/SANDBOX/SONIC_ASCII/index.html", icon: "/images/icons/SANDBOX.png", desc: "Send ASCII text by sound" },
+            { label: "SANDBOX_HOME", dir: "/contents/SANDBOX/", path: "/contents/SANDBOX/index.html", icon: "/images/icons/sandbox.png", exact: true },
+            { label: "SONIC_ASCII", dir: "/contents/SANDBOX/SONIC_ASCII/", path: "/contents/SANDBOX/SONIC_ASCII/index.html", icon: "/images/icons/sandbox.png", desc: "Send ASCII text by sound" },
         ],
     },
     {
-        label: "WORKS", icon: "/images/icons/FOLDER.png",
+        label: "WORKS", icon: "/images/icons/folder.png",
         items: [
-            { label: "GALLERY", dir: "/contents/GALLERY/", path: "/contents/GALLERY/index.html", icon: "/images/icons/GALLARY.png" },
-            { label: "SOFTWARE", dir: "/contents/SOFTWARE/", path: "/contents/SOFTWARE/index.html", icon: "/images/icons/SOFTWARE.png" },
-            { label: "POEM", dir: "/contents/POEM/", path: "/contents/POEM/index.html", icon: "/images/icons/FOLDER.png" },
-            { label: "FONT", dir: "/contents/FONT/", path: "/contents/FONT/index.html", icon: "/images/icons/FONTS.png" },
+            { label: "GALLERY", dir: "/contents/GALLERY/", path: "/contents/GALLERY/index.html", icon: "/images/icons/gallery.png" },
+            { label: "SOFTWARE", dir: "/contents/SOFTWARE/", path: "/contents/SOFTWARE/index.html", icon: "/images/icons/software.png" },
+            { label: "POEM", dir: "/contents/POEM/", path: "/contents/POEM/index.html", icon: "/images/icons/folder.png" },
+            { label: "FONT", dir: "/contents/FONT/", path: "/contents/FONT/index.html", icon: "/images/icons/fonts.png" },
         ],
     },
     {
-        label: "OTHER", icon: "/images/icons/FOLDER.png",
+        label: "OTHER", icon: "/images/icons/folder.png",
         items: [
-            { label: "LINK", dir: "/contents/LINKS/", path: "/contents/LINKS/index.html", icon: "/images/icons/LINK.png" },
-            { label: "POLICY", dir: "/contents/POLICY/", path: "/contents/POLICY/index.html", icon: "/images/icons/POLICY.png" },
-            { label: "UPDATE", dir: "/contents/UPDATE/", path: "/contents/UPDATE/index.html", icon: "/images/icons/UPDATE.png" },
+            { label: "LINK", dir: "/contents/LINKS/", path: "/contents/LINKS/index.html", icon: "/images/icons/link.png" },
+            { label: "POLICY", dir: "/contents/POLICY/", path: "/contents/POLICY/index.html", icon: "/images/icons/policy.png" },
+            { label: "UPDATE", dir: "/contents/UPDATE/", path: "/contents/UPDATE/index.html", icon: "/images/icons/update.png" },
         ],
     },
 ];
@@ -130,8 +130,8 @@ const SODENMIR_GROUPS = [
         branding.className = 'sodenmir-branding';
         branding.href = '/';
         branding.innerHTML =
-            '<img src="/images/TENOKUN_ICON.gif" alt="送電世界" class="sodenmir-brand-icon">' +
-            '<img src="/images/banner.png" alt="送電世界 そーでんみーる//Soden-mir" class="sodenmir-brand-banner">';
+            '<img src="/images/avatar/tenokun_icon.gif" alt="送電世界" class="sodenmir-brand-icon">' +
+            '<img src="/images/title/banner.png" alt="送電世界 そーでんみーる//Soden-mir" class="sodenmir-brand-banner">';
         topbar.appendChild(branding);
 
         const nav = document.createElement('nav');

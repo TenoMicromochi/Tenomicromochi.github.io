@@ -46,7 +46,7 @@
     color: var(--accent);
 }
 .sidebar-head-icon {
-    /* GALLARY.png は 16x16 の等倍ドット絵。中身を 32px（2 倍）で出す。 */
+    /* gallery.png は 16x16 の等倍ドット絵。中身を 32px（2 倍）で出す。 */
     box-sizing: content-box;
     width: 32px;
     height: 32px;
@@ -253,7 +253,7 @@
     user-drag: none;
 }
 
-/* ── 拡大率切替（button_original(x1) / x2 / x3 / x4、ON/OFFの差し替え式）
+/* ── 拡大率切替（button_original_x1 / x2 / x3 / x4、ON/OFFの差し替え式）
    すべてドット絵ボタンなので等倍の2倍で表示し、補完させない。 ── */
 .scale-btn-group {
     display: flex;

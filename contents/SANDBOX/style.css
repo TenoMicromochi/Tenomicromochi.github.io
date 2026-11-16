@@ -9,7 +9,7 @@ body::before {
     position: fixed;
     inset: 0;
     z-index: -1;
-    background: url('/images/sandbox_bg.png') no-repeat right bottom / 1024px 684px;
+    background: url('/images/background/sandbox_bg.png') no-repeat right bottom / 1024px 684px;
     image-rendering: pixelated;
     opacity: 0.35;
     pointer-events: none;

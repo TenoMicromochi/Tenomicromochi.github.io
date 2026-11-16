@@ -120,7 +120,7 @@ class App {
     for (const btn of this.scaleGroup.querySelectorAll('.scale-btn')) {
       const img = btn.querySelector('img');
       const on = Number(btn.dataset.scale) === active;
-      const src = '/images/buttons/button_' + img.dataset.asset + (on ? '_ON' : '_OFF') + '.png';
+      const src = '/images/buttons/button_' + img.dataset.asset + (on ? '_on' : '_off') + '.png';
       if (img.getAttribute('src') !== src) img.setAttribute('src', src);
       btn.classList.toggle('on', on);
     }
@@ -194,7 +194,7 @@ class App {
         const img = this.fsBtn.querySelector('img');
         if (img) {
           const src = '/images/buttons/button_' + img.dataset.asset +
-            (active ? '_ON' : '_OFF') + '.png';
+            (active ? '_on' : '_off') + '.png';
           if (img.getAttribute('src') !== src) img.setAttribute('src', src);
         }
         this.fsBtn.classList.toggle('on', active);

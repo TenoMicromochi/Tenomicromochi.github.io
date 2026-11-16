@@ -11,7 +11,7 @@ body::before {
     position: fixed;
     inset: -24px;
     z-index: -2;
-    background: url('/images/home_bg_hall.webp') center / cover no-repeat;
+    background: url('/images/background/home_bg_hall.webp') center / cover no-repeat;
     filter: blur(4px) saturate(0.8);
     pointer-events: none;
 }

@@ -2,42 +2,42 @@ const LINK_DATA = [
     {
         title: "X/SFW",
         url: "https://x.com/_Tenokun_sfw",
-        image: "/images/icons/X.png",
+        image: "/images/icons/x.png",
         buttonText: "←VISIT！",
         description: "僕のメインアカウントです\n色々つぶやいてるよ"
     },
     {
         title: "X/NSFW",
         url: "https://x.com/_Tenokun_nsfw",
-        image: "/images/icons/X.png",
+        image: "/images/icons/x.png",
         buttonText: "←VISIT！",
         description: "僕のNSFWアカウントです\n未成年はブロックします"
     },
     {
         title: "Fluxer - あーく・ごもら",
         url: "https://fluxer.gg/zjfx6Q2m",
-        image: "/images/icons/FLUXER.png",
+        image: "/images/icons/fluxer.png",
         buttonText: "←VISIT！",
         description: "僕が管理者のFluxerサーバーです\nDISCORDは捨てました"
     },
     {
         title: "PIXIV",
         url: "https://www.pixiv.net/users/7435083",
-        image: "/images/icons/PIXIV.png",
+        image: "/images/icons/pixiv.png",
         buttonText: "←VISIT！",
         description: "僕のドット絵がいっぱい置いてある場所です\n好きにみていってね"
     },
     {
         title: "VRChat",
         url: "https://vrchat.com/home/user/usr_2c3892bd-bc45-4bdf-b6ff-2a763227d13b",
-        image: "/images/icons/VRCHAT.png",
+        image: "/images/icons/vrchat.png",
         buttonText: "←VISIT！",
         description: "僕のVRChatアカウントです\nフレンド登録歓迎だよ"
     },
     {
         title: "YOUTUBE",
         url: "https://www.youtube.com/@Teno_Micromochi",
-        image: "/images/icons/YOUTUBE.png",
+        image: "/images/icons/youtube.png",
         buttonText: "←VISIT！",
         description: "僕の音楽がそこそこ置いてある場所です\n好きにみていってね"
     },

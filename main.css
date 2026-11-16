@@ -30,7 +30,7 @@
     min-height: 56px;
     /* タイル（高さ 56）よりバーが高い分は、タイル最上段の空の色で埋める */
     background-color: #6688CC;
-    background-image: url('/images/tile.png');
+    background-image: url('/images/tile/tile.png');
     background-repeat: repeat-x;
     background-position: left bottom;
     image-rendering: pixelated;
@@ -41,12 +41,12 @@
 
 /* ハロウィン限定のタイル（menu.js が 10/31 だけ付ける） */
 #sodenmir-topbar.sodenmir-halloween {
-    background-image: url('/images/tile_halloween.png');
+    background-image: url('/images/tile/tile_halloween.png');
 }
 
 /* SANDBOX 以下のページ専用タイル（menu.js が付ける） */
 #sodenmir-topbar.sodenmir-sandbox {
-    background-image: url('/images/tile_sandbox.png');
+    background-image: url('/images/tile/tile_sandbox.png');
 }
 
 #sodenmir-topbar * {
@@ -73,7 +73,7 @@
 }
 
 .sodenmir-brand-icon {
-    width: 32px;   /* TENOKUN_ICON は 32x32 を 8 倍で書き出してある。1 倍 */
+    width: 32px;   /* tenokun_icon は 32x32 を 8 倍で書き出してある。1 倍 */
     height: 32px;
     display: block;
     border: 1px solid #038C7F;
@@ -143,11 +143,11 @@
     width: 6px;
     height: 5px;
     flex-shrink: 0;
-    background: url('/images/tab_triangle_down.png') no-repeat;
+    background: url('/images/buttons/tab_triangle_down.png') no-repeat;
     image-rendering: pixelated;
 }
 .sodenmir-group[open] > .sodenmir-group-summary .sodenmir-caret {
-    background-image: url('/images/tab_triangle_up.png');
+    background-image: url('/images/buttons/tab_triangle_up.png');
 }
 
 .sodenmir-group {

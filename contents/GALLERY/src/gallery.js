@@ -145,7 +145,7 @@ function renderGrid() {
     items.forEach(item => grid.appendChild(buildCard(item)));
 }
 
-// button_size_s/m/l_ON/OFF.png を差し替えてサムネイル行の高さ(S/M/L)を切り替える。
+// button_size_s/m/l_on/off.png を差し替えてサムネイル行の高さ(S/M/L)を切り替える。
 function setActiveSizeButton(sizePx) {
     sizeGroup.querySelectorAll('.size-btn').forEach(btn => {
         const img = btn.querySelector('img');
