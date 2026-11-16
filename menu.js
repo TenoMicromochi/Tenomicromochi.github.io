@@ -38,6 +38,7 @@ const SODENMIR_GROUPS = [
         label: "WORKS", icon: "/images/icons/folder.png",
         items: [
             { label: "GALLERY", dir: "/contents/GALLERY/", path: "/contents/GALLERY/index.html", icon: "/images/icons/gallery.png" },
+            { label: "ASSETS", dir: "/contents/ASSETS/", path: "/contents/ASSETS/index.html", icon: "/images/icons/folders.png" },
             { label: "SOFTWARE", dir: "/contents/SOFTWARE/", path: "/contents/SOFTWARE/index.html", icon: "/images/icons/software.png" },
             { label: "POEM", dir: "/contents/POEM/", path: "/contents/POEM/index.html", icon: "/images/icons/folder.png" },
             { label: "FONT", dir: "/contents/FONT/", path: "/contents/FONT/index.html", icon: "/images/icons/fonts.png" },

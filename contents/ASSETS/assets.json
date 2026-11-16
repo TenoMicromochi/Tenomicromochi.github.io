@@ -1,0 +1,280 @@
+{
+  "categories": [
+    {
+      "key": "avatar",
+      "ja": "アバター",
+      "en": "Avatar"
+    },
+    {
+      "key": "background",
+      "ja": "バックグラウンド",
+      "en": "Background"
+    },
+    {
+      "key": "buttons",
+      "ja": "ボタン",
+      "en": "Buttons"
+    },
+    {
+      "key": "icons",
+      "ja": "アイコン",
+      "en": "Icons"
+    },
+    {
+      "key": "tile",
+      "ja": "タイル",
+      "en": "Tile"
+    },
+    {
+      "key": "title",
+      "ja": "タイトル",
+      "en": "Title"
+    }
+  ],
+  "items": [
+    {
+      "category": "avatar",
+      "file": "/images/avatar/tenokun_icon.gif"
+    },
+    {
+      "category": "avatar",
+      "file": "/images/avatar/tenokun_tachie.gif"
+    },
+    {
+      "category": "background",
+      "file": "/images/background/home_bg_hall.webp"
+    },
+    {
+      "category": "background",
+      "file": "/images/background/sandbox_bg.png"
+    },
+    {
+      "category": "buttons",
+      "file": "/images/buttons/button_check.png"
+    },
+    {
+      "category": "buttons",
+      "file": "/images/buttons/button_close.png"
+    },
+    {
+      "category": "buttons",
+      "file": "/images/buttons/button_download_off.png"
+    },
+    {
+      "category": "buttons",
+      "file": "/images/buttons/button_download_on.png"
+    },
+    {
+      "category": "buttons",
+      "file": "/images/buttons/button_exclamation.png"
+    },
+    {
+      "category": "buttons",
+      "file": "/images/buttons/button_extension_gif.png"
+    },
+    {
+      "category": "buttons",
+      "file": "/images/buttons/button_extension_png.png"
+    },
+    {
+      "category": "buttons",
+      "file": "/images/buttons/button_fullscreen_off.png"
+    },
+    {
+      "category": "buttons",
+      "file": "/images/buttons/button_fullscreen_on.png"
+    },
+    {
+      "category": "buttons",
+      "file": "/images/buttons/button_original_x1_off.png"
+    },
+    {
+      "category": "buttons",
+      "file": "/images/buttons/button_original_x1_on.png"
+    },
+    {
+      "category": "buttons",
+      "file": "/images/buttons/button_play.png"
+    },
+    {
+      "category": "buttons",
+      "file": "/images/buttons/button_size_l_off.png"
+    },
+    {
+      "category": "buttons",
+      "file": "/images/buttons/button_size_l_on.png"
+    },
+    {
+      "category": "buttons",
+      "file": "/images/buttons/button_size_m_off.png"
+    },
+    {
+      "category": "buttons",
+      "file": "/images/buttons/button_size_m_on.png"
+    },
+    {
+      "category": "buttons",
+      "file": "/images/buttons/button_size_s_off.png"
+    },
+    {
+      "category": "buttons",
+      "file": "/images/buttons/button_size_s_on.png"
+    },
+    {
+      "category": "buttons",
+      "file": "/images/buttons/button_stop.png"
+    },
+    {
+      "category": "buttons",
+      "file": "/images/buttons/button_x2_off.png"
+    },
+    {
+      "category": "buttons",
+      "file": "/images/buttons/button_x2_on.png"
+    },
+    {
+      "category": "buttons",
+      "file": "/images/buttons/button_x3_off.png"
+    },
+    {
+      "category": "buttons",
+      "file": "/images/buttons/button_x3_on.png"
+    },
+    {
+      "category": "buttons",
+      "file": "/images/buttons/button_x4_off.png"
+    },
+    {
+      "category": "buttons",
+      "file": "/images/buttons/button_x4_on.png"
+    },
+    {
+      "category": "buttons",
+      "file": "/images/buttons/tab_triangle_down.png"
+    },
+    {
+      "category": "buttons",
+      "file": "/images/buttons/tab_triangle_up.png"
+    },
+    {
+      "category": "icons",
+      "file": "/images/icons/animalt.png"
+    },
+    {
+      "category": "icons",
+      "file": "/images/icons/discord.png"
+    },
+    {
+      "category": "icons",
+      "file": "/images/icons/flight.png"
+    },
+    {
+      "category": "icons",
+      "file": "/images/icons/fluxer.png"
+    },
+    {
+      "category": "icons",
+      "file": "/images/icons/folder.png"
+    },
+    {
+      "category": "icons",
+      "file": "/images/icons/folders.png"
+    },
+    {
+      "category": "icons",
+      "file": "/images/icons/fonts.png"
+    },
+    {
+      "category": "icons",
+      "file": "/images/icons/gallery.png"
+    },
+    {
+      "category": "icons",
+      "file": "/images/icons/games.png"
+    },
+    {
+      "category": "icons",
+      "file": "/images/icons/konvert.png"
+    },
+    {
+      "category": "icons",
+      "file": "/images/icons/link.png"
+    },
+    {
+      "category": "icons",
+      "file": "/images/icons/logic.png"
+    },
+    {
+      "category": "icons",
+      "file": "/images/icons/paletalt.png"
+    },
+    {
+      "category": "icons",
+      "file": "/images/icons/pixiv.png"
+    },
+    {
+      "category": "icons",
+      "file": "/images/icons/policy.png"
+    },
+    {
+      "category": "icons",
+      "file": "/images/icons/prismalt.png"
+    },
+    {
+      "category": "icons",
+      "file": "/images/icons/profile.png"
+    },
+    {
+      "category": "icons",
+      "file": "/images/icons/sandbox.png"
+    },
+    {
+      "category": "icons",
+      "file": "/images/icons/software.png"
+    },
+    {
+      "category": "icons",
+      "file": "/images/icons/tenomoji.png"
+    },
+    {
+      "category": "icons",
+      "file": "/images/icons/tools.png"
+    },
+    {
+      "category": "icons",
+      "file": "/images/icons/update.png"
+    },
+    {
+      "category": "icons",
+      "file": "/images/icons/vrchat.png"
+    },
+    {
+      "category": "icons",
+      "file": "/images/icons/x.png"
+    },
+    {
+      "category": "icons",
+      "file": "/images/icons/youtube.png"
+    },
+    {
+      "category": "tile",
+      "file": "/images/tile/tile.png"
+    },
+    {
+      "category": "tile",
+      "file": "/images/tile/tile_halloween.png"
+    },
+    {
+      "category": "tile",
+      "file": "/images/tile/tile_sandbox.png"
+    },
+    {
+      "category": "title",
+      "file": "/images/title/banner.png"
+    },
+    {
+      "category": "title",
+      "file": "/images/title/ogp.png"
+    }
+  ]
+}
