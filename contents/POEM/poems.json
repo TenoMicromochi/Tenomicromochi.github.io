@@ -64,6 +64,14 @@
       "file": "data/asphalt_day.txt"
     },
     {
+      "id": "cough_powder",
+      "category": "auto2",
+      "color": "#09f",
+      "titleJa": "咳止めの甘苦い粉っぽさで噎せてる",
+      "titleEn": "Choking on the Bittersweet Chalkiness of Cough Medicine",
+      "file": "data/cough_powder.txt"
+    },
+    {
       "id": "anti_allergy",
       "category": "auto2",
       "color": "#3ac",
