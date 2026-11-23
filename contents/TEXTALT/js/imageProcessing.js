@@ -131,6 +131,10 @@ function applyConvolution(data, w, h, kernelObj, out) {
     return out;
 }
 
+let _colSum = null;
+let _avgLut = null;
+let _avgLutCnt = -1;
+
 /* ---- Image Processing Pipeline ---- */
 /* 移動和による箱ぼかし。端は従来同様に画素を複製して常に (2r+1) 個で平均する。
  * 入力は整数のみ・加減算のみのため走査和は誤差なく整数を保ち、結果は従来と完全一致。 */
@@ -141,6 +145,16 @@ function applyBoxBlur(data, w, h, radius, out, tmp) {
     if (!out) out = new Uint8ClampedArray(data.length);
 
     const cnt = 2 * r + 1;
+
+    // 和 → 平均値の表。Uint8ClampedArray への代入（偶数丸め）をそのまま表に焼くので、
+    // 毎画素 sum/cnt を代入するのと値は同じ。割り算と丸めを表引き1回にする。
+    const maxSum = 255 * cnt;
+    if (!_avgLut || _avgLutCnt !== cnt) {
+        _avgLut = new Uint8ClampedArray(maxSum + 1);
+        for (let s = 0; s <= maxSum; s++) _avgLut[s] = s / cnt;
+        _avgLutCnt = cnt;
+    }
+    const avg = _avgLut;
 
     // horizontal pass
     for (let y = 0; y < h; y++) {
@@ -153,7 +167,7 @@ function applyBoxBlur(data, w, h, radius, out, tmp) {
         }
         for (let x = 0; x < w; x++) {
             const oi = row + x * 4;
-            tmp[oi] = sr/cnt; tmp[oi+1] = sg/cnt; tmp[oi+2] = sb/cnt; tmp[oi+3] = data[oi+3];
+            tmp[oi] = avg[sr]; tmp[oi+1] = avg[sg]; tmp[oi+2] = avg[sb]; tmp[oi+3] = data[oi+3];
 
             // 窓を1つ進める: clamp(x-r) を抜き clamp(x+1+r) を足す
             const addX = x + 1 + r > w - 1 ? w - 1 : x + 1 + r;
@@ -166,27 +180,29 @@ function applyBoxBlur(data, w, h, radius, out, tmp) {
         }
     }
 
-    // vertical pass
+    // vertical pass：列ごとの移動和を行の順に進める（メモリを前から順に読むので速い）。
+    // 和は整数の加減算だけなので、列ごとに縦へ走る従来の書き方と値は完全に一致する。
     const stride = w * 4;
-    for (let x = 0; x < w; x++) {
-        const col = x * 4;
-        let sr = 0, sg = 0, sb = 0;
-        for (let ky = -r; ky <= r; ky++) {
-            const sy = ky < 0 ? 0 : (ky > h - 1 ? h - 1 : ky);
-            const i = sy * stride + col;
-            sr += tmp[i]; sg += tmp[i+1]; sb += tmp[i+2];
+    if (!_colSum || _colSum.length !== stride) _colSum = new Int32Array(stride);
+    const cs = _colSum;
+    cs.fill(0);
+    for (let ky = -r; ky <= r; ky++) {
+        const sy = ky < 0 ? 0 : (ky > h - 1 ? h - 1 : ky);
+        const row = sy * stride;
+        for (let i = 0; i < stride; i += 4) {
+            cs[i] += tmp[row+i]; cs[i+1] += tmp[row+i+1]; cs[i+2] += tmp[row+i+2];
         }
-        for (let y = 0; y < h; y++) {
-            const oi = y * stride + col;
-            out[oi] = sr/cnt; out[oi+1] = sg/cnt; out[oi+2] = sb/cnt; out[oi+3] = tmp[oi+3];
-
-            const addY = y + 1 + r > h - 1 ? h - 1 : y + 1 + r;
-            const remY = y - r < 0 ? 0 : y - r;
-            const ai = addY * stride + col;
-            const ri = remY * stride + col;
-            sr += tmp[ai]   - tmp[ri];
-            sg += tmp[ai+1] - tmp[ri+1];
-            sb += tmp[ai+2] - tmp[ri+2];
+    }
+    for (let y = 0; y < h; y++) {
+        const row = y * stride;
+        const addRow = (y + 1 + r > h - 1 ? h - 1 : y + 1 + r) * stride;
+        const remRow = (y - r < 0 ? 0 : y - r) * stride;
+        for (let i = 0; i < stride; i += 4) {
+            const oi = row + i;
+            out[oi] = avg[cs[i]]; out[oi+1] = avg[cs[i+1]]; out[oi+2] = avg[cs[i+2]]; out[oi+3] = tmp[oi+3];
+            cs[i]   += tmp[addRow+i]   - tmp[remRow+i];
+            cs[i+1] += tmp[addRow+i+1] - tmp[remRow+i+1];
+            cs[i+2] += tmp[addRow+i+2] - tmp[remRow+i+2];
         }
     }
     return out;

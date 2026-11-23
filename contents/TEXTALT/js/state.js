@@ -17,6 +17,14 @@ let sourceImage = null;
 let isFontReady = false;
 let processTimer = null;
 
+// processImage の段ごとのキャッシュ（S 縮小 → P 加工 → F 特徴量 → A 文字の選択）
+const _cache = {
+    srcImage: null, keyS: null, previewImg: null, srcPixels: null,
+    keyP: null, processed: null,
+    keyF: null, feats: null,
+    keyA: null,
+};
+
 // --- Cache States ---
 let lastAnalyzeKey = "";
 
