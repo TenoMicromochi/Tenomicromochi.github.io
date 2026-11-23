@@ -32,7 +32,7 @@ function analyzeFontShapes() {
     aCtx.textBaseline = 'top';
 
     const seen = new Set();
-    charBitmaps.clear();
+    charMasks.clear();
     for (let i = 0; i < chars.length; i++) {
         const char = chars[i];
         if (seen.has(char)) continue;
@@ -44,7 +44,9 @@ function analyzeFontShapes() {
         aCtx.fillText(char, 0, 0);
 
         const imgData = aCtx.getImageData(0, 0, FONT_W, FONT_H);
-        charBitmaps.set(char, new Uint8Array(imgData.data));
+        const mask = new Uint8Array(FONT_W * FONT_H);
+        for (let p = 0; p < mask.length; p++) mask[p] = imgData.data[p * 4] < 128 ? 1 : 0;
+        charMasks.set(char, mask);
         const vec = calcFeatures(imgData.data, FONT_W, FONT_H, true, gridX, gridY, includeAvg);
         charVectors.push({ char, vec });
     }

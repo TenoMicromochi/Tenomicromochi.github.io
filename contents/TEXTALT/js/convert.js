@@ -86,29 +86,14 @@ function processImage() {
         }
         rows[r] = rowChars.join('');
     }
-    const ascii = rows.join('\n') + '\n';
 
-    ui.output.textContent = ascii;
     lastAsciiLines = rows;
-    lastNeedsInvert = needsInvert;
-
-    if (needsInvert) {
-        ui.output.style.backgroundColor = '#e8edf8';
-        ui.output.style.color = 'var(--output-bg)';
-        if (ui.bgColorPicker.value === '#1a1d28') ui.bgColorPicker.value = '#e8edf8';
-        if (ui.fgColorPicker.value === '#c8cfe8') ui.fgColorPicker.value = '#1a1d28';
-    } else {
-        ui.output.style.backgroundColor = 'var(--output-bg)';
-        ui.output.style.color = 'var(--output-fg)';
-        if (ui.bgColorPicker.value === '#e8edf8') ui.bgColorPicker.value = '#1a1d28';
-        if (ui.fgColorPicker.value === '#1a1d28') ui.fgColorPicker.value = '#c8cfe8';
-    }
-    syncColorDots();
 
     ui.status.className = 'status-bar success';
     ui.status.textContent = `✅Converted: ${outW} × ${outH} Characters | Grid ${gridX}×${gridY} | ${charVectors.length} chars`;
 
-    requestBitmapPreview();
+    renderOutput();
+    fitPreviewCanvas();
 }
 
 /* 距離は従来と同じ「重み付き二乗和」。式の形と加算順序を保っているため結果は一致する。

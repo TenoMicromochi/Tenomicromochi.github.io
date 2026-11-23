@@ -107,54 +107,9 @@
                 </div>
             </div>
 
+
         </div>
-        </aside>
-
-        <!-- RIGHT：出力・書き出し・文字セット -->
-        <aside class="side-panel side-panel-right hidden" id="panelRight">
         <div class="panel-col">
-
-            <div class="section">
-                <div class="section-title">OUTPUT</div>
-                <div class="control-row">
-                    <label class="ctrl-label">WIDTH (chars) <span class="val-badge" id="val-width">80</span></label>
-                    <input type="range" id="widthInput" min="10" max="300" value="80" class="slider">
-                </div>
-            </div>
-
-            <hr class="divider">
-
-            <div class="section">
-                <div class="section-title">EXPORT PNG</div>
-                <div class="control-row">
-                    <label class="ctrl-label">SCALE</label>
-                    <div class="scale-btn-group view-btn-group full">
-                        <button class="btn-scale view-btn" data-scale="1">1×</button>
-                        <button class="btn-scale view-btn" data-scale="2">2×</button>
-                        <button class="btn-scale view-btn" data-scale="3">3×</button>
-                        <button class="btn-scale view-btn" data-scale="4">4×</button>
-                    </div>
-                </div>
-                <div class="control-row">
-                    <label class="ctrl-label">COLOR</label>
-                    <div class="color-picker-row">
-                        <div class="color-field">
-                            <span class="color-dot" id="fgColorDot" style="background:#c8cfe8"></span>
-                            <label class="ctrl-label">FG</label>
-                            <input type="color" id="fgColorPicker" value="#c8cfe8" class="color-input">
-                        </div>
-                        <div class="color-field">
-                            <span class="color-dot" id="bgColorDot" style="background:#1a1d28"></span>
-                            <label class="ctrl-label">BG</label>
-                            <input type="color" id="bgColorPicker" value="#1a1d28" class="color-input">
-                        </div>
-                        <button class="btn-secondary" id="swapColorsBtn">⇄</button>
-                    </div>
-                </div>
-                <div id="exportStatus" class="export-status"></div>
-            </div>
-
-            <hr class="divider">
 
             <div class="section">
                 <div class="section-title">CHAR SET</div>
@@ -216,6 +171,58 @@
             <hr class="divider">
 
             <div class="section">
+                <div class="section-title">COLOR</div>
+                <div class="control-row">
+                    <div class="color-picker-row">
+                        <div class="color-field">
+                            <span class="color-dot" id="fgColorDot" style="background:#c8cfe8"></span>
+                            <label class="ctrl-label">FG</label>
+                            <input type="color" id="fgColorPicker" value="#c8cfe8" class="color-input">
+                        </div>
+                        <div class="color-field">
+                            <span class="color-dot" id="bgColorDot" style="background:#1a1d28"></span>
+                            <label class="ctrl-label">BG</label>
+                            <input type="color" id="bgColorPicker" value="#1a1d28" class="color-input">
+                        </div>
+                        <button class="btn-secondary" id="swapColorsBtn">⇄</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        </aside>
+
+        <!-- RIGHT：出力・書き出し・特徴抽出 -->
+        <aside class="side-panel side-panel-right hidden" id="panelRight">
+        <div class="panel-col">
+
+            <div class="section">
+                <div class="section-title">OUTPUT</div>
+                <div class="control-row">
+                    <label class="ctrl-label">WIDTH (chars) <span class="val-badge" id="val-width">80</span></label>
+                    <input type="range" id="widthInput" min="10" max="300" value="80" class="slider">
+                </div>
+            </div>
+
+            <hr class="divider">
+
+            <div class="section">
+                <div class="section-title">EXPORT PNG</div>
+                <div class="control-row">
+                    <label class="ctrl-label">SCALE</label>
+                    <div class="scale-btn-group view-btn-group full">
+                        <button class="btn-scale view-btn" data-scale="1">1×</button>
+                        <button class="btn-scale view-btn" data-scale="2">2×</button>
+                        <button class="btn-scale view-btn" data-scale="3">3×</button>
+                        <button class="btn-scale view-btn" data-scale="4">4×</button>
+                    </div>
+                </div>
+                <div id="exportStatus" class="export-status"></div>
+            </div>
+
+            <hr class="divider">
+
+            <div class="section">
                 <div class="section-title">FEATURE EXTRACTION</div>
                 <div class="grid-control-row">
                     <div class="grid-item">
@@ -260,18 +267,13 @@
             <div class="panel output-panel">
                 <div class="output-panel-header">
                     <span class="output-title">ASCII OUTPUT</span>
-                    <div class="view-tabs">
-                        <button class="view-tab view-btn active" data-tab="text">TEXT</button>
-                        <button class="view-tab view-btn"        data-tab="preview">PREVIEW</button>
+                    <div class="output-actions view-btn-group">
+                        <button class="view-btn" id="copyTextBtn" type="button">COPY TEXT</button>
+                        <button class="view-btn" id="saveTxtBtn" type="button">SAVE TXT</button>
                     </div>
                 </div>
                 <div class="panel-body output-body">
-                    <div id="tab-text" class="output-tab active">
-                        <pre id="output"></pre>
-                    </div>
-                    <div id="tab-preview" class="output-tab">
-                        <canvas id="bitmapCanvas"></canvas>
-                    </div>
+                    <canvas id="outputCanvas"></canvas>
                 </div>
             </div>
         </div>

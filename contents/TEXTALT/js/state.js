@@ -4,7 +4,8 @@
  * ============================================================ */
 
 let charVectors = [];
-let charBitmaps = new Map();
+// 文字ごとの 8×11 インクマスク（1 = インク）
+let charMasks = new Map();
 
 // 最近傍探索の内側ループ用に charVectors を平坦化したもの（順序は charVectors と同一）
 let charVecFlat = null;
@@ -12,15 +13,12 @@ let charCharList = [];
 let charIsSpace = null;
 let charVecLen = 0;
 let lastAsciiLines = [];
-let lastNeedsInvert = false;
 let sourceImage = null;
 let isFontReady = false;
 let processTimer = null;
 
 // --- Cache States ---
 let lastAnalyzeKey = "";
-let coloredGlyphCache = new Map();
-let lastColorKey = "";
 
 const ui = {
     file:               document.getElementById('imgInput'),
@@ -48,7 +46,6 @@ const ui = {
     includeAvg:         document.getElementById('includeAvgCheck'),
     status:             document.getElementById('status-bar'),
     preview:            document.getElementById('previewCanvas'),
-    output:             document.getElementById('output'),
     analysis:           document.getElementById('analysisCanvas'),
     valWidth:           document.getElementById('val-width'),
     valContrast:        document.getElementById('val-contrast'),
@@ -66,7 +63,10 @@ const ui = {
     fgColorDot:         document.getElementById('fgColorDot'),
     bgColorDot:         document.getElementById('bgColorDot'),
     swapColorsBtn:      document.getElementById('swapColorsBtn'),
-    bitmapCanvas:       document.getElementById('bitmapCanvas'),
+    outputBody:         document.querySelector('.output-body'),
+    outputCanvas:       document.getElementById('outputCanvas'),
+    copyTextBtn:        document.getElementById('copyTextBtn'),
+    saveTxtBtn:         document.getElementById('saveTxtBtn'),
 };
 
 const pCtx = ui.preview.getContext('2d', { willReadFrequently: true });

@@ -58,16 +58,8 @@ function init() {
         el.addEventListener('change', scheduleProcess);
     });
 
-    document.querySelectorAll('.view-tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-            document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.output-tab').forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
-            // 非表示中にスキップした描画をここで取り戻す
-            if (tab.dataset.tab === 'preview' && bitmapDirty) renderBitmapPreview();
-        });
-    });
+    ui.copyTextBtn.addEventListener('click', copyText);
+    ui.saveTxtBtn.addEventListener('click', saveTxt);
 
     document.querySelectorAll('.btn-scale').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -80,7 +72,7 @@ function init() {
     [ui.fgColorPicker, ui.bgColorPicker].forEach(el => {
         el.addEventListener('input', () => {
             syncColorDots();
-            requestBitmapPreview();
+            renderOutput();
         });
     });
     ui.swapColorsBtn.addEventListener('click', () => {
@@ -88,9 +80,14 @@ function init() {
         ui.fgColorPicker.value = ui.bgColorPicker.value;
         ui.bgColorPicker.value = tmp;
         syncColorDots();
-        requestBitmapPreview();
+        renderOutput();
     });
 
+    window.addEventListener('resize', fitPreviewCanvas);
+    document.getElementById('tabLeft').addEventListener('click', () => setTimeout(fitPreviewCanvas, 250));
+
+    renderOutput();
+    fitPreviewCanvas();
     checkFontLoading();
 }
 

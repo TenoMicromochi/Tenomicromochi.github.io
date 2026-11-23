@@ -232,38 +232,26 @@
 
 /* ---- Preview Canvas ---- */
 #previewCanvas {
-    width: 100%;
+    /* 幅・高さは fitPreviewCanvas() が「実ピクセル ÷ n」で付ける */
     display: block;
     background: var(--canvas-bg);
     image-rendering: pixelated;
 }
 
 /* ---- Output Panel ---- */
-.output-panel { height: 100%; width: 100%; }
+.output-panel { height: 100%; width: 100%; display: flex; flex-direction: column; }
+/* 絵は枠の中央。flex + margin:auto なら、枠より大きいときは端が切れずにスクロールできる */
 .output-body {
+    flex: 1;
+    min-height: 0;
     padding: 0;
-    background: #f8fafb;
+    background: var(--output-bg);  /* renderOutput() が COLOR の BG に合わせる */
     overflow: auto;
     max-height: calc(100vh - 80px);
     max-height: calc(100dvh - 80px);
-    display: block;
+    display: flex;
     border: 1px solid var(--border);
     border-radius: var(--radius);
-}
-
-#output {
-    font-family: 'TenoText', monospace;
-    background-color: var(--output-bg);
-    color: var(--output-fg);
-    white-space: pre;
-    font-size: 11px;   /* TenoText 8x11 の等倍 */
-    line-height: 11px;
-    padding: 8px;
-    margin: 0;
-    border: none;
-    min-width: 100px;
-    min-height: 200px;
-    display: block;
 }
 
 /* 出力欄の見出し。タブを右端に寄せるためだけの行 */
@@ -284,22 +272,34 @@
     color: var(--accent);
 }
 
-/* .view-tab / .btn-scale はどちらも alt.css の .view-btn を併用している。
-   クラス名を残してあるのは JS が querySelectorAll で拾っているため */
-.view-tabs { display: flex; }
-
-.output-tab { display: none; width: 100%; }
-.output-tab.active { display: block; width: 100%; }
-
-#bitmapCanvas {
+/* 出力キャンバス：実ピクセル等倍（幅・高さは指定しない）。はみ出しは .output-body がスクロール */
+#outputCanvas {
     display: block;
+    flex: none;
+    margin: auto;
     image-rendering: -moz-crisp-edges;
     image-rendering: crisp-edges;
     image-rendering: pixelated;
-    width: 100%;
-    height: auto;
-    background: var(--output-bg);
 }
+
+/* モバイル幅：見出しを消し、ボタンだけ右に寄せる */
+@media (max-width: 560px) {
+    .output-title { display: none; }
+    .output-panel-header { justify-content: flex-end; }
+}
+
+/* ---- 左タブ：2カラム（/alt.css のコメントの形） ---- */
+#panelLeft {
+    width: min(560px, 100%);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 14px;
+    align-content: start;
+}
+@media (max-width: 600px) {
+    #panelLeft { grid-template-columns: 1fr; }
+}
+#panelLeft .char-textarea { width: 100%; box-sizing: border-box; }
 
 /* ---- Export PNG ---- */
 .color-picker-row { display: flex; align-items: center; gap: 8px; }
