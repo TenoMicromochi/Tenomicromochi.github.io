@@ -3,8 +3,10 @@
  * フォントの読み込み（FontFace・専用の家族名）と FONT の項目の操作
  * ============================================================ */
 
-const DEFAULT_URL = '/fonts/TenoText 8x11(+Extended ASCII).ttf';
-const DEFAULT_LABEL = 'TenoText 8x11 (default)';
+/* プリセットは SODENMIR の FONT ページの一覧（/contents/FONT/fonts.json）から TenoText だけを使う。
+ * SIZE は一覧の emPx（そのフォントの等倍）。読めなければ index.html に書いた TenoText 8x11 だけになる */
+const FONT_LIST_URL = '/contents/FONT/fonts.json';
+const FILE_OPTION = '__file__';
 const PIXEL_PROBE_TEXT = 'AMgW#@08';
 /* 「中間の灰色」の範囲。作業票は 16〜239 だが、この環境の Chrome（Windows）はドット絵フォントの
  * 縁にも 30 や 230 前後の灰色を出す（文字の濃さ補正）ため、16〜239 だと正しい SIZE でも 20% 以上が中間になる。
@@ -70,7 +72,7 @@ function applyFont(loaded, name, mode, size) {
     isFontReady = true;
 
     if (ui.customCharsInput.value === '') {
-        ui.customCharsInput.value = CHAR_SETS['all'];
+        ui.customCharsInput.value = CHAR_SETS['ascii'];
         updateCharCount();
     }
     syncFontUI();
@@ -89,15 +91,61 @@ function fontLoadFailed(err) {
     ui.status.textContent = '⚠Font load failed: ' + (err && err.message ? err.message : err);
 }
 
-async function loadDefaultFont() {
+/* プリセットの一覧を作る（TenoText のみ。今選ばれているものは残す） */
+async function fillFontPresets() {
+    const sel = ui.fontPresetSelect;
     try {
-        const res = await fetch(DEFAULT_URL);
+        const res = await fetch(FONT_LIST_URL);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const list = (await res.json()).filter(f => /^TenoText/.test(f.label));
+        if (list.length === 0) return;
+        const keep = sel.value;
+        sel.textContent = '';
+        for (const f of list) {
+            const o = document.createElement('option');
+            o.value = f.file;
+            o.textContent = f.label;
+            o.dataset.size = f.emPx;
+            o.dataset.mode = f.pixelGrid ? 'pixel' : 'smooth';
+            sel.appendChild(o);
+        }
+        sel.value = keep;
+        if (sel.selectedIndex < 0) sel.selectedIndex = 0;
+    } catch (err) {
+        // 一覧が読めなくても、index.html の TenoText 8x11 で動く
+    }
+}
+
+/* プリセットの選択中のフォントを読む */
+async function loadPresetFont() {
+    const o = ui.fontPresetSelect.selectedOptions[0];
+    if (!o || o.value === FILE_OPTION) return;
+    try {
+        const res = await fetch(o.value);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const loaded = await loadFontFace(await res.arrayBuffer());
-        applyFont(loaded, DEFAULT_LABEL, 'pixel', 11);
+        applyFont(loaded, o.textContent, o.dataset.mode, parseInt(o.dataset.size));
+        dropFileOption();
     } catch (err) {
         fontLoadFailed(err);
     }
+}
+
+/* ファイルを読んだときだけ、プリセットに「— FILE —」を出して選んだ状態にする */
+function showFileOption() {
+    const sel = ui.fontPresetSelect;
+    let o = sel.querySelector(`option[value="${FILE_OPTION}"]`);
+    if (!o) {
+        o = document.createElement('option');
+        o.value = FILE_OPTION;
+        o.textContent = '— FILE —';
+        sel.appendChild(o);
+    }
+    sel.value = FILE_OPTION;
+}
+function dropFileOption() {
+    const o = ui.fontPresetSelect.querySelector(`option[value="${FILE_OPTION}"]`);
+    if (o) o.remove();
 }
 
 async function loadFontFile(e) {
@@ -107,10 +155,17 @@ async function loadFontFile(e) {
         const loaded = await loadFontFace(await file.arrayBuffer());
         const px = inferPixelSize(loaded.family);
         applyFont(loaded, file.name, px ? 'pixel' : 'smooth', px || 16);
+        showFileOption();
     } catch (err) {
         fontLoadFailed(err);
     }
     e.target.value = '';
+}
+
+/* 起動時：一覧を作ってから、選択中のプリセット（TenoText 8x11）を読む */
+async function loadDefaultFont() {
+    await fillFontPresets();
+    await loadPresetFont();
 }
 
 /* ---- FONT の項目 ---- */
@@ -140,7 +195,7 @@ function resetAutoCell() {
 
 function initFontUI() {
     ui.fontFileInput.addEventListener('change', loadFontFile);
-    ui.fontDefaultBtn.addEventListener('click', loadDefaultFont);
+    ui.fontPresetSelect.addEventListener('change', loadPresetFont);
 
     ui.modePixelBtn.addEventListener('click', () => {
         if (!isFontReady) return;

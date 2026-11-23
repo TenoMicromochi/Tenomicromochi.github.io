@@ -41,7 +41,7 @@ const ui = {
     file:               document.getElementById('imgInput'),
     fontFileInput:      document.getElementById('fontFileInput'),
     fontNameLabel:      document.getElementById('fontNameLabel'),
-    fontDefaultBtn:     document.getElementById('fontDefaultBtn'),
+    fontPresetSelect:   document.getElementById('fontPresetSelect'),
     modePixelBtn:       document.getElementById('modePixelBtn'),
     modeSmoothBtn:      document.getElementById('modeSmoothBtn'),
     cellPixelRow:       document.getElementById('cellPixelRow'),

@@ -31,7 +31,7 @@ function getCurrentChars() {
         return out;
     };
     const chars = filter(ui.customCharsInput.value);
-    return chars.length > 0 ? chars : filter(CHAR_SETS['all']);
+    return chars.length > 0 ? chars : filter(CHAR_SETS['ascii']);
 }
 
 /* 自動のセル：幅 = 送り幅（四捨五入）の最頻値（同数なら大きい方）、高さ = フォントの高さ（切り上げ） */

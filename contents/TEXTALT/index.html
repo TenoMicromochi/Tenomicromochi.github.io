@@ -108,11 +108,16 @@
 
             <div class="section">
                 <div class="section-title">FONT</div>
+                <div class="control-row">
+                    <label class="ctrl-label">PRESET</label>
+                    <select id="fontPresetSelect" class="select-input">
+                        <option value="/fonts/TenoText 8x11(+Extended ASCII).ttf" data-size="11" data-mode="pixel" selected>TenoText 8x11</option>
+                    </select>
+                </div>
                 <div class="control-row col">
                     <label class="ctrl-label">FONT FILE</label>
                     <input type="file" id="fontFileInput" accept=".ttf,.otf,.woff,.woff2" class="file-input">
-                    <span class="hint" id="fontNameLabel">TenoText 8x11 (default)</span>
-                    <div class="font-row"><button class="btn-secondary" id="fontDefaultBtn" type="button">DEFAULT</button></div>
+                    <span class="hint" id="fontNameLabel">TenoText 8x11</span>
                 </div>
                 <div class="control-row">
                     <label class="ctrl-label">MODE</label>
@@ -190,7 +195,8 @@
                             <option value="all_alphabet">All Alphabet</option>
                         </optgroup>
                         <optgroup label="— All —">
-                            <option value="all" selected>**ALL**</option>
+                            <option value="ascii" selected>ASCII</option>
+                            <option value="all">**ALL**</option>
                         </optgroup>
                     </select>
                 </div>
