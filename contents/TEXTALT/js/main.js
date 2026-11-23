@@ -30,7 +30,7 @@ function init() {
         });
     });
 
-    document.querySelectorAll('.spin-btn').forEach(btn => {
+    document.querySelectorAll('.spin-btn[data-target]').forEach(btn => {
         btn.addEventListener('click', () => {
             const targetId = btn.dataset.target;
             const dir      = parseInt(btn.dataset.dir);
@@ -45,7 +45,7 @@ function init() {
     });
 
     ui.file.addEventListener('change', loadSourceImage);
-    ui.fontFile.addEventListener('change', manualFontLoad);
+    initFontUI();
 
     ui.addPresetBtn.addEventListener('click',     () => addPresetChars(false));
     ui.replacePresetBtn.addEventListener('click', () => addPresetChars(true));
@@ -88,7 +88,8 @@ function init() {
 
     renderOutput();
     fitPreviewCanvas();
-    checkFontLoading();
+    ui.status.textContent = '🔄Loading fonts...';
+    loadDefaultFont();
 }
 
 init();

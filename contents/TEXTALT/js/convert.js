@@ -31,6 +31,7 @@ function processImage() {
 
     // スライダー操作等ではフォント条件が変わらなければ再解析をスキップする
     ensureFontAnalyzed();
+    syncFontUI();   // PIXEL ではセルが CHAR SET に合わせて変わることがある
 
     const outW  = parseInt(ui.width.value) || 80;
     const contrast     = parseInt(ui.contrast.value);
@@ -48,18 +49,19 @@ function processImage() {
     const includeAvg   = ui.includeAvg.checked;
 
     const imgAspect = sourceImage.height / sourceImage.width;
-    const fontAspect = FONT_W / FONT_H;
+    const cellW = font.cellW, cellH = font.cellH;   // ensureFontAnalyzed がセルを確定させたあとの値
+    const fontAspect = cellW / cellH;
     const outH = Math.round(outW * imgAspect * fontAspect);
 
-    const cvsW = outW * FONT_W;
-    const cvsH = outH * FONT_H;
+    const cvsW = outW * cellW;
+    const cvsH = outH * cellH;
 
     /* 段ごとのキャッシュ。変えた設定より後ろの段だけをやり直す：
      *   S 元画像の縮小 → P 加工 → F セルの特徴量 → A 文字の選択
      * 各段の中身は従来と同じ計算なので、出力は従来と完全一致する。 */
 
     // --- S: 元画像を出力サイズへ縮小して読む（画像と出力サイズが同じ間は使い回す）---
-    const keyS = `${cvsW}x${cvsH}`;
+    const keyS = `${cvsW}x${cvsH}|${cellW}x${cellH}`;
     if (_cache.srcImage !== sourceImage || _cache.keyS !== keyS) {
         ui.preview.width  = cvsW;
         ui.preview.height = cvsH;
@@ -90,7 +92,7 @@ function processImage() {
     const processed = _cache.processed;
 
     // --- F: セルごとの特徴量（格子の設定が同じ間は使い回す）---
-    const ex = getCellExtractor(gridX, gridY, includeAvg);
+    const ex = getCellExtractor(gridX, gridY, includeAvg, cellW, cellH);
     const vecLen = ex.len;
     const keyF = `${keyP}|${gridX}|${gridY}|${includeAvg}`;
     if (_cache.keyF !== keyF) {
@@ -99,9 +101,9 @@ function processImage() {
         const feats = _cache.feats;
         let o = 0;
         for (let r = 0; r < outH; r++) {
-            const cy = r * FONT_H;
+            const cy = r * cellH;
             for (let c = 0; c < outW; c++) {
-                const vec = calcCellFeatures(processed, c * FONT_W, cy, cvsW, ex);
+                const vec = calcCellFeatures(processed, c * cellW, cy, cvsW, ex);
                 for (let j = 0; j < vecLen; j++) feats[o++] = vec[j];
             }
         }
@@ -129,6 +131,7 @@ function processImage() {
     ui.status.className = 'status-bar success';
     ui.status.textContent = `✅Converted: ${outW} × ${outH} Characters | Grid ${gridX}×${gridY} | ${charVectors.length} chars`;
 
+    lastRender = { masks: charMasks, cw: cellW, ch: cellH };
     renderOutput();
     fitPreviewCanvas();
 }

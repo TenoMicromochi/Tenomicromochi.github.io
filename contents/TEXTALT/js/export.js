@@ -9,7 +9,7 @@ function setExportStatus(cls, text) {
 }
 
 function hasResult() {
-    if (lastAsciiLines.length === 0 || charMasks.size === 0) {
+    if (lastAsciiLines.length === 0 || !lastRender) {
         setExportStatus('err', '⚠Please convert the image first');
         return false;
     }
@@ -19,7 +19,7 @@ function hasResult() {
 /* 書き出し用 canvas を作る（toBlob 前。確認用に切り出してある） */
 function buildExportCanvas(scale) {
     const img = renderAsciiImageData(
-        lastAsciiLines, charMasks,
+        lastAsciiLines, lastRender.masks, lastRender.cw, lastRender.ch,
         hexToRGB(ui.fgColorPicker.value), hexToRGB(ui.bgColorPicker.value), scale);
     const cvs = document.createElement('canvas');
     cvs.width = img.width;

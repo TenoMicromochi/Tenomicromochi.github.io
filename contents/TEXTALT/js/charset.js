@@ -4,7 +4,8 @@
  * ============================================================ */
 
 function updateCharCount() {
-    ui.charCount.textContent = ui.customCharsInput.value.length;
+    // コードポイントで数える（絵文字も1文字）。改行・タブ・制御文字は数えない
+    ui.charCount.textContent = [...ui.customCharsInput.value].filter(c => !/[\u0000-\u001f\u007f-\u009f]/.test(c)).length;
 }
 
 function addPresetChars(replace) {

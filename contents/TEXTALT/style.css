@@ -8,17 +8,14 @@
    ============================================================ */
 
 
-/* AA のプレビューと出力に使う等幅ドットフォント。
-   画面のUI文字（TenoText 8x8 / マルミーニャ）とは別物 */
-@font-face {
-    font-family: 'TenoText';
-    src: url('/fonts/TenoText 8x11(+Extended ASCII).ttf');
-}
-
 /* ヘッダはスクロールしても残す → index.html の header に class="sticky"（theme.css） */
 
 /* ---- Preview ---- */
+/* 枠は絵の大きさに合わせて縮める（絵の横に余白の帯を出さない）。
+   絵の大きさは fitPreviewCanvas() が列の幅から決める */
 .preview-body {
+    width: fit-content;
+    max-width: 100%;
     padding: 0;
     background: var(--canvas-bg);
     border: 1px solid var(--border);
@@ -134,7 +131,7 @@
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 5px;
-    font-family: 'TenoText', var(--font-mono);
+    font-family: var(--font-mono);  /* 読み込んだフォントは JS が font-family / font-size / line-height を付ける */
     font-size: 11px;
     resize: vertical;
     outline: none;
@@ -208,27 +205,13 @@
 .status-bar.success { color: var(--accent); border-color: var(--accent); }
 .status-bar.error   { color: var(--danger); border-color: var(--danger); }
 
-/* ---- Font Error ---- */
-.font-error-box {
-    display: none;
-    background: #fff5f5;
-    border: 1px solid var(--danger);
-    border-radius: var(--radius);
-    padding: 8px;
-    gap: 5px;
-    flex-direction: column;
-}
-.font-error-box.visible { display: flex; }
-.error-tag {
-    font-size: 12px;
-    line-height: 16px;
-    letter-spacing: 2px;
-    color: var(--danger);
-    border: 1px solid var(--danger);
-    padding: 1px 6px;
-    display: inline-block;
-}
-.font-error-box p { font-size: 12px; line-height: 16px; color: var(--sub); }
+/* ---- FONT ---- */
+[hidden] { display: none !important; }
+.control-row.col { flex-direction: column; align-items: stretch; }
+.font-row { display: flex; align-items: center; gap: 4px; }
+.font-smooth-cell { display: flex; flex-direction: column; gap: 8px; }
+.font-smooth-cell[hidden] { display: none; }
+#fontNameLabel { word-break: break-all; }
 
 /* ---- Preview Canvas ---- */
 #previewCanvas {

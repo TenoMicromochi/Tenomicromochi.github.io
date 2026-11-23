@@ -38,11 +38,6 @@
 
             <div class="section">
                 <div class="section-title">IMAGE LOAD</div>
-                <div id="manual-font-load" class="font-error-box">
-                    <span class="error-tag">FONT ERROR</span>
-                    <p>Please manually select "TenoText 8x11 (+Extended ASCII).ttf"</p>
-                    <input type="file" id="fontInput" accept=".ttf" class="file-input">
-                </div>
                 <div class="control-row">
                     <label class="ctrl-label">IMAGE FILE</label>
                     <input type="file" id="imgInput" accept="image/*" class="file-input">
@@ -112,6 +107,56 @@
         <div class="panel-col">
 
             <div class="section">
+                <div class="section-title">FONT</div>
+                <div class="control-row col">
+                    <label class="ctrl-label">FONT FILE</label>
+                    <input type="file" id="fontFileInput" accept=".ttf,.otf,.woff,.woff2" class="file-input">
+                    <span class="hint" id="fontNameLabel">TenoText 8x11 (default)</span>
+                    <div class="font-row"><button class="btn-secondary" id="fontDefaultBtn" type="button">DEFAULT</button></div>
+                </div>
+                <div class="control-row">
+                    <label class="ctrl-label">MODE</label>
+                    <div class="view-btn-group full">
+                        <button class="view-btn active" id="modePixelBtn" type="button">PIXEL</button>
+                        <button class="view-btn" id="modeSmoothBtn" type="button">SMOOTH</button>
+                    </div>
+                </div>
+                <div class="control-row toggle-row">
+                    <label class="ctrl-label">SIZE (px)</label>
+                    <div class="number-spin">
+                            <button class="spin-btn" type="button" data-font="size" data-dir="-1">−</button>
+                            <span id="val-size" class="spin-val">11</span>
+                            <button class="spin-btn" type="button" data-font="size" data-dir="1">+</button>
+                        </div>
+                </div>
+                <div class="control-row toggle-row" id="cellPixelRow">
+                    <label class="ctrl-label">CELL</label>
+                    <span class="hint" id="cellAutoText">8 × 11 (auto)</span>
+                </div>
+                <div id="cellSmoothRow" class="font-smooth-cell" hidden>
+                    <div class="control-row toggle-row">
+                        <label class="ctrl-label">CELL W</label>
+                        <div class="number-spin">
+                            <button class="spin-btn" type="button" data-font="cellW" data-dir="-1">−</button>
+                            <span id="val-cellW" class="spin-val">8</span>
+                            <button class="spin-btn" type="button" data-font="cellW" data-dir="1">+</button>
+                        </div>
+                    </div>
+                    <div class="control-row toggle-row">
+                        <label class="ctrl-label">CELL H</label>
+                        <div class="number-spin">
+                            <button class="spin-btn" type="button" data-font="cellH" data-dir="-1">−</button>
+                            <span id="val-cellH" class="spin-val">11</span>
+                            <button class="spin-btn" type="button" data-font="cellH" data-dir="1">+</button>
+                        </div>
+                    </div>
+                    <div class="font-row"><button class="btn-secondary" id="cellAutoBtn" type="button">AUTO</button></div>
+                </div>
+            </div>
+
+            <hr class="divider">
+
+            <div class="section">
                 <div class="section-title">CHAR SET</div>
                 <div class="control-row">
                     <label class="ctrl-label">PRESET</label>
@@ -157,7 +202,7 @@
                 <div class="control-row">
                     <label class="ctrl-label">CUSTOM CHARS</label>
                 </div>
-                <textarea id="customCharsInput" class="char-textarea" placeholder="Only ASCII and extended ASCII characters are supported."></textarea>
+                <textarea id="customCharsInput" class="char-textarea" placeholder="Any characters. Emoji are drawn in monochrome."></textarea>
                 <div class="char-counter"><span id="charCount">0</span> chars</div>
                 <div class="control-row toggle-row">
                     <label class="ctrl-label">AUTO-APPLY ON EDIT</label>

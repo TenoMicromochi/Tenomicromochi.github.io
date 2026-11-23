@@ -7,16 +7,8 @@
  * 密度をFloat32で持つ点・加算順序は従来と同一にしてあるため結果は完全一致する。
  * ============================================================ */
 
-function calcFeatures(data, w, h, isDarkIsDense, gridX, gridY, includeAvg) {
-    const grayDensity = new Float32Array(w * h);
-    for (let i = 0; i < w * h; i++) {
-        const r = data[i * 4];
-        const g = data[i * 4 + 1];
-        const b = data[i * 4 + 2];
-        const gray = 0.299 * r + 0.587 * g + 0.114 * b;
-        grayDensity[i] = isDarkIsDense ? (255 - gray) / 255 : gray / 255;
-    }
-
+/* 濃さ(0..1, Float32)のセル → 特徴量。フォント解析用（呼び出しは文字種類数ぶんのみ） */
+function calcFeaturesFromDensity(grayDensity, w, h, gridX, gridY, includeAvg) {
     const features = [];
 
     if (includeAvg) {
@@ -47,25 +39,22 @@ function calcFeatures(data, w, h, isDarkIsDense, gridX, gridY, includeAvg) {
 
 /* ---- 画像セル用の高速経路 ---- */
 
-const CELL_PIXELS = FONT_W * FONT_H;
-const _cellDensity = new Float32Array(CELL_PIXELS);
-
 let _extractorCache = null;
 let _extractorKey = "";
 
 /* グリッド境界はセル毎に変わらないので1変換につき1回だけ算出する。
- * 境界式 Math.round(i * FONT_W / gridX) は従来と同一。 */
-function getCellExtractor(gridX, gridY, includeAvg) {
-    const key = `${gridX}|${gridY}|${includeAvg}`;
+ * 境界式 Math.round(i * cw / gridX) は従来と同一。 */
+function getCellExtractor(gridX, gridY, includeAvg, cw, ch) {
+    const key = `${gridX}|${gridY}|${includeAvg}|${cw}|${ch}`;
     if (key === _extractorKey) return _extractorCache;
 
     const xs = new Int32Array(gridX + 1);
-    for (let i = 0; i <= gridX; i++) xs[i] = Math.round(i * FONT_W / gridX);
+    for (let i = 0; i <= gridX; i++) xs[i] = Math.round(i * cw / gridX);
     const ys = new Int32Array(gridY + 1);
-    for (let i = 0; i <= gridY; i++) ys[i] = Math.round(i * FONT_H / gridY);
+    for (let i = 0; i <= gridY; i++) ys[i] = Math.round(i * ch / gridY);
 
     const len = (includeAvg ? 1 : 0) + gridX * gridY;
-    _extractorCache = { xs, ys, gridX, gridY, includeAvg, len, vec: new Float64Array(len) };
+    _extractorCache = { xs, ys, gridX, gridY, includeAvg, len, cw, ch, vec: new Float64Array(len), dens: new Float32Array(cw * ch) };
     _extractorKey = key;
     return _extractorCache;
 }
@@ -73,12 +62,13 @@ function getCellExtractor(gridX, gridY, includeAvg) {
 /* セルを切り出さず元バッファから直接読む（従来の extractCell によるコピーが不要）。
  * 戻り値は使い回しのバッファなので、次の呼び出しまでに読み終えること。 */
 function calcCellFeatures(data, cellX, cellY, strideW, ex) {
-    const dens = _cellDensity;
+    const dens = ex.dens;
+    const CELL_W = ex.cw, CELL_H = ex.ch, CELL_PIXELS = CELL_W * CELL_H;
 
     let p = 0;
-    for (let ry = 0; ry < FONT_H; ry++) {
+    for (let ry = 0; ry < CELL_H; ry++) {
         let idx = ((cellY + ry) * strideW + cellX) * 4;
-        for (let rx = 0; rx < FONT_W; rx++, idx += 4) {
+        for (let rx = 0; rx < CELL_W; rx++, idx += 4) {
             const gray = 0.299 * data[idx] + 0.587 * data[idx+1] + 0.114 * data[idx+2];
             dens[p++] = gray / 255;
         }
@@ -100,7 +90,7 @@ function calcCellFeatures(data, cellX, cellY, strideW, ex) {
             const x0 = xs[gx], x1 = xs[gx + 1];
             let cellSum = 0, cellCount = 0;
             for (let py = y0; py < y1; py++) {
-                const rowBase = py * FONT_W;
+                const rowBase = py * CELL_W;
                 for (let px = x0; px < x1; px++) {
                     cellSum += dens[rowBase + px];
                     cellCount++;

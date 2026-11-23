@@ -2,10 +2,6 @@
  * AA Generator v6 — constants.js
  * ============================================================ */
 
-const FONT_NAME = 'TenoText 8x11(+Extended ASCII)';
-const FONT_W = 8;
-const FONT_H = 11;
-
 const CHAR_SETS = {
     teno:            "TENOteno ",
     minimal:         "@%#*+=-:. ",

@@ -4,8 +4,17 @@
  * ============================================================ */
 
 let charVectors = [];
-// 文字ごとの 8×11 インクマスク（1 = インク）
+// 文字ごとのインク（0〜255。PIXEL は 0 / 255 のみ）。解析のたびに作り直す
 let charMasks = new Map();
+
+/* 今のフォントの状態（1か所に持つ）
+ *  family : FontFace に付けた TEXTALT 専用の家族名（TextaltFont0, 1, …）
+ *  mode   : 'pixel' | 'smooth'    size : px    cellW / cellH : セルの大きさ
+ *  autoW / autoH : 測った自動の値  face : 読み込んだ FontFace */
+const font = { family: '', name: '', mode: 'pixel', size: 11, cellW: 1, cellH: 1, autoW: 1, autoH: 1, face: null };
+
+// 最後の変換で使った描画の材料（表示・書き出しはこれを使う）
+let lastRender = null;   // { masks, cw, ch }
 
 // 最近傍探索の内側ループ用に charVectors を平坦化したもの（順序は charVectors と同一）
 let charVecFlat = null;
@@ -30,8 +39,18 @@ let lastAnalyzeKey = "";
 
 const ui = {
     file:               document.getElementById('imgInput'),
-    fontFile:           document.getElementById('fontInput'),
-    manualLoadArea:     document.getElementById('manual-font-load'),
+    fontFileInput:      document.getElementById('fontFileInput'),
+    fontNameLabel:      document.getElementById('fontNameLabel'),
+    fontDefaultBtn:     document.getElementById('fontDefaultBtn'),
+    modePixelBtn:       document.getElementById('modePixelBtn'),
+    modeSmoothBtn:      document.getElementById('modeSmoothBtn'),
+    cellPixelRow:       document.getElementById('cellPixelRow'),
+    cellAutoText:       document.getElementById('cellAutoText'),
+    cellSmoothRow:      document.getElementById('cellSmoothRow'),
+    cellAutoBtn:        document.getElementById('cellAutoBtn'),
+    valSize:            document.getElementById('val-size'),
+    valCellW:           document.getElementById('val-cellW'),
+    valCellH:           document.getElementById('val-cellH'),
     charSetSelect:      document.getElementById('charSetSelect'),
     customCharsInput:   document.getElementById('customCharsInput'),
     charCount:          document.getElementById('charCount'),
