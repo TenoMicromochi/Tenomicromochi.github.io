@@ -3,32 +3,6 @@
 body {
     font-family: var(--font-body);
 }
-/* 背景：3D の柱の広間。ドット絵ではないので画面いっぱいに拡大し、ぼかして白で薄める。
-   iOS Safari は background-attachment: fixed を無視するので、固定した疑似要素に敷く。
-   ぼかすと縁が透けるので、inset を負にして画面より少し大きく敷く */
-body::before {
-    content: '';
-    position: fixed;
-    inset: -24px;
-    z-index: -2;
-    background: url('/images/background/home_bg_hall.webp') center / cover no-repeat;
-    filter: blur(4px) saturate(0.8);
-    pointer-events: none;
-}
-body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    /* 上下は白、真ん中は白 60% で壁紙が透ける */
-    background: linear-gradient(to bottom,
-        #ffffff 0%,
-        rgba(255, 255, 255, 0.6) 30%,
-        rgba(255, 255, 255, 0.6) 70%,
-        #ffffff 100%);
-    pointer-events: none;
-}
-
 @font-face {
     font-family: 'TenoText 3x6';
     src: url('/fonts/TenoText 3x6.ttf') format('truetype');
@@ -51,15 +25,8 @@ body::after {
     width: 100px;
     height: 80px;
     image-rendering: pixelated;
-}
-
-.tenokun-clock {
-    font-family: 'TenoText 3x6', var(--font-mono);
-    font-size: 12px;
-    line-height: 1;
-    color: var(--text);
-    white-space: nowrap;
-    padding-bottom: 4px;
+    pointer-events: auto;   /* クリックで pupi とハート（親の .tenokun-mascot は none） */
+    cursor: pointer;
 }
 
 .home-main {
@@ -87,7 +54,9 @@ body::after {
     gap: 6px;
     padding: 14px;
     text-decoration: none;
-    background: var(--panel);
+    /* 背景の透明度（--panel #f5f8fa を透かす。枠線と文字は透かさない） */
+    --card-a: 0.7;
+    background: rgba(245, 248, 250, var(--card-a));
     border: 1px solid var(--border);
     border-radius: var(--radius);
     color: var(--text);
@@ -133,3 +102,49 @@ footer {
     max-width: 960px;
     margin: 0 auto;
 }
+
+/* ── 背景：電柱の AA とグリッド（script.js が描く） ──
+   文字は TenoText 3x6 の 18px（3 倍）。1 マス 12x18。
+   電線は碍子から画面の左端までたるみ、風で揺れる */
+#denchu-bg {
+    --dg-grid: #ededed;
+    --dg-ink: #8ccbec;
+    --dg-cw: 12px;
+    --dg-ch: 18px;
+    /* ページと一緒にスクロールする。高さは script.js がページの高さに合わせる */
+    position: absolute; left: 0; top: 0; width: 100%; height: 100vh;
+    z-index: -1; overflow: hidden;
+    pointer-events: none;
+    background-color: #ffffff;
+    background-image:
+        linear-gradient(to right, var(--dg-grid) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--dg-grid) 1px, transparent 1px);
+    background-size: var(--dg-cw) var(--dg-ch);
+}
+#denchu-aa {
+    position: absolute; left: 0; margin: 0;
+    font-family: 'TenoText 3x6'; font-size: 18px; line-height: 18px;
+    color: var(--dg-ink);
+    white-space: pre;
+    -webkit-font-smoothing: none;
+    font-kerning: none;
+    font-variant-ligatures: none;
+}
+
+/* アバターをクリックしたときに出るハート。位置は script.js が整数 px で動かす */
+#dg-hearts { position: fixed; inset: 0; z-index: 501; pointer-events: none; overflow: hidden; }
+#dg-hearts img { position: absolute; left: 0; top: 0; image-rendering: pixelated; }
+
+/* ── 時計：リード文の行に 1 行。左端は SANDBOX のカードに揃える ── */
+.home-lead { position: relative; }
+.dg-clock {
+    display: block;
+    width: max-content;
+    font-family: 'TenoText 3x6'; font-size: 18px; line-height: 20px;
+    /* 場所決め用の入れ物。文字は背景の AA のマスに描く（script.js） */
+    visibility: hidden;
+    white-space: nowrap;
+    -webkit-font-smoothing: none;
+}
+.home-lead.dg-clock-side .dg-clock { position: absolute; top: 0; }
+

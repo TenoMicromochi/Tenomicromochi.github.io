@@ -21,6 +21,11 @@
       "en": "Icons"
     },
     {
+      "key": "particle",
+      "ja": "particle",
+      "en": "particle"
+    },
+    {
       "key": "tile",
       "ja": "タイル",
       "en": "Tile"
@@ -255,6 +260,18 @@
     {
       "category": "icons",
       "file": "/images/icons/youtube.png"
+    },
+    {
+      "category": "particle",
+      "file": "/images/particle/heart_l.png"
+    },
+    {
+      "category": "particle",
+      "file": "/images/particle/heart_m.png"
+    },
+    {
+      "category": "particle",
+      "file": "/images/particle/heart_s.png"
     },
     {
       "category": "tile",
