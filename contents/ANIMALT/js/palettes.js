@@ -1,5 +1,5 @@
 /* ============================================================
-   ANIMALT-Δ — palette files（FILE モード）
+   ANIMALT — palette files（FILE モード）
 
    PNG から色を読む。GLYPHALT にも同じ機能があるが、あちらは
 

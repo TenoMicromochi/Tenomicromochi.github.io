@@ -1,5 +1,5 @@
 /* ============================================================
-   ANIMALT-Δ — image adjustment
+   ANIMALT — image adjustment
 
    かける順番:
      BLUR → SOBEL → 明度/コントラスト/ガンマ(LUT) → 彩度+色相(行列) → 反転

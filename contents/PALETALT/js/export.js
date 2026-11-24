@@ -1,5 +1,5 @@
 /* ============================================================
-   PALETALT-K — export (PNG / text formats / clipboard)
+   PALETALT — export (PNG / text formats / clipboard)
    ============================================================ */
 const Exporter = (() => {
 

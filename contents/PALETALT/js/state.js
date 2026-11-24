@@ -1,5 +1,5 @@
 /* ============================================================
-   PALETALT-K — shared state
+   PALETALT — shared state
    ============================================================ */
 const State = {
   img: null,          // 読み込み済みの HTMLImageElement

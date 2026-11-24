@@ -1,5 +1,5 @@
 /* ============================================================
-   PALETALT-K — color space utilities
+   PALETALT — color space utilities
 
    量子化はすべて「ワークスペース座標」上で行う。
    OKLAB / RGB のどちらを選んでも、そこでのユークリッド距離が

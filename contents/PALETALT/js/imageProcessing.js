@@ -1,5 +1,5 @@
 /* ============================================================
-   PALETALT-K — image resampling / adjustment / histogram
+   PALETALT — image resampling / adjustment / histogram
    ============================================================ */
 const ImageProc = (() => {
 

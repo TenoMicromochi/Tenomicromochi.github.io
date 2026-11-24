@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         getInputFile(),
       ];
       if (navigator.share && navigator.canShare && navigator.canShare({ files })) {
-        await navigator.share({ title: 'GLYPHALT-16', text, files });
+        await navigator.share({ title: 'GLYPHALT', text, files });
       } else {
         window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
         showError('This browser cannot attach files automatically. Add the two images to the X post manually.');

@@ -1,5 +1,5 @@
 /* ============================================================
-   PALETALT-K — canvas / palette DOM rendering
+   PALETALT — canvas / palette DOM rendering
    ============================================================ */
 const Render = (() => {
 

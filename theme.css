@@ -1,5 +1,5 @@
 /* ============================================================
-   送電世界 共通デザインシステム（GLYPHALT / CHROMALT-Q 基準）
+   送電世界 共通デザインシステム（GLYPHALT / CHROMALT 基準）
    各ページの index.html で、theme.css → alt.css（ALT ツールだけ）→
    style.css → main.css の順に <link> で並べて読む。
    @import は使わない（style.css を読み終わるまで theme.css が始まらず、直列になる）。

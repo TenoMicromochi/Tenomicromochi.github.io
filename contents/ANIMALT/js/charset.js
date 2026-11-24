@@ -83,7 +83,7 @@ const CHAR_SET_LABELS = {
   everything:     'ASCII + EXT + 25XX',
 };
 
-/* プリセット選択の並び。TEXTALT-V と同じく用途でまとめる。
+/* プリセット選択の並び。TEXTALT と同じく用途でまとめる。
    Blocks / Box / Shapes は 8x11 専用（8x8 には字形が無い）。 */
 const CHAR_SET_GROUPS = [
   ['— Teno —',     ['teno']],

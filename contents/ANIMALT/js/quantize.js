@@ -1,6 +1,6 @@
 /* ============================================================
    ANIMALT — quantization pipeline
-   PALETALT-K の quantize.js を、この用途に要る分だけ削って移植したもの。
+   PALETALT の quantize.js を、この用途に要る分だけ削って移植したもの。
 
    1. MEDIAN CUT  分散最大の箱を優先分割して初期プールを作る
    2. CAP         最近傍ペアを潰して TARGET まで確実に落とす

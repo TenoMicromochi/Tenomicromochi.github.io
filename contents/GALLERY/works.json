@@ -8,21 +8,25 @@
     {
       "key": "icons",
       "ja": "アイコン・素材",
+      "kana": "アイコン・そざい",
       "en": "Icons & Materials"
     },
     {
       "key": "machine",
       "ja": "マシン系",
+      "kana": "マシンけい",
       "en": "Machines"
     },
     {
       "key": "other",
       "ja": "その他",
+      "kana": "そのた",
       "en": "Other"
     },
     {
       "key": "talisman",
       "ja": "護符",
+      "kana": "ごふ",
       "en": "Talismans"
     },
     {
@@ -33,6 +37,7 @@
     {
       "key": "equipment",
       "ja": "装備",
+      "kana": "そうび",
       "en": "Equipment"
     }
   ],
@@ -75,10 +80,10 @@
     {
       "category": "icons",
       "file": "my_works/icons/GLYPHALT-16のグリフ一覧.png",
-      "titleJa": "GLYPHALT-16のグリフ一覧",
-      "titleEn": "GLYPHALT-16 Glyph List",
-      "descriptionJa": "「GLYPHALT-16」の対応グリフ一覧表。",
-      "descriptionEn": "A reference sheet listing the glyphs supported by the \"GLYPHALT-16.\""
+      "titleJa": "GLYPHALTのグリフ一覧",
+      "titleEn": "GLYPHALT Glyph List",
+      "descriptionJa": "「GLYPHALT」の対応グリフ一覧表。",
+      "descriptionEn": "A reference sheet listing the glyphs supported by the \"GLYPHALT.\""
     },
     {
       "category": "icons",

@@ -1,5 +1,5 @@
 /* ============================================================
-   PALETALT-K — quantization pipeline
+   PALETALT — quantization pipeline
 
    1. MEDIAN CUT   分散最大の箱を優先分割して初期プールを作る
    2. CAP          最近傍ペアを潰して TARGET まで確実に落とす

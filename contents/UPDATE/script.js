@@ -45,11 +45,11 @@ const UPDATE_LOGS = [
     },
     {
         date: "2026/08/08",
-        text: "追加//Added: PALETALT-K"
+        text: "追加//Added: PALETALT"
     },
     {
         date: "2026/08/07",
-        text: "追加//Added: TENOMOJI\n変更//Updated: GLYPHALT-16"
+        text: "追加//Added: TENOMOJI\n変更//Updated: GLYPHALT"
     },
     {
         date: "2026/08/06",
@@ -57,19 +57,19 @@ const UPDATE_LOGS = [
     },
     {
         date: "2026/08/04",
-        text: "🐾Move the site's host to GitHub🐾\n削除//Deleted: CHROMALT-Q\n削除//Deleted: MAP-GEN"
+        text: "🐾Move the site's host to GitHub🐾\n削除//Deleted: CHROMALT\n削除//Deleted: MAP-GEN"
     },
     {
         date: "2026/08/04",
-        text: "変更//Updated: TEXTALT-V"
+        text: "変更//Updated: TEXTALT"
     },
     {
         date: "2026/08/03",
-        text: "変更//Updated: GLYPHALT-16"
+        text: "変更//Updated: GLYPHALT"
     },
     {
         date: "2026/07/30",
-        text: "変更//Updated: GLYPHALT-16"
+        text: "変更//Updated: GLYPHALT"
     },
     {
         date: "2026/07/29",
@@ -77,11 +77,11 @@ const UPDATE_LOGS = [
     },
     {
         date: "2026/07/28",
-        text: "変更//Updated: GLYPHALT-16"
+        text: "変更//Updated: GLYPHALT"
     },
     {
         date: "2026/05/28",
-        text: "追加//Added: TEXTALT-V\n削除//Deleted: aa-Gen"
+        text: "追加//Added: TEXTALT\n削除//Deleted: aa-Gen"
     },
     {
         date: "2026/04/17",
@@ -89,11 +89,11 @@ const UPDATE_LOGS = [
     },
     {
         date: "2026/04/15",
-        text: "追加//Added: CHROMALT-Q"
+        text: "追加//Added: CHROMALT"
     },
     {
         date: "2026/04/09",
-        text: "追加//Added: GLYPHALT-16"
+        text: "追加//Added: GLYPHALT"
     },
     {
         date: "2026/02/15",
