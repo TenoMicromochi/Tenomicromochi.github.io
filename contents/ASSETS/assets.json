@@ -16,14 +16,19 @@
       "en": "Buttons"
     },
     {
+      "key": "cards",
+      "ja": "カード",
+      "en": "Cards"
+    },
+    {
       "key": "icons",
       "ja": "アイコン",
       "en": "Icons"
     },
     {
       "key": "particle",
-      "ja": "particle",
-      "en": "particle"
+      "ja": "パーティクル",
+      "en": "Particle"
     },
     {
       "key": "tile",
@@ -160,6 +165,30 @@
     {
       "category": "buttons",
       "file": "/images/buttons/tab_triangle_up.png"
+    },
+    {
+      "category": "cards",
+      "file": "/images/cards/games.png"
+    },
+    {
+      "category": "cards",
+      "file": "/images/cards/others.png"
+    },
+    {
+      "category": "cards",
+      "file": "/images/cards/profiles.png"
+    },
+    {
+      "category": "cards",
+      "file": "/images/cards/sandbox.png"
+    },
+    {
+      "category": "cards",
+      "file": "/images/cards/tools.png"
+    },
+    {
+      "category": "cards",
+      "file": "/images/cards/works.png"
     },
     {
       "category": "icons",

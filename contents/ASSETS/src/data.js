@@ -48,9 +48,10 @@ let CATEGORIES = [];
 let ITEMS = [];
 
 function categoryLabel(key) {
-    if (key === 'all') return { ja: 'すべて', en: 'All' };
+    if (key === 'all') return { ja: 'すべて', en: 'All', kana: 'すべて' };
     const c = CATEGORIES.find(c => c.key === key);
-    return c ? { ja: c.ja, en: c.en } : { ja: key, en: key };
+    // kana：見出し用。漢字をひらがなにした名前（無ければ ja）。左のカテゴリ一覧は ja のまま
+    return c ? { ja: c.ja, en: c.en, kana: c.kana || c.ja } : { ja: key, en: key, kana: key };
 }
 
 // assets.json を読み込み CATEGORIES/ITEMS を更新する。読み込み後の描画は呼び出し側の責務。

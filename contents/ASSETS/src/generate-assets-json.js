@@ -15,7 +15,9 @@ const KNOWN_CATEGORIES = {
     avatar:     { key: 'avatar',     ja: 'アバター',         en: 'Avatar' },
     background: { key: 'background', ja: 'バックグラウンド', en: 'Background' },
     buttons:    { key: 'buttons',    ja: 'ボタン',           en: 'Buttons' },
+    cards:      { key: 'cards',      ja: 'カード',           en: 'Cards' },
     icons:      { key: 'icons',      ja: 'アイコン',         en: 'Icons' },
+    particle:   { key: 'particle',   ja: 'パーティクル',     en: 'Particle' },
     tile:       { key: 'tile',       ja: 'タイル',           en: 'Tile' },
     title:      { key: 'title',      ja: 'タイトル',         en: 'Title' },
 };

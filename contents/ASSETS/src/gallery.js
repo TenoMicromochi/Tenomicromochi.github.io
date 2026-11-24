@@ -77,7 +77,7 @@ function buildSidebar() {
             buildSidebar();
             renderGrid();
             const lbl = categoryLabel(activeCategory);
-            currentCategoryLabel.textContent = lbl.en + ' / ' + lbl.ja;
+            currentCategoryLabel.textContent = lbl.en + ' / ' + lbl.kana;
         });
 
         categoryList.appendChild(row);
