@@ -1,6 +1,8 @@
-// HOME：背景の電柱 AA（TenoText 3x6 18px / 水色 / グリッド / そよ風）、時計、カードのマス揃え、アバターの pupi とハート
+// HOME：時計、カードのマス揃え（見えない 12x18 のマス）、アバターの pupi とハート
+// 電柱の AA（TenoText 3x6 18px / そよ風）は SHOW_DENCHU で出し入れする。今は出さない（カードの裏がごちゃつくため）
 // 電線は碍子（X の右端）から画面の左端までを1径間とみなし、真ん中が一番低い放物線
 (() => {
+  const SHOW_DENCHU = false;
   const FONT = { family: 'TenoText 3x6', size: 18 };
   const WIND = { center: 2.0, amp: 0.9, speed: 0.9 };   // CALM
   const LEVEL_TOP = ['~', '-', '_', ' '];
@@ -13,10 +15,12 @@
   let clockAt = null;   // { row, col } 画面のマス。null なら出さない
 
   async function init() {
-    const txt = await (await fetch('aa_source.txt')).text();
-    base = txt.replace(/\r/g, '').split('\n');
-    while (base.length && base[base.length - 1].trim() === '') base.pop();
-    cols = Math.max(...base.map(l => l.length));
+    if (SHOW_DENCHU) {
+      const txt = await (await fetch('aa_source.txt')).text();
+      base = txt.replace(/\r/g, '').split('\n');
+      while (base.length && base[base.length - 1].trim() === '') base.pop();
+    }
+    cols = base.length ? Math.max(...base.map(l => l.length)) : 0;
     base = base.map(l => l.padEnd(cols, ' '));
     base.forEach((l, r) => {
       const m = l.match(/^X+/);
@@ -110,7 +114,7 @@
     placeClock();
   }
   function baseRow(r) {
-    if (r < 0) return '';
+    if (r < 0 || !base.length) return '';
     if (r < base.length) return base[r];
     const p = 7, start = base.length - p;
     return base[start + ((r - base.length) % p)];

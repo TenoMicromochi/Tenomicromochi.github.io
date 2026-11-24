@@ -42,51 +42,87 @@ body {
     line-height: 20px;
 }
 
+/* ── カード：images/cards/<種類>.png（205x127）を等倍で敷き、透過の窓に中身を置く ──
+   窓の位置（画像の実測）：アイコン 9,22 50x50 / JP 65,28 130x13 / EN 65,51 130x16 / EXPL 9,78 186x26
+   種類は data-card（profiles / tools / games / sandbox / works / others） */
 .home-card-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, 205px);
+    justify-content: center;
     gap: 14px;
 }
 
 .home-card {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 14px;
+    position: relative;
+    display: block;
+    width: 205px;
+    height: 127px;
     text-decoration: none;
-    /* 背景の透明度（--panel #f5f8fa を透かす。枠線と文字は透かさない） */
-    --card-a: 0.7;
-    background: rgba(245, 248, 250, var(--card-a));
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
     color: var(--text);
-    transition: border-color 0.1s, box-shadow 0.1s;
+    background: url('/images/cards/tools.png') 0 0 / 205px 127px no-repeat;
+    image-rendering: crisp-edges;
+    image-rendering: pixelated;
 }
-.home-card:hover {
-    border-color: var(--accent);
-    box-shadow: 0 2px 8px rgba(34, 119, 119, 0.15);
-}
+.home-card[data-card="profiles"] { background-image: url('/images/cards/profiles.png'); }
+.home-card[data-card="games"]    { background-image: url('/images/cards/games.png'); }
+.home-card[data-card="sandbox"]  { background-image: url('/images/cards/sandbox.png'); }
+.home-card[data-card="works"]    { background-image: url('/images/cards/works.png'); }
+.home-card[data-card="others"]   { background-image: url('/images/cards/others.png'); }
+.home-card:hover { top: -2px; }   /* マウスを乗せると 2px 浮く */
 
+/* アイコン：16x16 を 2 倍の 32x32、50x50 の窓の中央（9 + 9, 22 + 9） */
 .home-card-icon {
-    box-sizing: content-box;   /* 中身が 32px（icons は 16x16 の 2 倍、TENOKUN は 1 倍） */
-    width: 32px;
-    height: 32px;
-    object-fit: contain;
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 4px;
+    position: absolute;
+    left: 9px; top: 22px;
+    box-sizing: content-box;   /* 中身 32px + 余白 9px = 窓の 50px */
+    width: 32px; height: 32px;
+    padding: 9px;
+    background: rgba(245, 248, 250, 0.85);
+    image-rendering: crisp-edges;
     image-rendering: pixelated;
 }
 
-.home-card-label {
-    font-family: 'TenoText 8x8', var(--font-mono);
-    font-size: 16px;
-    color: var(--accent2);
-    letter-spacing: 1px;
+.home-card-jp,
+.home-card-label,
+.home-card-desc {
+    position: absolute;
+    box-sizing: border-box;
+    overflow: hidden;
+    white-space: nowrap;
+    background: rgba(245, 248, 250, 0.85);
+    -webkit-font-smoothing: none;
 }
 
-.home-card-desc {
+/* 日本語タイトル：マルミーニャ 12px */
+.home-card-jp {
+    left: 65px; top: 28px; width: 130px; height: 13px;
+    padding: 0 3px;
+    font-family: var(--font-body);
     font-size: 12px;
+    line-height: 13px;
+    color: var(--text);
+}
+
+/* 英語タイトル：TenoText 8x8 の 2 倍 16px */
+.home-card-label {
+    /* 窓は 51px からだが、字面を合わせるため文字だけ 1px 上。地は窓の 51px から（枠線にかぶせない） */
+    left: 65px; top: 50px; width: 130px; height: 17px;
+    background: linear-gradient(rgba(245, 248, 250, 0.85), rgba(245, 248, 250, 0.85)) 0 1px / 100% 16px no-repeat;
+    padding: 0 1px;   /* 1 文字 16px。8 文字 = 128px で窓の 130px にちょうど入る */
+    font-family: var(--font-heading);
+    font-size: 16px;
+    line-height: 16px;
+    color: var(--text);   /* #333355。色の見比べで決めた */
+}
+
+/* 説明：マルミーニャ 12px、2 行まで */
+.home-card-desc {
+    left: 9px; top: 78px; width: 186px; height: 26px;
+    padding: 0 2px;
+    font-family: var(--font-body);
+    font-size: 12px;
+    line-height: 13px;
+    white-space: normal;
     color: var(--sub);
 }
 
@@ -103,23 +139,19 @@ footer {
     margin: 0 auto;
 }
 
-/* ── 背景：電柱の AA とグリッド（script.js が描く） ──
-   文字は TenoText 3x6 の 18px（3 倍）。1 マス 12x18。
-   電線は碍子から画面の左端までたるみ、風で揺れる */
+/* ── 背景：上の白から下の灰色へのグラデーション ──
+   高さは script.js がページの高さに合わせるので、グラデーションはページ全体にかかる。
+   1 マス 12x18（TenoText 3x6 の 18px）。カードと時計の文字はこのマスに揃う（script.js）。
+   電柱の AA は script.js の SHOW_DENCHU で出し入れ */
 #denchu-bg {
-    --dg-grid: #ededed;
-    --dg-ink: #8ccbec;
+    --dg-ink: #8a8f99;   /* 時計（と電柱を出すときの AA）の色 */
     --dg-cw: 12px;
     --dg-ch: 18px;
     /* ページと一緒にスクロールする。高さは script.js がページの高さに合わせる */
     position: absolute; left: 0; top: 0; width: 100%; height: 100vh;
     z-index: -1; overflow: hidden;
     pointer-events: none;
-    background-color: #ffffff;
-    background-image:
-        linear-gradient(to right, var(--dg-grid) 1px, transparent 1px),
-        linear-gradient(to bottom, var(--dg-grid) 1px, transparent 1px);
-    background-size: var(--dg-cw) var(--dg-ch);
+    background: linear-gradient(to bottom, #ffffff, #d6d8dc);
 }
 #denchu-aa {
     position: absolute; left: 0; margin: 0;
@@ -147,4 +179,3 @@ footer {
     -webkit-font-smoothing: none;
 }
 .home-lead.dg-clock-side .dg-clock { position: absolute; top: 0; }
-
