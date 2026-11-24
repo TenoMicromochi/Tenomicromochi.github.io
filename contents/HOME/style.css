@@ -140,23 +140,18 @@ footer {
 }
 
 /* ── 背景：上の白から下の灰色へのグラデーション ──
-   高さは script.js がページの高さに合わせるので、グラデーションはページ全体にかかる。
-   1 マス 12x18（TenoText 3x6 の 18px）。カードと時計の文字はこのマスに揃う（script.js）。
-   電柱の AA は script.js の SHOW_DENCHU で出し入れ */
-#denchu-bg {
-    --dg-ink: #8a8f99;   /* 時計（と電柱を出すときの AA）の色 */
-    --dg-cw: 12px;
-    --dg-ch: 18px;
-    /* ページと一緒にスクロールする。高さは script.js がページの高さに合わせる */
+   高さは script.js がページの高さに合わせるので、グラデーションはページ全体にかかる */
+#home-bg {
     position: absolute; left: 0; top: 0; width: 100%; height: 100vh;
     z-index: -1; overflow: hidden;
     pointer-events: none;
     background: linear-gradient(to bottom, #ffffff, #d6d8dc);
 }
-#denchu-aa {
-    position: absolute; left: 0; margin: 0;
+/* 時計の文字を描く層。1 文字 = 1 マス（TenoText 3x6 の 18px、12x18）。カードもこのマスにそろう（script.js） */
+#home-clock-layer {
+    position: absolute; left: 0; top: 0; margin: 0;
     font-family: 'TenoText 3x6'; font-size: 18px; line-height: 18px;
-    color: var(--dg-ink);
+    color: #8a8f99;
     white-space: pre;
     -webkit-font-smoothing: none;
     font-kerning: none;
@@ -173,7 +168,7 @@ footer {
     display: block;
     width: max-content;
     font-family: 'TenoText 3x6'; font-size: 18px; line-height: 20px;
-    /* 場所決め用の入れ物。文字は背景の AA のマスに描く（script.js） */
+    /* 場所決め用の入れ物。文字は #home-clock-layer のマスに描く（script.js） */
     visibility: hidden;
     white-space: nowrap;
     -webkit-font-smoothing: none;

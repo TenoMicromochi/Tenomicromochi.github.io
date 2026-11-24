@@ -1,46 +1,23 @@
 // HOME：時計、カードのマス揃え（見えない 12x18 のマス）、アバターの pupi とハート
-// 電柱の AA（TenoText 3x6 18px / そよ風）は SHOW_DENCHU で出し入れする。今は出さない（カードの裏がごちゃつくため）
-// 電線は碍子（X の右端）から画面の左端までを1径間とみなし、真ん中が一番低い放物線
+// マスは TenoText 3x6 の 18px の 1 文字（12x18）。時計の文字はこのマスに描く
 (() => {
-  const SHOW_DENCHU = false;
   const FONT = { family: 'TenoText 3x6', size: 18 };
-  const WIND = { center: 2.0, amp: 0.9, speed: 0.9 };   // CALM
-  const LEVEL_TOP = ['~', '-', '_', ' '];
-  const LEVEL_BELOW = '`';
 
-  const aa = document.getElementById('denchu-aa');
-  const bg = document.getElementById('denchu-bg');
-  let base = [], wires = [], rowEls = [];
-  let cols = 0, cw = 12, ch = 18, gx = 0, ox = 0, topRows = 0, lastKey = '';
-  let clockAt = null;   // { row, col } 画面のマス。null なら出さない
+  const layer = document.getElementById('home-clock-layer');   // 時計の文字を描く pre
+  const bg = document.getElementById('home-bg');
+  let cw = 12, ch = 18;
+  let clockAt = null;   // { row, col } ページのマス。null なら出さない
 
   async function init() {
-    if (SHOW_DENCHU) {
-      const txt = await (await fetch('aa_source.txt')).text();
-      base = txt.replace(/\r/g, '').split('\n');
-      while (base.length && base[base.length - 1].trim() === '') base.pop();
-    }
-    cols = base.length ? Math.max(...base.map(l => l.length)) : 0;
-    base = base.map(l => l.padEnd(cols, ' '));
-    base.forEach((l, r) => {
-      const m = l.match(/^X+/);
-      if (m) wires.push({ row: r, len: m[0].length });
-    });
-    wires.forEach((w, i) => {
-      w.phase = (w.row < 10 ? 0 : 1.1) + i * 0.25;
-      w.rate = 1 + ((i * 37) % 7 - 3) * 0.02;
-    });
     await document.fonts.load(`${FONT.size}px "${FONT.family}"`);
     const c = document.createElement('canvas').getContext('2d');
     c.font = `${FONT.size}px "${FONT.family}"`;
     cw = Math.round(c.measureText('#'.repeat(100)).width / 100);
     ch = FONT.size;
-    bg.style.setProperty('--dg-cw', cw + 'px');
-    bg.style.setProperty('--dg-ch', ch + 'px');
     await document.fonts.ready;
     layout();
     addEventListener('resize', layout);
-    requestAnimationFrame(tick);
+    tick();
   }
 
   // カードをグリッドのマスに合わせる。
@@ -76,8 +53,7 @@
     grid.style.marginTop = (above + Math.ceil(y / ch) * ch - y) + 'px';
   }
 
-  // 背景はページと一緒にスクロールする（グリッドとカードがずれないように）。
-  // 電柱は右寄せ、上は上部バーの下から1マス空ける。柱はページの下まで継ぎ足す
+  // 背景（グラデーション）はページと一緒にスクロールし、高さはページ全体に合わせる
   function layout() {
     // 先に時計の入れ物の置き方を決める（狭い画面では行が増えてカードが下がる）。
     // カードを揃えると SANDBOX の位置が動き、置き方が変わることがある（幅を変えたとき）。
@@ -90,50 +66,15 @@
     placeClock();
     if (side() !== before) snapCards();
     bg.style.height = '0px';
-    const docW = document.documentElement.clientWidth;
-    const docH = Math.max(document.documentElement.scrollHeight, innerHeight);
-    bg.style.height = docH + 'px';
-    gx = Math.floor(docW / cw);
-    const gy = Math.ceil(docH / ch);
-    const bar = document.getElementById('sodenmir-topbar');
-    const barRows = bar ? Math.ceil(bar.getBoundingClientRect().bottom / ch) : 0;
-    // pre は画面の一番上から置き、AA は topRows 行下げる（時計を上の行にも描けるように）
-    topRows = barRows + 1;
-    ox = gx - cols;
-    const total = Math.max(gy, topRows + base.length);
-    aa.style.top = '0px';
-    aa.textContent = '';
-    rowEls = [];
-    for (let r = 0; r < total; r++) {
-      const s = document.createElement('span');
-      s.textContent = screenRow(r).join('') + '\n';
-      aa.appendChild(s);
-      rowEls.push(s);
-    }
-    lastKey = '';
+    bg.style.height = Math.max(document.documentElement.scrollHeight, innerHeight) + 'px';
     placeClock();
+    drawClock();
   }
-  function baseRow(r) {
-    if (r < 0 || !base.length) return '';
-    if (r < base.length) return base[r];
-    const p = 7, start = base.length - p;
-    return base[start + ((r - base.length) % p)];
-  }
-  function screenRow(r) {
-    const src = baseRow(r - topRows), out = new Array(gx);
-    for (let c = 0; c < gx; c++) out[c] = src[c - ox] ?? ' ';
-    return out;
-  }
-  function depth(w, t) {
-    const a = Math.sin(t * WIND.speed * w.rate + w.phase);
-    const b = Math.sin(t * WIND.speed * 0.37 + w.phase * 0.5) * 0.35;
-    const v = WIND.center + WIND.amp * (a * 0.8 + b);
-    return Math.min(3, Math.max(0, v - 1));
-  }
+
   const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const pad = n => String(n).padStart(2, '0');
   // 時計：リード文の行に1行で。左端を SANDBOX のカードの左端に揃える。
-  // 文字は背景の AA のマスに描くので、グリッドとずれない。
+  // 文字は #home-clock-layer のマスに描くので、カードと同じマスにそろう。
   // #dg-clock は場所を決めるための見えない入れ物（狭い画面で行を確保する）
   const clockEl = document.getElementById('dg-clock');
   function clockText() {
@@ -171,10 +112,8 @@
       row: Math.round((r.top + scrollY) / ch),
       col: Math.round((r.left + scrollX) / cw),
     };
-    lastKey = '';
   }
   document.fonts.ready.then(placeClock);
-
 
   // アバターをクリックすると pupi が鳴る（連打しても頭から鳴らし直す）
   const pupi = new Audio('/sounds/pupi.mp3');
@@ -232,43 +171,14 @@
     if (hearts.length) requestAnimationFrame(stepHearts);
     else heartsRunning = false;
   }
-  function tick(ms) {
-    const t = ms / 1000;
-    const levels = wires.map(w => {
-      const A = ox + w.len, d = depth(w, t), lv = [];
-      for (let c = 0; c < A; c++) {
-        const u = (c + 0.5) / A * 2 - 1;
-        lv.push(Math.round(d * (1 - u * u)));
-      }
-      return lv;
-    });
-    const clock = clockText();
-    const key = levels.map(l => l.join('')).join('|') + clock;
-    if (key !== lastKey) {
-      lastKey = key;
-      const rows = new Map();
-      const get = r => rows.get(r) ?? screenRow(r);
-      wires.forEach((w, i) => {
-        const R = w.row + topRows;
-        const lv = levels[i], line = get(R), below = get(R + 1);
-        for (let c = 0; c < lv.length; c++) {
-          line[c] = LEVEL_TOP[lv[c]];
-          if (lv[c] === 3 && below[c] === ' ') below[c] = LEVEL_BELOW;
-        }
-        rows.set(R, line);
-        rows.set(R + 1, below);
-      });
-      if (clockAt && clockAt.row < rowEls.length) {
-        const line = get(clockAt.row);
-        for (let i = 0; i < clock.length && clockAt.col + i < gx; i++) line[clockAt.col + i] = clock[i];
-        rows.set(clockAt.row, line);
-      }
-      rowEls.forEach((el, r) => {
-        const s = (rows.has(r) ? rows.get(r) : screenRow(r)).join('') + '\n';
-        if (el.textContent !== s) el.textContent = s;
-      });
-    }
-    requestAnimationFrame(tick);
+  // pre の左上はページの左上。行と桁はマスの数で、改行と空白で送る
+  function drawClock() {
+    layer.textContent = clockAt ? '\n'.repeat(clockAt.row) + ' '.repeat(clockAt.col) + clockText() : '';
+  }
+  // 1 秒ごと。秒の変わり目に合わせて描き直す
+  function tick() {
+    drawClock();
+    setTimeout(tick, 1000 - (Date.now() % 1000) + 5);
   }
   init();
 })();
