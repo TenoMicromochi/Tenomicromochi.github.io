@@ -23,6 +23,7 @@
   // カードをグリッドのマスに合わせる。
   // 枠線がグリッドの線に重なるよう、カードは「マス数×幅 + 1px」、隙間は「1マス − 1px」
   const CARD_COLS = 18;     // カード1枚の横の送り（マス）。カードは 17 マス + 1px
+  const MAX_COLS = 5;       // 1行に並べるカードの最大数
   function snapCards() {
     const grid = document.querySelector('.home-card-grid');
     const cards = [...document.querySelectorAll('.home-card')];
@@ -31,8 +32,8 @@
     grid.style.cssText = '';
     const ms = getComputedStyle(main);
     const avail = main.clientWidth - parseFloat(ms.paddingLeft) - parseFloat(ms.paddingRight);
-    // 列の数と1枚の幅（マス）。1列しか入らないときは入るだけの幅にする
-    let n = Math.max(1, Math.floor((avail + cw) / (CARD_COLS * cw)));
+    // 列の数（最大 MAX_COLS）と1枚の幅（マス）。1列しか入らないときは入るだけの幅にする
+    let n = Math.min(MAX_COLS, Math.max(1, Math.floor((avail + cw) / (CARD_COLS * cw))));
     let m = n > 1 ? CARD_COLS : Math.floor((avail + cw) / cw);
     grid.style.gridTemplateColumns = `repeat(${n}, ${(m - 1) * cw + 1}px)`;
     grid.style.columnGap = (cw - 1) + 'px';
