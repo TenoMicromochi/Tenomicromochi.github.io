@@ -1,4 +1,8 @@
 /* SANDBOX_HOME: HOME のカード並びだけ写したもの（壁紙・てのくん・時計は無し） */
+@font-face {
+    font-family: 'TenoText 3x6';
+    src: url('/fonts/TenoText 3x6.ttf') format('truetype');
+}
 body {
     font-family: var(--font-body);
 }
@@ -30,51 +34,89 @@ body::before {
     line-height: 20px;
 }
 
+/* カードは HOME と同じ作り：205x127 のカード画像（images/cards/sandbox.png）に、窓の位置を合わせて文字を置く */
 .home-card-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, 205px);
+    justify-content: center;
     gap: 14px;
 }
 
 .home-card {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 14px;
+    position: relative;
+    display: block;
+    width: 205px;
+    height: 127px;
     text-decoration: none;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
     color: var(--text);
-    transition: border-color 0.1s, box-shadow 0.1s;
+    background: url('/images/cards/sandbox.png') 0 0 / 205px 127px no-repeat;
+    image-rendering: crisp-edges;
+    image-rendering: pixelated;
 }
-.home-card:hover {
-    border-color: var(--accent);
-    box-shadow: 0 2px 8px rgba(34, 119, 119, 0.15);
-}
+.home-card:hover { top: -2px; }   /* マウスを乗せると 2px 浮く */
 
+/* アイコン：16x16 を 2 倍の 32x32、50x50 の窓の中央（9 + 9, 22 + 9） */
 .home-card-icon {
-    box-sizing: content-box;   /* 中身が 32px（icons は 16x16 の 2 倍、TENOKUN は 1 倍） */
-    width: 32px;
-    height: 32px;
-    object-fit: contain;
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 4px;
+    position: absolute;
+    left: 9px; top: 22px;
+    box-sizing: content-box;
+    width: 32px; height: 32px;
+    padding: 9px;
+    background: rgba(245, 248, 250, 0.85);
+    image-rendering: crisp-edges;
     image-rendering: pixelated;
 }
 
-.home-card-label {
-    font-family: 'TenoText 8x8', var(--font-mono);
-    font-size: 16px;
-    color: var(--accent2);
-    letter-spacing: 1px;
+.home-card-jp,
+.home-card-label,
+.home-card-desc {
+    position: absolute;
+    box-sizing: border-box;
+    overflow: hidden;
+    white-space: nowrap;
+    background: rgba(245, 248, 250, 0.85);
+    -webkit-font-smoothing: none;
 }
 
-.home-card-desc {
+/* 日本語タイトル：マルミーニャ 12px（窓 130px に全角 10 文字） */
+.home-card-jp {
+    left: 65px; top: 28px; width: 130px; height: 13px;
+    padding: 0 3px;
+    font-family: var(--font-body);
     font-size: 12px;
+    line-height: 13px;
+    color: var(--text);
+}
+
+/* 英語タイトル：TenoText 8x8 の 2 倍 16px。8 文字 = 128px で窓の 130px にちょうど入る */
+.home-card-label {
+    left: 65px; top: 50px; width: 130px; height: 17px;
+    background: linear-gradient(rgba(245, 248, 250, 0.85), rgba(245, 248, 250, 0.85)) 0 1px / 100% 16px no-repeat;
+    padding: 0 1px;
+    font-family: var(--font-heading);
+    font-size: 16px;
+    line-height: 16px;
+    color: var(--text);
+}
+/* 9 文字以上の英語タイトル（script.js が付ける）。下の窓の中で、等倍のまま細いフォントにする */
+.home-card-label.is-long {
+    font-family: 'TenoText 3x6', var(--font-heading);
+    font-size: 12px;
+    line-height: 12px;
+    padding: 3px 1px 0;
+}
+
+/* 説明：マルミーニャ 12px、2 行まで */
+.home-card-desc {
+    left: 9px; top: 78px; width: 186px; height: 26px;
+    padding: 0 2px;
+    font-family: var(--font-body);
+    font-size: 12px;
+    line-height: 13px;
+    white-space: normal;
     color: var(--sub);
 }
+
 footer {
     border-top: 1px solid var(--border);
     padding: 8px 20px;

@@ -31,7 +31,8 @@ const SODENMIR_GROUPS = [
         items: [
             // exact: true は /contents/SANDBOX/ と index.html でだけ選択中（試作ページ側では光らせない）
             { label: "SANDBOX_HOME", dir: "/contents/SANDBOX/", path: "/contents/SANDBOX/index.html", icon: "/images/icons/sandbox.png", exact: true },
-            { label: "SONIC_ASCII", dir: "/contents/SANDBOX/SONIC_ASCII/", path: "/contents/SANDBOX/SONIC_ASCII/index.html", icon: "/images/icons/sandbox.png", desc: "Send ASCII text by sound" },
+            { label: "T2Sound", jp: "ティーツーサウンド", dir: "/contents/SANDBOX/SONIC_ASCII/", path: "/contents/SANDBOX/SONIC_ASCII/index.html", icon: "/images/icons/sandbox.png", desc: "音でテキストをやり取りする実験" },
+            { label: "CRT-EFF", jp: "ｼｰｱｰﾙﾃｨ-ｴﾌ", dir: "/contents/SANDBOX/CRT_EFF/", path: "/contents/SANDBOX/CRT_EFF/index.html", icon: "/images/icons/sandbox.png", desc: "ブラウン管風エフェクトの実験" },
         ],
     },
     {

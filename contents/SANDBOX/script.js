@@ -15,15 +15,20 @@
         items.forEach((item) => {
             const a = document.createElement('a');
             a.className = 'home-card';
+            a.dataset.card = 'sandbox';
             a.href = item.path;
             const img = document.createElement('img');
             img.className = 'home-card-icon';
             img.src = item.icon;
             img.alt = '';
+            const jp = document.createElement('span');
+            jp.className = 'home-card-jp';
+            jp.textContent = item.jp || '';
             const label = document.createElement('span');
             label.className = 'home-card-label';
+            if (item.label.length > 8) label.classList.add('is-long');   // 8x8 の 16px は 8 文字まで
             label.textContent = item.label;
-            a.append(img, label);
+            a.append(img, jp, label);
             if (item.desc) {
                 const d = document.createElement('span');
                 d.className = 'home-card-desc';

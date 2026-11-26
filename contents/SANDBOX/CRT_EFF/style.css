@@ -1,0 +1,47 @@
+/* ============================================================
+   CRT SHADER 固有のスタイル。共通の見た目は lib/sandbox.css。
+   色は直書きしない（sandbox.css のトークンを var() で使う）。
+   ============================================================ */
+
+/* stage 全体に canvas を1枚敷く。内部解像度は CSS の大きさ × devicePixelRatio（main.js） */
+main.sb-stage { padding: 0; background: var(--sb-screen-bg); }
+#screen {
+    position: absolute;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    display: block;
+    cursor: grab;
+    touch-action: none;
+    image-rendering: pixelated;   /* 内部解像度は CSS の大きさ × devicePixelRatio で 1:1。ブラウザに拡大縮小させない */
+}
+#screen.is-drag { cursor: grabbing; }
+
+/* 下の欄の部品 */
+.sb-sliders { display: contents; }
+.sb-tab .sb-ctrl { width: 128px; }
+
+.sb-select {
+    min-width: 72px;
+    padding: 4px 4px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: var(--font-body);
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: 1px;
+    color: var(--text);
+    cursor: pointer;
+}
+.sb-select:focus { outline: none; border-color: var(--accent); }
+
+/* 右端の状態の文字 */
+.sb-status {
+    margin-left: auto;
+    align-self: flex-end;
+    white-space: pre;
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: 1px;
+    color: var(--sub);
+}

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<!-- CRT-EFF（サイト版）。正本は Sandbox/CRT_Shader、publish.py で写す。直接編集しない -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>送電世界 - CRT-EFF</title>
+<meta name="description" content="ブラウン管風エフェクトの実験">
+<meta property="og:type" content="website">
+<meta property="og:title" content="送電世界 - CRT-EFF">
+<meta property="og:description" content="ブラウン管風エフェクトの実験">
+<meta property="og:image" content="https://tenomicromochi.github.io/images/title/ogp.png">
+<meta property="og:url" content="https://tenomicromochi.github.io/contents/SANDBOX/CRT_EFF/index.html">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="/theme.css">
+<link rel="stylesheet" href="/sandbox.css">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="/main.css">
+<script src="/menu.js" defer></script>
+<script type="module" src="js/main.js"></script>
+</head>
+<body class="sandbox-app">
+
+<header class="sb-title">
+  <div class="sb-name">CRT-EFF</div>
+  <div class="sb-desc">Run an image through a phosphor-level CRT shader.</div>
+  <div class="sb-badge">SANDBOX</div>
+</header>
+
+<main class="sb-stage" id="stage">
+  <canvas id="screen"></canvas>
+</main>
+
+<footer class="sb-dock">
+  <section class="sb-tab" data-tab="MAIN">
+    <button class="btn" id="openBtn" type="button">OPEN</button>
+    <input type="file" id="fileInput" accept="image/png,image/jpeg,image/gif,image/webp" hidden>
+    <div class="sb-field">
+      <label class="sb-label" for="maxSel">MAX</label>
+      <select class="sb-select" id="maxSel"></select>
+    </div>
+    <div class="sb-field">
+      <label class="sb-label" for="divSel">DIV</label>
+      <select class="sb-select" id="divSel"></select>
+    </div>
+    <div class="sb-field">
+      <label class="sb-label" for="maskSel">MASK</label>
+      <select class="sb-select" id="maskSel"></select>
+    </div>
+    <div id="sliders" class="sb-sliders"></div>
+    <button class="btn secondary" id="fitBtn" type="button">FIT</button>
+    <button class="btn" id="exportBtn" type="button">EXPORT PNG</button>
+    <button class="btn" id="exportGifBtn" type="button">EXPORT GIF</button>
+    <div class="sb-status" id="status"></div>
+  </section>
+</footer>
+
+</body>
+</html>
