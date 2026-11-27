@@ -130,13 +130,14 @@ export function makeTestPattern() {
 //   静止画  IN 1920x1080 → 640x360   x8.0
 //   1/n     IN 1920x1080 → 1/4 → 480x270   x8.0
 //   GIF     IN 320x240 (24f) → 320x240   x4.0
-// opt = { div, frames, note }。note は最後に付ける注意書き
+// opt = { div, frames, note, out }。note は注意書き、out は書き出しの大きさ（最後に OUT 〜 を付ける）
 export function statusText(inW, inH, w, h, zoom, opt = {}) {
   const z = zoom < 1 ? zoom.toFixed(2) : zoom.toFixed(1);
   const f = opt.frames > 1 ? ` (${opt.frames}f)` : '';
   const d = opt.div > 1 ? ` → 1/${opt.div}` : '';
   const note = opt.note ? ` ${opt.note}` : '';
-  return `IN ${inW}x${inH}${f}${d} → ${w}x${h}   x${z}${note}`;
+  const out = opt.out ? `   OUT ${opt.out}` : '';
+  return `IN ${inW}x${inH}${f}${d} → ${w}x${h}   x${z}${note}${out}`;
 }
 
 // ガンマ関数（Lanczos 近似）。穴の面積の計算だけに使う
@@ -181,4 +182,117 @@ export function gifExportCheck(w, h, frames) {
 // GIF の待ち時間（ms）。10ms 以下は 100ms（ブラウザと同じ扱い）
 export function gifDelay(ms) {
   return ms <= 10 ? 100 : ms;
+}
+
+// ---- 第3段 ----
+
+export const APNG_MAX_PIXELS = 1e9;   // 1コマの画素数 × コマ数
+
+// APNG で書き出せるか：長い辺が limit 以下、かつ 1コマの画素数 × コマ数が 10 億以下
+export function apngExportCheck(w, h, frames, limit) {
+  return Math.max(w, h) <= limit && w * h * frames <= APNG_MAX_PIXELS;
+}
+
+// MP4 の大きさ：幅・高さを偶数に切り下げる（右端・下端の1列を落とす）
+export function mp4Size(w, h) {
+  return { w: w - (w % 2), h: h - (h % 2) };
+}
+
+// MP4 のコーデック文字列。1コマのマクロブロック数（16x16 の数）で選ぶ。書き出せない大きさは null
+export function mp4Codec(w, h) {
+  if (w < 2 || h < 2) return null;
+  const mb = Math.ceil(w / 16) * Math.ceil(h / 16);
+  if (mb <= 36864) return 'avc1.640033';    // High 5.1
+  if (mb <= 139264) return 'avc1.64003C';   // High 6.0
+  return null;
+}
+
+// RGBA（w x h）の左上 ew x eh を切り出す。同じ大きさなら元のまま
+export function cropRgba(rgba, w, h, ew, eh) {
+  if (ew === w && eh === h) return rgba;
+  const out = new Uint8ClampedArray(ew * eh * 4);
+  for (let y = 0; y < eh; y++) out.set(rgba.subarray(y * w * 4, y * w * 4 + ew * 4), y * ew * 4);
+  return out;
+}
+
+// ---- 第4段 ----
+
+// 切り抜きの書き出しの大きさ。ratio = [rw, rh]、zoom = 今の拡大率。
+// 単位 u = max(1, floor(rect.h × zoom / rh))、大きさは (rw × u) x (rh × u)（比率がぴったり保たれる）。
+// even のとき（MP4）は、幅・高さが偶数になるよう u を偶数に切り上げる
+export function cropOutSize(rect, zoom, ratio, even) {
+  const [rw, rh] = ratio;
+  let u = Math.max(1, Math.floor(rect.h * zoom / rh + 1e-9));
+  if (even && u % 2 === 1 && (rw % 2 === 1 || rh % 2 === 1)) u++;
+  return { w: rw * u, h: rh * u };
+}
+
+// 枠を画像（imgW x imgH）に収める。画像より大きいときは比率を保って縮め、短い辺が最小（minSide）を割るときは
+// 画像に収まる範囲で大きくし、はみ出すときは押し戻す。中心を保って大きさを直し、そのあと位置を押し戻す
+export function fitCropRect(rect, imgW, imgH, minSide = 4) {
+  let { w, h } = rect;
+  const cx = rect.x + w / 2, cy = rect.y + h / 2;
+  let k = 1;
+  if (Math.min(w, h) < minSide) k = minSide / Math.min(w, h);
+  k = Math.min(k, imgW / w, imgH / h);
+  w *= k; h *= k;
+  const x = Math.min(Math.max(0, cx - w / 2), imgW - w);
+  const y = Math.min(Math.max(0, cy - h / 2), imgH - h);
+  return { x, y, w, h };
+}
+
+// 比率 ratio の枠を新しく作る。中心 (cx, cy)・高さ h を指定する（h が無いときは、見えている範囲 visW x visH の 60% に収まる一番大きな枠）
+export function makeCropRect(ratio, cx, cy, imgW, imgH, visW, visH, h) {
+  const [rw, rh] = ratio;
+  if (h === undefined) {
+    const w = Math.min(0.6 * visW, 0.6 * visH * rw / rh);
+    h = w * rh / rw;
+  }
+  const w = h * rw / rh;
+  return fitCropRect({ x: cx - w / 2, y: cy - h / 2, w, h }, imgW, imgH);
+}
+
+// 縁・角のドラッグで枠の大きさを変える（比率は start のまま）。座標は処理する画像の画素。
+// handle：'n' 's' 'e' 'w'（縁）、'nw' 'ne' 'sw' 'se'（角）。pointer = { x, y }。start（ドラッグを始めたときの枠）から計算する
+//   角：向かいの角を止め、幅から決めた大きさと高さから決めた大きさの大きい方
+//   左右の縁：向かいの縁を止め、高さは比率から決めて縦の中心を保つ。上下の縁は縦横を入れ替えたもの
+//   画像の外へは広げず（止めた側は動かさない）、短い辺は minSide で止まる（裏返らない）
+export function resizeCropRect(start, handle, pointer, imgW, imgH, minSide = 4) {
+  const r = start.w / start.h;
+  const wMin = r >= 1 ? minSide * r : minSide;
+  const east = handle.includes('e'), west = handle.includes('w');
+  const south = handle.includes('s'), north = handle.includes('n');
+  let w;
+  let x, y;
+  if (handle.length === 2) {
+    const sx = east ? 1 : -1, sy = south ? 1 : -1;
+    const ax = east ? start.x : start.x + start.w, ay = south ? start.y : start.y + start.h;
+    const dw = (pointer.x - ax) * sx, dh = (pointer.y - ay) * sy;
+    w = Math.max(dw, dh * r);
+    const wMax = Math.min(sx > 0 ? imgW - ax : ax, (sy > 0 ? imgH - ay : ay) * r);
+    w = Math.min(Math.max(w, wMin), Math.max(wMin, wMax));
+    const h = w / r;
+    x = sx > 0 ? ax : ax - w;
+    y = sy > 0 ? ay : ay - h;
+    return { x, y, w, h };
+  }
+  if (east || west) {
+    const sx = east ? 1 : -1;
+    const ax = east ? start.x : start.x + start.w;
+    const cy = start.y + start.h / 2;
+    w = (pointer.x - ax) * sx;
+    const wMax = Math.min(sx > 0 ? imgW - ax : ax, 2 * Math.min(cy, imgH - cy) * r);
+    w = Math.min(Math.max(w, wMin), Math.max(wMin, wMax));
+    const h = w / r;
+    return { x: sx > 0 ? ax : ax - w, y: cy - h / 2, w, h };
+  }
+  const sy = south ? 1 : -1;
+  const ay = south ? start.y : start.y + start.h;
+  const cx = start.x + start.w / 2;
+  let h = (pointer.y - ay) * sy;
+  const hMin = wMin / r;
+  const hMax = Math.min(sy > 0 ? imgH - ay : ay, 2 * Math.min(cx, imgW - cx) / r);
+  h = Math.min(Math.max(h, hMin), Math.max(hMin, hMax));
+  w = h * r;
+  return { x: cx - w / 2, y: sy > 0 ? ay : ay - h, w, h };
 }

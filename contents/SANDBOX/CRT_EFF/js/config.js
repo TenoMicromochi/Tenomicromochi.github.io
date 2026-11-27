@@ -64,3 +64,14 @@ export const HALO = {
 
 // 書き出しの上限（長い辺）
 export const EXPORT_LIMIT = 8192;
+
+// MP4（H.264）のビットレート = 幅 × 高さ × 30 × MP4_BPP。ただし MP4_MAX_BITRATE まで
+export const MP4_BPP = 0.25;
+export const MP4_MAX_BITRATE = 200e6;
+
+// 切り抜きの枠の比率（CROP セレクトの候補。OFF は枠なし）
+export const CROP_RATIOS = { '1:1': [1, 1], '4:3': [4, 3], '3:4': [3, 4], '16:9': [16, 9], '9:16': [9, 16] };
+// 枠の短い辺の最小（処理する画像の画素）
+export const CROP_MIN_SIDE = 4;
+// 切り抜きの書き出しで、ハレーションのために枠の周りに足す余白（元画素 = この値 × HALO.sigmas の最大）
+export const CROP_MARGIN_SIGMAS = 3;

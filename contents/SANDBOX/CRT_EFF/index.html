@@ -24,11 +24,13 @@
 <header class="sb-title">
   <div class="sb-name">CRT-EFF</div>
   <div class="sb-desc">Run an image through a phosphor-level CRT shader.</div>
+  <button class="btn secondary" id="panelBtn" type="button">HIDE PANEL</button>
   <div class="sb-badge">SANDBOX</div>
 </header>
 
 <main class="sb-stage" id="stage">
   <canvas id="screen"></canvas>
+  <div class="crop-layer"><div class="crop-box" id="cropBox" hidden><div class="crop-line"></div></div></div>
 </main>
 
 <footer class="sb-dock">
@@ -49,8 +51,15 @@
     </div>
     <div id="sliders" class="sb-sliders"></div>
     <button class="btn secondary" id="fitBtn" type="button">FIT</button>
-    <button class="btn" id="exportBtn" type="button">EXPORT PNG</button>
-    <button class="btn" id="exportGifBtn" type="button">EXPORT GIF</button>
+    <div class="sb-field">
+      <label class="sb-label" for="cropSel">CROP</label>
+      <select class="sb-select" id="cropSel"></select>
+    </div>
+    <div class="sb-field">
+      <label class="sb-label" for="fmtSel">FORMAT</label>
+      <select class="sb-select" id="fmtSel"></select>
+    </div>
+    <button class="btn" id="exportBtn" type="button">EXPORT</button>
     <div class="sb-status" id="status"></div>
   </section>
 </footer>

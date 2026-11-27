@@ -6,7 +6,7 @@
 //   5. 細かすぎるときは点の平均の明るさへ混ぜる（fwidth）
 //   6. ハレーション（幅の違うガウス4枚を縮小ピラミッドで作って重ね、HALO の割合で足す。画像の外にも漏れる）
 //   7. ガンマ 2.2 で戻して表示
-import { MASKS, PHOSPHORS, GAMMA, EDGE_SOFT, DOT_MIX, ROW_MIX, AVG_GAUSS, HALO } from './config.js';
+import { MASKS, PHOSPHORS, GAMMA, EDGE_SOFT, DOT_MIX, ROW_MIX, AVG_GAUSS, HALO, CROP_MARGIN_SIGMAS } from './config.js';
 import { holeAreaFraction } from './logic.js';
 
 const VERT = `#version 300 es
@@ -448,7 +448,10 @@ export class Renderer {
   // 画像全体を outW x outH で描き、タイル（上から数行ずつ）ごとに onTile(y0, th, rgba) へ渡す。
   // rgba は上の行から並べ直した th 行分。画面の canvas・画面用のテクスチャには触らない
   // src を渡すと、その RGBA（srcW x srcH）を書き出し専用のテクスチャに入れて使う（再生中のコマを動かさない）
-  _renderTiles(outW, outH, params, mask, onTile, src) {
+  // crop = { x, y, w, h }（処理する画像の画素座標）を渡すと、その枠の中だけを outW x outH で描く。
+  //   同じ拡大率（outW / crop.w）で全体を描いたときの、その部分と同じ絵になるよう、枠の周りに余白
+  //   （元画素 CROP_MARGIN_SIGMAS × HALO.sigmas の最大。画像の外は削る）を足した範囲を描いてハレーションを作り、枠の部分だけを取り出す
+  _renderTiles(outW, outH, params, mask, onTile, src, crop) {
     const gl = this.gl;
     let ex = {};
     let key = 'halo';
@@ -470,31 +473,46 @@ export class Renderer {
       key = 'haloEx';
       srcW = src.w;
     }
-    const view = { zoom: outW / srcW, ox: 0, oy: 0 };
+    const srcH = src ? src.h : this.srcH;
+    let view = { zoom: outW / srcW, ox: 0, oy: 0 };
+    let left = 0, top = 0, pw = outW, ph = outH;
+    if (crop) {
+      const zoom = outW / crop.w;
+      const M = CROP_MARGIN_SIGMAS * Math.max(...HALO.sigmas);
+      const capX = Math.max(0, Math.floor((this.maxTex - outW) / 2));
+      const capY = Math.max(0, Math.floor((this.maxTex - outH) / 2));
+      left = Math.min(capX, Math.round(Math.min(crop.x, M) * zoom));
+      top = Math.min(capY, Math.round(Math.min(crop.y, M) * zoom));
+      const right = Math.min(capX, Math.round(Math.max(0, Math.min(srcW - crop.x - crop.w, M)) * zoom));
+      const bottom = Math.min(capY, Math.round(Math.max(0, Math.min(srcH - crop.y - crop.h, M)) * zoom));
+      pw = left + outW + right; ph = top + outH + bottom;
+      view = { zoom, ox: left - crop.x * zoom, oy: top - crop.y * zoom };
+    }
     let H = null;
-    if (params.halo > 0) H = this._makeHalo(outW, outH, view, params, mask, ex, key);
-    const tileH = Math.max(1, Math.min(outH, Math.floor(4000000 / outW)));
+    if (params.halo > 0) H = this._makeHalo(pw, ph, view, params, mask, ex, key);
+    const tileH = Math.max(1, Math.min(outH, Math.floor(4000000 / pw)));
     const tile = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, tile);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, outW, tileH, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, pw, tileH, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     const fb = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tile, 0);
-    const buf = new Uint8Array(outW * tileH * 4);
+    const buf = new Uint8Array(pw * tileH * 4);
     for (let y0 = 0; y0 < outH; y0 += tileH) {
       const th = Math.min(tileH, outH - y0);
       this._crtPass({
-        ...ex, fb, vw: outW, vh: th, view, params, mask, pixScale: 1, offX: 0, offY: y0,
+        ...ex, fb, vw: pw, vh: th, view, params, mask, pixScale: 1, offX: 0, offY: top + y0,
         haloAmt: params.halo, haloTex: H && H.a.tex,
         haloInv: H && [1 / (H.w * HALO.down), 1 / (H.h * HALO.down)],
       });
-      gl.readPixels(0, 0, outW, th, gl.RGBA, gl.UNSIGNED_BYTE, buf);
+      gl.readPixels(0, 0, pw, th, gl.RGBA, gl.UNSIGNED_BYTE, buf);
       // readPixels は下の行から。上下を入れ替えて渡す
       const rgba = new Uint8ClampedArray(outW * th * 4);
       for (let r = 0; r < th; r++) {
-        rgba.set(buf.subarray((th - 1 - r) * outW * 4, (th - r) * outW * 4), r * outW * 4);
+        const o = (th - 1 - r) * pw * 4 + left * 4;
+        rgba.set(buf.subarray(o, o + outW * 4), r * outW * 4);
       }
       onTile(y0, th, rgba);
     }
@@ -504,20 +522,20 @@ export class Renderer {
   }
 
   // 今表示している絵の PNG の Blob
-  async exportPng(outW, outH, params, mask) {
+  async exportPng(outW, outH, params, mask, crop) {
     const out = document.createElement('canvas');
     out.width = outW; out.height = outH;
     const ctx = out.getContext('2d');
     this._renderTiles(outW, outH, params, mask, (y0, th, rgba) => {
       ctx.putImageData(new ImageData(rgba, outW, th), 0, y0);
-    });
+    }, undefined, crop);
     return new Promise((res, rej) => out.toBlob((b) => (b ? res(b) : rej(new Error('PNG encode failed'))), 'image/png'));
   }
 
   // 渡した1コマ（RGBA、srcW x srcH）を outW x outH で描いた RGBA（上の行から）
-  exportRgba(src, outW, outH, params, mask) {
+  exportRgba(src, outW, outH, params, mask, crop) {
     const out = new Uint8ClampedArray(outW * outH * 4);
-    this._renderTiles(outW, outH, params, mask, (y0, th, rgba) => { out.set(rgba, y0 * outW * 4); }, src);
+    this._renderTiles(outW, outH, params, mask, (y0, th, rgba) => { out.set(rgba, y0 * outW * 4); }, src, crop);
     return out;
   }
 }

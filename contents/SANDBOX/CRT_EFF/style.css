@@ -45,3 +45,20 @@ main.sb-stage { padding: 0; background: var(--sb-screen-bg); }
     letter-spacing: 1px;
     color: var(--sub);
 }
+
+/* 下の欄をしまう（footer.sb-dock の display: grid より強くする） */
+footer.sb-dock[hidden] { display: none; }
+
+/* 切り抜きの枠：canvas の上に重ねる（シェーダーには混ぜない）。ポインタは canvas が受ける */
+.crop-layer { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.crop-box {
+    position: absolute;
+    box-sizing: border-box;
+    box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.5);   /* 枠の外を黒の 50% で暗くする */
+}
+.crop-box[hidden] { display: none; }
+.crop-line {   /* 1 CSS 画素の線。下の絵の色を反転して見せる */
+    position: absolute; inset: 0;
+    border: 1px solid #fff;
+    mix-blend-mode: difference;
+}
