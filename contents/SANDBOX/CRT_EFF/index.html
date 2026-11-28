@@ -34,33 +34,59 @@
 </main>
 
 <footer class="sb-dock">
-  <section class="sb-tab" data-tab="MAIN">
-    <button class="btn" id="openBtn" type="button">OPEN</button>
-    <input type="file" id="fileInput" accept="image/png,image/jpeg,image/gif,image/webp" hidden>
-    <div class="sb-field">
-      <label class="sb-label" for="maxSel">MAX</label>
-      <select class="sb-select" id="maxSel"></select>
+  <section class="sb-tab" data-tab="CRT-EFF">
+    <div class="sb-group" data-group="IMAGE">
+      <button class="sb-fold" type="button" aria-expanded="true">IMAGE</button>
+      <div class="sb-body">
+        <button class="btn" id="openBtn" type="button">OPEN</button>
+        <input type="file" id="fileInput" accept="image/png,image/jpeg,image/gif,image/webp" hidden>
+        <div class="sb-field">
+          <label class="sb-label" for="maxSel">MAX</label>
+          <select class="sb-select" id="maxSel"></select>
+        </div>
+        <div class="sb-field">
+          <label class="sb-label" for="divSel">DIV</label>
+          <select class="sb-select" id="divSel"></select>
+        </div>
+        <button class="btn secondary" id="fitBtn" type="button">FIT</button>
+        <div class="sb-field">
+          <label class="sb-label" for="cropSel">CROP</label>
+          <select class="sb-select" id="cropSel"></select>
+        </div>
+        <div class="sb-field">
+          <label class="sb-label" for="fmtSel">FORMAT</label>
+          <select class="sb-select" id="fmtSel"></select>
+        </div>
+        <button class="btn" id="exportBtn" type="button">EXPORT</button>
+        <div class="sb-status" id="status"></div>
+      </div>
     </div>
-    <div class="sb-field">
-      <label class="sb-label" for="divSel">DIV</label>
-      <select class="sb-select" id="divSel"></select>
+    <div class="sb-group" data-group="SIGNAL">
+      <button class="sb-fold" type="button" aria-expanded="true">SIGNAL</button>
+      <div class="sb-body">
+        <div class="sb-field">
+          <label class="sb-label" for="signalSel">SIGNAL</label>
+          <select class="sb-select" id="signalSel"></select>
+        </div>
+        <div id="signalSliders" class="sb-sliders"></div>
+      </div>
     </div>
-    <div class="sb-field">
-      <label class="sb-label" for="maskSel">MASK</label>
-      <select class="sb-select" id="maskSel"></select>
+    <div class="sb-group" data-group="MASK">
+      <button class="sb-fold" type="button" aria-expanded="true">MASK</button>
+      <div class="sb-body">
+        <div class="sb-field">
+          <label class="sb-label" for="maskSel">MASK</label>
+          <select class="sb-select" id="maskSel"></select>
+        </div>
+        <div id="sliders" class="sb-sliders"></div>
+      </div>
     </div>
-    <div id="sliders" class="sb-sliders"></div>
-    <button class="btn secondary" id="fitBtn" type="button">FIT</button>
-    <div class="sb-field">
-      <label class="sb-label" for="cropSel">CROP</label>
-      <select class="sb-select" id="cropSel"></select>
+    <div class="sb-group" data-group="LIGHT">
+      <button class="sb-fold" type="button" aria-expanded="true">LIGHT</button>
+      <div class="sb-body">
+        <div id="lightSliders" class="sb-sliders"></div>
+      </div>
     </div>
-    <div class="sb-field">
-      <label class="sb-label" for="fmtSel">FORMAT</label>
-      <select class="sb-select" id="fmtSel"></select>
-    </div>
-    <button class="btn" id="exportBtn" type="button">EXPORT</button>
-    <div class="sb-status" id="status"></div>
   </section>
 </footer>
 

@@ -18,7 +18,29 @@ main.sb-stage { padding: 0; background: var(--sb-screen-bg); }
 
 /* 下の欄の部品 */
 .sb-sliders { display: contents; }
-.sb-tab .sb-ctrl { width: 128px; }
+.sb-tab .sb-ctrl { width: 140px; grid-template-columns: minmax(0, 1fr) auto auto; }
+/* 数値の横の ▲▼（1 刻みずつ動かす）。三角は border で描いて、にじませない */
+.sb-step { grid-column: 3; grid-row: 1; display: grid; grid-template-rows: 8px 8px; width: 12px; height: 16px; }
+.sb-step button {
+    position: relative;
+    padding: 0; margin: 0;
+    width: 12px; height: 8px;
+    background: none; border: none;
+    cursor: pointer;
+}
+.sb-step button::before {
+    content: '';
+    position: absolute; left: 2px; top: 2px;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+}
+.sb-step .up::before { border-bottom: 4px solid var(--sub); }
+.sb-step .down::before { border-top: 4px solid var(--sub); }
+.sb-step .up:hover::before { border-bottom-color: var(--accent); }
+.sb-step .down:hover::before { border-top-color: var(--accent); }
+.sb-ctrl.is-off .sb-step button { cursor: not-allowed; }
+.sb-ctrl.is-off { opacity: 0.4; }
+.sb-ctrl.is-off input { cursor: not-allowed; }
 
 .sb-select {
     min-width: 72px;
@@ -61,4 +83,56 @@ footer.sb-dock[hidden] { display: none; }
     position: absolute; inset: 0;
     border: 1px solid #fff;
     mix-blend-mode: difference;
+}
+
+/* ── 下の欄：組（IMAGE・SIGNAL・MASK・LIGHT）を縦に積み、見出しで畳む ── */
+footer.sb-dock { min-height: 0; }   /* lib の --sb-dock-h を打ち消す。畳んだ分だけ低くなる */
+footer.sb-dock .sb-tab { display: block; }
+.sb-group {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr);
+    align-items: start;
+    padding: 4px 0;
+}
+.sb-group + .sb-group { border-top: 1px solid var(--border); }
+.sb-group:first-child { padding-top: 0; }
+.sb-group:last-child { padding-bottom: 0; }
+.sb-fold {
+    display: flex; align-items: center; gap: 6px;
+    padding: 0; margin: 0;
+    height: 16px;
+    background: none; border: none;
+    font-family: var(--font-body);
+    font-size: 12px; line-height: 16px; letter-spacing: 2px;
+    color: var(--sub);
+    text-align: left;
+    cursor: pointer;
+}
+.sb-fold:hover { color: var(--accent); }
+/* 開閉の三角は border で描く（開 ▼ / 畳 ▶）。文字の ▼▶ は使わない */
+.sb-fold::before {
+    content: '';
+    flex: none;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid var(--sub);
+}
+.sb-fold:hover::before { border-top-color: var(--accent); }
+.sb-group.is-folded .sb-fold::before {
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    border-right: 0;
+    border-left: 4px solid var(--sub);
+}
+.sb-group.is-folded .sb-fold:hover::before { border-left-color: var(--accent); }
+.sb-body {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 8px 16px;
+    min-width: 0;
+}
+.sb-group.is-folded .sb-body { display: none; }
+@media (max-width: 720px) {
+    .sb-group { grid-template-columns: minmax(0, 1fr); gap: 4px; }
 }

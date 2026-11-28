@@ -1,5 +1,5 @@
 // CRT SHADER — 画面の組み立て（読み込み・拡大・移動・書き出し）
-import { MAX_CHOICES, DIV_CHOICES, SLIDERS, DEFAULT_MAX, DEFAULT_DIV, DEFAULT_MASK, MASKS, EXPORT_LIMIT, MP4_BPP, MP4_MAX_BITRATE, CROP_RATIOS } from './config.js';
+import { SIGNAL_CHOICES, DEFAULT_SIGNAL, MAX_CHOICES, DIV_CHOICES, SLIDERS, DEFAULT_MAX, DEFAULT_DIV, DEFAULT_MASK, MASKS, NO_GAP_Y, EXPORT_LIMIT, MP4_BPP, MP4_MAX_BITRATE, CROP_RATIOS } from './config.js';
 import { fitSize, divSize, zoomAt, fitView, exportSize, boxResize, makeTestPattern, statusText, WHEEL_STEP, gifExportCheck, gifDelay, GIF_MAX_FRAMES, apngExportCheck, mp4Size, mp4Codec, cropRgba, cropOutSize, fitCropRect, makeCropRect, resizeCropRect } from './logic.js';
 import { buildMp4 } from './mp4.js';
 import { Renderer } from './shader.js';
@@ -29,7 +29,13 @@ for (const name of Object.keys(MASKS)) {
   if (name === DEFAULT_MASK) o.selected = true;
   $('maskSel').appendChild(o);
 }
-const params = {};
+for (const name of SIGNAL_CHOICES) {
+  const o = document.createElement('option');
+  o.value = name; o.textContent = name;
+  if (name === DEFAULT_SIGNAL) o.selected = true;
+  $('signalSel').appendChild(o);
+}
+const params = { signal: DEFAULT_SIGNAL };
 for (const [key, s] of Object.entries(SLIDERS)) {
   params[key] = s.def;
   const box = document.createElement('div');
@@ -37,12 +43,35 @@ for (const [key, s] of Object.entries(SLIDERS)) {
   box.innerHTML =
     `<label for="${key}">${s.label}</label>` +
     `<input type="range" id="${key}" min="${s.min}" max="${s.max}" step="${s.step}" value="${s.def}">` +
-    `<input type="number" id="${key}N" min="${s.min}" max="${s.max}" step="${s.step}" value="${s.def}">`;
-  $('sliders').appendChild(box);
-  box.querySelector('input[type=range]').addEventListener('input', (e) => {
+    `<input type="number" id="${key}N" min="${s.min}" max="${s.max}" step="${s.step}" value="${s.def}">` +
+    `<div class="sb-step"><button type="button" class="up" aria-label="${s.label} up"></button>` +
+    `<button type="button" class="down" aria-label="${s.label} down"></button></div>`;
+  $({ signal: 'signalSliders', light: 'lightSliders' }[s.sec] || 'sliders').appendChild(box);
+  const range = box.querySelector('input[type=range]');
+  range.addEventListener('input', (e) => {
     params[key] = parseFloat(e.target.value);
     requestDraw();
   });
+  // ▲▼：1 刻みずつ動かす。押し続けると繰り返す
+  const dec = (String(s.step).split('.')[1] || '').length;
+  const nudge = (dir) => {
+    if (range.disabled) return;
+    const v = Math.min(s.max, Math.max(s.min, parseFloat(range.value) + dir * s.step));
+    range.value = v.toFixed(dec);
+    range.dispatchEvent(new Event('input', { bubbles: true }));
+  };
+  for (const [cls, dir] of [['up', 1], ['down', -1]]) {
+    const b = box.querySelector('.sb-step .' + cls);
+    let timer = null;
+    const stop = () => { clearTimeout(timer); timer = null; };
+    b.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      nudge(dir);
+      const repeat = () => { nudge(dir); timer = setTimeout(repeat, 60); };
+      timer = setTimeout(repeat, 400);
+    });
+    for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) b.addEventListener(ev, stop);
+  }
 }
 // タブ・スライダーと数値の同期は共通スクリプト。部品を作ったあとで読み込む
 {
@@ -270,7 +299,26 @@ stage.addEventListener('drop', (e) => {
 
 $('maxSel').addEventListener('change', (e) => { state.max = parseInt(e.target.value, 10); reload(); });
 $('divSel').addEventListener('change', (e) => { state.div = parseInt(e.target.value, 10); reload(); });
-$('maskSel').addEventListener('change', (e) => { state.mask = e.target.value; requestDraw(); });
+// GAP Y を使わない MASK（GRILLE・DELTA）では GAP Y を無効にする
+function updateGapY() {
+  const off = NO_GAP_Y.includes(state.mask);
+  $('gapY').disabled = off;
+  $('gapYN').disabled = off;
+  $('gapY').closest('.sb-ctrl').classList.toggle('is-off', off);
+}
+// SIGNAL が RGB のときは Y MHz・C MHz を無効にする
+function updateSignal() {
+  const off = params.signal !== 'COMPOSITE';
+  for (const id of ['yMHz', 'cMHz']) {
+    $(id).disabled = off;
+    $(id + 'N').disabled = off;
+    $(id).closest('.sb-ctrl').classList.toggle('is-off', off);
+  }
+}
+$('signalSel').addEventListener('change', (e) => { params.signal = e.target.value; updateSignal(); requestDraw(); });
+updateSignal();
+$('maskSel').addEventListener('change', (e) => { state.mask = e.target.value; updateGapY(); requestDraw(); });
+updateGapY();
 
 // ---- 切り抜きの枠 ----
 const HIT_CORNER = 8, HIT_EDGE = 5;     // 当たりの範囲（CSS 画素）
@@ -587,6 +635,15 @@ async function exportMp4() {
     updateStatus();
     requestDraw();
   }
+}
+
+// ---- 下の欄の組を畳む・開く（覚えない。開くたびに全部開いた状態） ----
+for (const g of document.querySelectorAll('.sb-group')) {
+  const b = g.querySelector('.sb-fold');
+  b.addEventListener('click', () => {
+    const folded = g.classList.toggle('is-folded');
+    b.setAttribute('aria-expanded', String(!folded));
+  });
 }
 
 // ---- 下の欄をしまう ----

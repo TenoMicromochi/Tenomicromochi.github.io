@@ -1,3 +1,4 @@
+import { N_LOW, SIGNAL, BLOOM } from './config.js';
 // 画面に依らない計算。node --test で試せるように、DOM にも GL にも触らない。
 
 export const ZOOM_MIN = 0.25;
@@ -102,24 +103,16 @@ function axisWeights(sn, dn) {
 // 上半分：カラーバー（白・黄・シアン・緑・マゼンタ・赤・青・黒）
 // 下半分：R・G・B・白それぞれを 0〜100% の 11 段で並べた帯
 export function makeTestPattern() {
-  const W = 320, H = 240;
+  // 1 画素ずつ並べたテスト模様（16x7）。行は R・Y・G・C・B・M・W、列は各 4bit の 0〜15 段（値 = 段 × 17）
+  const rows = [[1, 0, 0], [1, 1, 0], [0, 1, 0], [0, 1, 1], [0, 0, 1], [1, 0, 1], [1, 1, 1]];
+  const W = 16, H = rows.length;
   const px = new Uint8ClampedArray(W * H * 4);
-  const bars = [[1, 1, 1], [1, 1, 0], [0, 1, 1], [0, 1, 0], [1, 0, 1], [1, 0, 0], [0, 0, 1], [0, 0, 0]];
-  const bands = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 1]];
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
-      let c;
-      if (y < H / 2) {
-        c = bars[Math.floor(x / (W / 8))];
-      } else {
-        const band = bands[Math.floor((y - H / 2) / (H / 2 / 4))];
-        const v = Math.floor(x * 11 / W) / 10;
-        c = [band[0] * v, band[1] * v, band[2] * v];
-      }
       const o = (y * W + x) * 4;
-      px[o] = Math.round(c[0] * 255);
-      px[o + 1] = Math.round(c[1] * 255);
-      px[o + 2] = Math.round(c[2] * 255);
+      px[o] = rows[y][0] * x * 17;
+      px[o + 1] = rows[y][1] * x * 17;
+      px[o + 2] = rows[y][2] * x * 17;
       px[o + 3] = 255;
     }
   }
@@ -140,27 +133,104 @@ export function statusText(inW, inH, w, h, zoom, opt = {}) {
   return `IN ${inW}x${inH}${f}${d} → ${w}x${h}   x${z}${note}${out}`;
 }
 
-// ガンマ関数（Lanczos 近似）。穴の面積の計算だけに使う
-function gamma(z) {
-  const g = 7;
-  const c = [0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313,
-    -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
-  if (z < 0.5) return Math.PI / (Math.sin(Math.PI * z) * gamma(1 - z));
-  z -= 1;
-  let x = c[0];
-  const t = z + g + 0.5;
-  for (let i = 1; i < g + 2; i++) x += c[i] / (z + i);
-  return Math.sqrt(2 * Math.PI) * Math.pow(t, z + 0.5) * Math.exp(-t) * x;
+// ---- 第6段：素子の光り方（層 1〜3）----
+// 位置・長さは元画像の画素単位。シェーダー（CRT_FRAG）は同じ式を GLSL で書いたもの。
+
+function smooth(a, b, x) {
+  const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
+  return t * t * (3 - 2 * t);
 }
 
-// 穴の面積 ÷ 升目の面積。超楕円 |x/a|^n + |y/b|^n <= 1 の面積は 4ab Γ(1+1/n)^2 / Γ(1+2/n)。
-// 升目の大きさは 1（DELTA だけ 0.866）。b = 0（縦を切らない）は幅 2a の帯
-export function holeAreaFraction(mask) {
-  const cell = mask.id === 3 ? 0.8660254 : 1;
-  const area = mask.b === 0
-    ? 2 * mask.a
-    : 4 * mask.a * mask.b * gamma(1 + 1 / mask.n) ** 2 / gamma(1 + 2 / mask.n);
-  return Math.min(1, area / cell);
+// 層 1・3：素子の升目と穴。mask は config の MASKS の値、P = { pitch, beam, gapX, gapY }
+//   hx, hy          素子の「満ちた形」の半幅・半高さ（GRILLE の hy は BEAM / 2 行）
+//   holeHx, holeHy  網の穴の半幅・半高さ（GRILLE は縦の網が無いので holeHy = Infinity）
+export function maskGeometry(mask, P) {
+  const grille = mask.id === 0;
+  const cw = P.pitch / 3;
+  const ch = grille ? 1 : cw * mask.aspect;
+  const holeHx = (1 - P.gapX) / 2 * cw;
+  const holeHy = grille ? Infinity : (mask.id === 3 ? holeHx : (1 - P.gapY) / 2 * ch);
+  return { id: mask.id, grille, cw, ch, n: mask.n, nLow: Math.min(N_LOW, mask.n), min: P.min, holeHx, holeHy, hx: holeHx, hy: grille ? P.beam / 2 : holeHy, cellArea: cw * ch };
+}
+
+// 層 2：形の濃さ p（0〜1）。af = 満ち具合、sf = 柔らかさ
+export function shapeP(g, af, sf, dx, dy, e) {
+  const sz = g.min + (1 - g.min) * af;
+  const ax = g.hx * sz, ay = g.hy * sz;
+  const n = g.nLow + (g.n - g.nLow) * af;
+  const f = Math.pow(Math.pow(Math.abs(dx) / ax, n) + Math.pow(Math.abs(dy) / ay, n), 1 / n);
+  return (1 - sf) * (1 - smooth(1 - e, 1 + e, f)) + sf * Math.exp(-2 * f * f);
+}
+
+// 層 3：網。穴の中が 1、外が 0（縁は e でぼかす）。GRILLE は横だけ
+export function holeMask(g, dx, dy, e) {
+  let f;
+  if (g.grille) f = Math.abs(dx) / g.holeHx;
+  else f = Math.pow(Math.pow(Math.abs(dx) / g.holeHx, g.n) + Math.pow(Math.abs(dy) / g.holeHy, g.n), 1 / g.n);
+  return 1 - smooth(1 - e, 1 + e, f);
+}
+
+// 網を通した形 min(p, 穴)。満ちたとき（af = 1, sf = 0）は p そのもの
+function transmitShape(g, af, sf, dx, dy, e) {
+  return Math.min(shapeP(g, af, sf, dx, dy, e), holeMask(g, dx, dy, e));
+}
+
+// 網を通した形の面積（中点則、4象限は対称なので1象限を4倍）
+export function shapeArea(g, af, sf, e, N) {
+  const sz = g.min + (1 - g.min) * af;
+  const ax = g.hx * sz, ay = g.hy * sz;
+  const ext = sf > 0 ? 2.4 : 1 + e + 0.02;
+  const Lx = Math.min(g.holeHx * (1 + e), ax * ext);
+  const Ly = Math.min(g.holeHy * (1 + e), ay * ext);
+  let sum = 0;
+  for (let j = 0; j < N; j++) {
+    const dy = (j + 0.5) * Ly / N;
+    for (let i = 0; i < N; i++) sum += transmitShape(g, af, sf, (i + 0.5) * Lx / N, dy, e);
+  }
+  return 4 * sum * Lx * Ly / (N * N);
+}
+
+// B の表。Q(af, sf) = 網を通した形の面積 ÷ 満ちた形の面積。B = 1 / Q（MIN が変わったら作り直す）。
+// 表には Q ÷ sz²（sz = MIN + (1 − MIN) × af、形の大きさの割合）を持つ。Q の主な変化を sz² が受け持つので、補間が合う
+//   aFull    満ちた形（af = 1, sf = 0）の面積
+//   avgFrac  満ちた形の面積 ÷ 素子の升目の面積（細かすぎるときの平均の明るさ）
+export function buildTable(g, e, T) {
+  const { na, ns, afMin, n } = T;
+  const tmin = Math.sqrt(afMin);
+  const aFull = shapeArea(g, 1, 0, e, n);
+  const R = new Float32Array(na * ns);
+  for (let i = 0; i < na; i++) {
+    const t = tmin + (1 - tmin) * i / (na - 1), af = t * t;
+    const sz = g.min + (1 - g.min) * af;
+    for (let j = 0; j < ns; j++)
+      R[j * na + i] = shapeArea(g, af, j / (ns - 1), e, n) / aFull / (sz * sz);
+  }
+  return { na, ns, tmin, afMin, min: g.min, aFull, avgFrac: aFull / g.cellArea, R };
+}
+
+export function lookupQ(tab, af, sf) {
+  const t = Math.sqrt(Math.min(1, Math.max(tab.afMin, af)));
+  const u = (t - tab.tmin) / (1 - tab.tmin) * (tab.na - 1);
+  const v = Math.min(1, Math.max(0, sf)) * (tab.ns - 1);
+  const i0 = Math.min(Math.floor(u), tab.na - 2), j0 = Math.min(Math.floor(v), tab.ns - 2);
+  const fu = u - i0, fv = v - j0, r = tab.R, na = tab.na;
+  const a = r[j0 * na + i0] * (1 - fu) + r[j0 * na + i0 + 1] * fu;
+  const b = r[(j0 + 1) * na + i0] * (1 - fu) + r[(j0 + 1) * na + i0 + 1] * fu;
+  const sz = tab.min + (1 - tab.min) * Math.min(1, af);
+  return (a * (1 - fv) + b * fv) * sz * sz;
+}
+
+// 層 2 + 3：素子の中心から (dx, dy) ずれた点の光（強さ I、色の係数は掛けない）
+//   af = min(1, I / KNEE)、sf = SOFT × (1 − af)、光 = I × B × min(p, 穴)  （B = 1 / Q）
+export function elementLight(g, tab, P, e, I, dx, dy) {
+  if (I <= 1e-4) return 0;
+  const af = Math.min(1, I / P.knee), sf = P.soft * (1 - af);
+  return I * transmitShape(g, af, sf, dx, dy, e) / lookupQ(tab, af, sf);
+}
+
+// 細かすぎるときの、素子の升目で平均した明るさ（素子の光の総量 I × 満ちた形の面積 ÷ 升目の面積）
+export function avgLight(tab, I) {
+  return I * tab.avgFrac;
 }
 
 // ---- 第2段 ----
@@ -295,4 +365,72 @@ export function resizeCropRect(start, handle, pointer, imgW, imgH, minSide = 4) 
   h = Math.min(Math.max(h, hMin), Math.max(hMin, hMax));
   w = h * r;
   return { x: cx - w / 2, y: sy > 0 ? ay : ay - h, w, h };
+}
+
+// ---- 層 0：信号（コンポジットの横のぼけ）。shader.js の SIGNAL_FRAG はこれと同じ式 ----
+// 帯域 f（MHz）のときのガウスの幅 σ（画素）。−3dB が f になるガウス。画像の横幅 W 画素 = 走査線の映る部分（lineUs µs）
+export function compositeSigma(W, f) {
+  return SIGNAL.sigmaK / f / (SIGNAL.lineUs / W);
+}
+// ぼかす範囲（片側の画素数）= ±range σ、最低 1
+export function compositeRadius(sigma) {
+  return Math.max(1, Math.ceil(SIGNAL.range * sigma));
+}
+// 1 行（rgbRow = [r, g, b, r, g, b, ...]、0〜1、sRGB のまま）を YIQ で横にぼかして RGB に戻す（0〜1 に切り詰め）。
+// Y は yMHz、I・Q は cMHz の帯域。画像の左右の外は 0（重みは範囲全体の合計で割る）
+export function compositeRow(rgbRow, W, yMHz, cMHz) {
+  const Y = new Float64Array(W), I = new Float64Array(W), Q = new Float64Array(W);
+  for (let x = 0; x < W; x++) {
+    const r = rgbRow[3 * x], g = rgbRow[3 * x + 1], b = rgbRow[3 * x + 2];
+    Y[x] = 0.299 * r + 0.587 * g + 0.114 * b;
+    I[x] = 0.596 * r - 0.274 * g - 0.322 * b;
+    Q[x] = 0.211 * r - 0.523 * g + 0.312 * b;
+  }
+  const blur = (v, f) => {
+    const s = compositeSigma(W, f), R = compositeRadius(s);
+    const w = new Float64Array(2 * R + 1);
+    let ws = 0;
+    for (let d = -R; d <= R; d++) { w[d + R] = Math.exp(-d * d / (2 * s * s)); ws += w[d + R]; }
+    const out = new Float64Array(W);
+    for (let x = 0; x < W; x++) {
+      let a = 0;
+      for (let d = -R; d <= R; d++) {
+        const k = x + d;
+        if (k >= 0 && k < W) a += w[d + R] * v[k];
+      }
+      out[x] = a / ws;
+    }
+    return out;
+  };
+  const By = blur(Y, yMHz), Bi = blur(I, cMHz), Bq = blur(Q, cMHz);
+  const clamp01 = (v) => Math.min(1, Math.max(0, v));
+  const out = new Float64Array(3 * W);
+  for (let x = 0; x < W; x++) {
+    out[3 * x] = clamp01(By[x] + 0.956 * Bi[x] + 0.621 * Bq[x]);
+    out[3 * x + 1] = clamp01(By[x] - 0.272 * Bi[x] - 0.647 * Bq[x]);
+    out[3 * x + 2] = clamp01(By[x] - 1.106 * Bi[x] + 1.703 * Bq[x]);
+  }
+  return out;
+}
+
+// ---- BLOOM（明るい色の表面のにじみ）。shader.js の BLOOM_SRC_FRAG・BLOOM_BLUR_FRAG はこれと同じ式 ----
+// 元：リニアの色 rgbLinear（0〜）に EXPOSURE を掛けた c から、c × min(Y, 1)^pow。暗い色ほど小さい
+export function bloomSource(rgbLinear, exposure) {
+  const c = rgbLinear.map((v) => v * exposure);
+  const Y = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  const k = Math.pow(Math.min(Y, 1), BLOOM.pow);
+  return c.map((v) => v * k);
+}
+// B SIZE のときの2枚のガウス。σ（元画素）・片側の画素数 R = ceil(range σ)・R の範囲で合計 1 に直した1次元の重み・足す重み。
+// margin = 2枚目の R = にじみのテクスチャが元画像の周りに足す余白（元画素）
+export function bloomKernel(size) {
+  const gauss = BLOOM.sigmas.map((k) => {
+    const sigma = k * size, R = Math.max(1, Math.ceil(BLOOM.rangeSigmas * sigma));
+    const w = new Float64Array(2 * R + 1);
+    let sum = 0;
+    for (let d = -R; d <= R; d++) { w[d + R] = Math.exp(-d * d / (2 * sigma * sigma)); sum += w[d + R]; }
+    for (let i = 0; i < w.length; i++) w[i] /= sum;
+    return { sigma, R, w };
+  });
+  return { gauss, weights: BLOOM.weights, margin: gauss[1].R };
 }
