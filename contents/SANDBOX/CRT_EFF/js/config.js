@@ -8,22 +8,22 @@ export const SLIDERS = {
   yMHz:     { label: 'Y MHZ',    min: 0.5,  max: 6.0, step: 0.1,  def: 3.0, sec: 'signal' },   // 0 明るさ（Y）の帯域
   cMHz:     { label: 'C MHZ',    min: 0.2,  max: 3.0, step: 0.1,  def: 1.0, sec: 'signal' },   // 0 色（I・Q）の帯域
   pitch:    { label: 'PITCH',    min: 0.5,  max: 3.0, step: 0.05, def: 1.0, sec: 'mask' },   // 1 格子
-  beam:     { label: 'BEAM',     min: 0.2,  max: 1.0, step: 0.05, def: 0.9, sec: 'mask' },   // 1・2 ビームの縦の太さ
-  knee:     { label: 'KNEE',     min: 0.01, max: 0.5, step: 0.01, def: 0.4, sec: 'mask' },   // 2 これ以上の強さで穴いっぱいに満ちる
+  beam:     { label: 'BEAM',     min: 0.2,  max: 1.0, step: 0.05, def: 0.85, sec: 'mask' },   // 1・2 ビームの縦の太さ
+  knee:     { label: 'KNEE',     min: 0.01, max: 0.5, step: 0.01, def: 0.15, sec: 'mask' },   // 2 これ以上の強さで穴いっぱいに満ちる
   min:      { label: 'MIN',      min: 0,    max: 1,   step: 0.05, def: 0.6, sec: 'mask' },   // 2 弱い素子の大きさ（満ちた形に対する割合の下限）
-  soft:     { label: 'SOFT',     min: 0,    max: 1,   step: 0.05, def: 0.5, sec: 'mask' },   // 2 弱い素子の中心からの淡さ
-  gapX:     { label: 'GAP X',    min: 0,    max: 0.6, step: 0.01, def: 0.2, sec: 'mask' },   // 3 縦の網
+  soft:     { label: 'SOFT',     min: 0,    max: 1,   step: 0.05, def: 0.95, sec: 'mask' },   // 2 弱い素子の中心からの淡さ
+  gapX:     { label: 'GAP X',    min: 0,    max: 0.6, step: 0.01, def: 0.3, sec: 'mask' },   // 3 縦の網
   gapY:     { label: 'GAP Y',    min: 0,    max: 0.6, step: 0.01, def: 0.1, sec: 'mask' },   // 3 横の網（GRILLE・DELTA では使わない）
-  exposure: { label: 'EXPOSURE', min: 0.25, max: 8,   step: 0.05, def: 1.0, sec: 'light' },   // 4
-  bloom:    { label: 'BLOOM',    min: 0,    max: 2,   step: 0.05, def: 0.5, sec: 'light' },   // 4 明るい色の表面のにじみの量
-  bsize:    { label: 'B SIZE',   min: 0.5,  max: 6.0, step: 0.1,  def: 1.5, sec: 'light' },   // 4 BLOOM の広がり σ1（元画素）
+  exposure: { label: 'EXPOSURE', min: 0.25, max: 8,   step: 0.05, def: 1.5, sec: 'light' },   // 4
+  bloom:    { label: 'BLOOM',    min: 0,    max: 2,   step: 0.05, def: 0.05, sec: 'light' },   // 4 明るい色の表面のにじみの量
+  bsize:    { label: 'B SIZE',   min: 0.5,  max: 6.0, step: 0.1,  def: 4.0, sec: 'light' },   // 4 BLOOM の広がり σ1（元画素）
   halo:     { label: 'HALO',     min: 0,    max: 0.5, step: 0.01, def: 0.05, sec: 'light' },  // 4
 };
 
 // 層 0：信号。SIGNAL が COMPOSITE のとき、画像の各行を走査線1本（lineUs µs）とみなし、
 // Y と I・Q を別の帯域（MHz）で横にガウスでぼかす。σ（画素）= sigmaK / f / (lineUs / 幅)、範囲は ±range σ
 export const SIGNAL_CHOICES = ['RGB', 'COMPOSITE'];
-export const DEFAULT_SIGNAL = 'RGB';
+export const DEFAULT_SIGNAL = 'COMPOSITE';
 export const SIGNAL = { lineUs: 52.6, sigmaK: 0.1325, range: 3 };
 
 export const DIV_CHOICES = [1, 2, 3, 4, 5, 6, 7, 8];   // 1/n 縮小の n
